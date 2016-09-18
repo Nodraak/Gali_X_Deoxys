@@ -5,7 +5,7 @@
 #include "QEI.h"
 #include "PID.h"
 
-#include "motor.h"
+#include "Motor.h"
 
 #define PID_UPDATE_INTERVAL (1.0/10)  // sec
 
@@ -28,9 +28,9 @@
 #define MOTOR_DIR_RIGHT_BACKWARD 0
 
 
-float abs(float i)
+float abs(float f)
 {
-    return (i < 0) ? (-i) : i;
+    return (f < 0) ? (-f) : f;
 }
 
 /*
@@ -72,15 +72,8 @@ int main(void)
 
     // init motors
 
-    PwmOut mot_l(PA_8);  // D7 == PA_8
-    mot_l.period(0.001 * 0.1);      // 0.0001 == 10K Hz
-    PwmOut mot_r(PB_10);  // D6 == PB_10
-    mot_r.period(0.001 * 0.1);      // 0.0001 == 10K Hz
-
-    DigitalOut mot_l_dir(PA_1);
-    mot_l_dir = MOTOR_DIR_LEFT_FORWARD;
-    DigitalOut mot_r_dir(PA_0);
-    mot_r_dir = MOTOR_DIR_RIGHT_FORWARD;
+    Motor motor_left(PA_8, PA_1, MOTOR_DIR_LEFT_FORWARD);
+    Motor motor_right(PA_10, PA_0, MOTOR_DIR_RIGHT_FORWARD);
 
     // todo motor TH
 
@@ -151,8 +144,6 @@ int main(void)
         float output_angle = 0;
         float mot_l_val = 0;
         float mot_r_val = 0;
-        float mot_l_pwm = 0;
-        float mot_r_pwm = 0;
 
         /*
             == pid dist ==
@@ -193,37 +184,26 @@ int main(void)
             == set val to motor ==
         */
 
-        // signed val
         mot_l_val = output_dist_pwm - output_angle;
-        mot_l_val = constrain(mot_l_val, -1, 1);
-        mot_l_pwm = abs(mot_l_val);
+        mot_l_val = constrain(mot_l_val, -1, 1);  // divide by the bigest of left/right values
+        motor_left.setSpeed(mot_l_val);
 
         mot_r_val = output_dist_pwm + output_angle;
         mot_r_val = constrain(mot_r_val, -1, 1);
-        mot_r_pwm = abs(mot_r_val);
+        motor_right.setSpeed(mot_r_val);
 
-        // set dir  -- WTF ??? todo
-        mot_r_dir = (mot_l_val < 0) ? MOTOR_DIR_LEFT_BACKWARD : MOTOR_DIR_LEFT_FORWARD;
-        mot_l_dir = (mot_r_val < 0) ? MOTOR_DIR_RIGHT_BACKWARD : MOTOR_DIR_RIGHT_FORWARD;
-
-        // set motor
-
-        if (mot_l_pwm < 0.05)   mot_l = 0;
-        else                    mot_l = map(mot_l_pwm, 0, 1, PWM_MIN, 1);
-
-        if (mot_r_pwm < 0.05)   mot_r = 0;
-        else                    mot_r = map(mot_r_pwm, 0, 1, PWM_MIN, 1);
-
-        // debug
+        /*
+            debug
+        */
 
         xbee.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
         xbee.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        xbee.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", mot_l_val, mot_l.read(), mot_r_val, mot_r.read());
+        // xbee.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", motor_left.getPWM(), -1, motor_right.getPWM(), -1);
         xbee.printf("\n");
 
         pc.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
         pc.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        pc.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", mot_l_val, mot_l.read(), mot_r_val, mot_r.read());
+        // pc.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", motor_left.getPWM(), -1, motor_right.getPWM(), -1);
         pc.printf("\n");
 
         Thread::wait(PID_UPDATE_INTERVAL*1000);
