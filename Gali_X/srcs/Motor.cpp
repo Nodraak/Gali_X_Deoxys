@@ -18,7 +18,7 @@ Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin)
 
 void Motor::setSpeed(float speed) {
     setPwm(abs(speed));
-    setDirection(speed >= 0 ? forward_dir_ : !forward_dir_);
+    setDirection(speed >= 0);
 }
 
 void Motor::setPwm(float pwm) {
@@ -29,7 +29,7 @@ void Motor::setPwm(float pwm) {
 }
 
 void Motor::setDirection(bool dir) {
-    dir_ = dir;
+    dir_ = dir ? forward_dir_ : !forward_dir_;
 }
 
 float Motor::getPwm(void) {
@@ -37,6 +37,5 @@ float Motor::getPwm(void) {
 }
 
 bool Motor::getDirection(void) {
-    return dir_;
+    return dir_ == forward_dir_;
 }
-

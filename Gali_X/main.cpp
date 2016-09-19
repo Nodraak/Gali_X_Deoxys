@@ -72,8 +72,8 @@ int main(void)
 
     // init motors
 
-    Motor motor_left(PA_8, PA_1, MOTOR_DIR_LEFT_FORWARD);
-    Motor motor_right(PA_10, PA_0, MOTOR_DIR_RIGHT_FORWARD);
+    Motor motor_left(PA_8, PA_0, MOTOR_DIR_LEFT_FORWARD);
+    Motor motor_right(PB_10, PA_1, MOTOR_DIR_RIGHT_FORWARD);
 
     // todo motor TH
 
@@ -198,12 +198,16 @@ int main(void)
 
         xbee.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
         xbee.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        // xbee.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", motor_left.getPWM(), -1, motor_right.getPWM(), -1);
+        xbee.printf("[mot val] %d %.3f | %d %.3f\n",
+            motor_left.getDirection(), motor_left.getPwm(), motor_right.getDirection(), motor_right.getPwm()
+        );
         xbee.printf("\n");
 
         pc.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
         pc.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        // pc.printf("[mot val] %.3f (%.3f) %.3f (%.3f)\n", motor_left.getPWM(), -1, motor_right.getPWM(), -1);
+        pc.printf("[mot val] %d %.3f | %d %.3f\n",
+            motor_left.getDirection(), motor_left.getPwm(), motor_right.getDirection(), motor_right.getPwm()
+        );
         pc.printf("\n");
 
         Thread::wait(PID_UPDATE_INTERVAL*1000);
