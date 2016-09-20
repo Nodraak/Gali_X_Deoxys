@@ -3,8 +3,7 @@
 
 #include "Motor.h"
 
-int PWM_ERROR_TOLERANCE = 0.05;
-int PWM_MIN = 0.07;
+// todo: clean this
 double map(double x, double in_min, double in_max, double out_min, double out_max);
 float abs(float f);
 

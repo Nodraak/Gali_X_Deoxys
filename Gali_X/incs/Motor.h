@@ -3,6 +3,17 @@
 
 #include "mbed.h"
 
+
+#define PWM_MIN 0.07  // pwm value at which the robot start moving
+#define PWM_ERROR_TOLERANCE 0.05
+
+#define MOTOR_DIR_LEFT_FORWARD 0
+#define MOTOR_DIR_LEFT_BACKWARD 1
+
+#define MOTOR_DIR_RIGHT_FORWARD 1
+#define MOTOR_DIR_RIGHT_BACKWARD 0
+
+
 class Motor {
 
 public:

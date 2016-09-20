@@ -6,69 +6,16 @@
 #include "PID.h"
 
 #include "Motor.h"
+#include "utils.h"
+#include "Debug.h"
 
-#define PID_UPDATE_INTERVAL (1.0/10)  // sec
-
-#define ENC_RADIUS          28                      // one enc radius
-#define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter
-#define TICKS_PER_MM        16.5
-#define PULSES_PER_REV      (ENC_PERIMETER*TICKS_PER_MM)
-#define ENC_POS_RADIUS      87                      // distance from one enc to the center of the robot
-#define TICKS_2PI           (87*2*M_PI * TICKS_PER_MM * 2)  // how many enc ticks after a 2*M_PI turn
-
-#define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
-#define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
-
-#define PWM_MIN 0.07  // pwm value at which the robot start moving
-
-#define MOTOR_DIR_LEFT_FORWARD 0
-#define MOTOR_DIR_LEFT_BACKWARD 1
-
-#define MOTOR_DIR_RIGHT_FORWARD 1
-#define MOTOR_DIR_RIGHT_BACKWARD 0
-
-
-float abs(float f)
-{
-    return (f < 0) ? (-f) : f;
-}
-
-/*
-    Re-maps a number from one range to another.
-    Notes:
-        Does not constrain values to within the range
-        The "lower bounds" of either range may be larger or smaller than the "upper bounds"
-
-    Cf. https://www.arduino.cc/en/Reference/Map
-*/
-double map(double x, double in_min, double in_max, double out_min, double out_max)
-{
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-double constrain(double val, double min, double max)
-{
-    if (val < min)
-        return min;
-    else if (val > max)
-        return max;
-    else
-        return val;
-}
 
 int main(void)
 {
     // init com (serial, wifi, xbee, ...)
 
-    Serial pc(USBTX, USBRX);
-    pc.baud(115200);
-    // pc.format(8, Serial::None, 1);  // usefull?
-    pc.printf("Hello, world! pc\n");
-
-    Serial xbee(PC_10, PC_11);
-    xbee.baud(115200);
-    // xbee.format(8, Serial::None, 1);  // usefull?
-    xbee.printf("Hello, world! xbee\n");
+    Debug debug(USBTX, USBRX, PC_10, PC_11);
+    debug.printf("Hello world ! (all)\n");
 
     // init motors
 
@@ -107,10 +54,10 @@ int main(void)
 
     // float robot_angle = 0;
 
-    ctrl_dist.setSetPoint(MM_TO_TICKS(1000));  // goal
+    ctrl_dist.setSetPoint(MM_TO_TICKS(2000));  // goal
     ctrl_angle.setSetPoint(0);  // goal
 
-    xbee.printf("pid dist goal %d\n", MM_TO_TICKS(1000));
+    debug.printf("pid dist goal %d\n", MM_TO_TICKS(1000));
 
 
     while (true)
@@ -196,19 +143,12 @@ int main(void)
             debug
         */
 
-        xbee.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
-        xbee.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        xbee.printf("[mot val] %d %.3f | %d %.3f\n",
+        debug.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
+        debug.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
+        debug.printf("[mot val] %d %.3f | %d %.3f\n",
             motor_left.getDirection(), motor_left.getPwm(), motor_right.getDirection(), motor_right.getPwm()
         );
-        xbee.printf("\n");
-
-        pc.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
-        pc.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-        pc.printf("[mot val] %d %.3f | %d %.3f\n",
-            motor_left.getDirection(), motor_left.getPwm(), motor_right.getDirection(), motor_right.getPwm()
-        );
-        pc.printf("\n");
+        debug.printf("\n");
 
         Thread::wait(PID_UPDATE_INTERVAL*1000);
     }
