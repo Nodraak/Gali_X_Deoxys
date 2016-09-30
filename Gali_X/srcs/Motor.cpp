@@ -24,7 +24,12 @@ void Motor::setPwm(float pwm) {
     if (pwm < PWM_ERROR_TOLERANCE)
         pwm_ = 0;
     else
-        pwm_ = map(pwm, 0, 1, PWM_MIN, 1);
+    {
+        float val = map(pwm, 0, 1, PWM_MIN, 1);
+        if (val > PWM_MAX)
+            val = PWM_MAX;
+        pwm_ = val;
+    }
 }
 
 void Motor::setDirection(bool dir) {

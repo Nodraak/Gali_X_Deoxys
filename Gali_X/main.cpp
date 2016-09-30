@@ -12,10 +12,11 @@
 
 int main(void)
 {
+    char buffer[1024];
+
     // init com (serial, wifi, xbee, ...)
 
     Debug debug(USBTX, USBRX, PC_10, PC_11);
-    debug.printf("Hello world ! (all)\n");
 
     // init motors
 
@@ -57,24 +58,23 @@ int main(void)
     ctrl_dist.setSetPoint(MM_TO_TICKS(2000));  // goal
     ctrl_angle.setSetPoint(0);  // goal
 
-    debug.printf("pid dist goal %d\n", MM_TO_TICKS(1000));
-
-
     while (true)
     {
-/*
-        pc.printf("readable %d\n", pc.readable());
-        if (pc.readable())
-        {
-            pc.printf("Read: %s\n", pc.getc());
-
-        }
-*/
-
         // update qei
         // update sharp + other sensors
 
-        // do com (serial, ...)
+        // do com (serial, ...) - This might overwrite sensors inputs
+
+        if (debug.get_line(buffer, 1024) != -1)
+        {
+            if (strcmp(buffer, "hello") == 0)
+                debug.printf("gotcha!\n");
+            else if (strcmp(buffer, "ping") == 0)
+                debug.printf("pong\n");
+            else
+                debug.printf("Please say again\n");
+        }
+
 
         // update ia
 
