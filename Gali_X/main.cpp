@@ -35,7 +35,13 @@ int main(void)
 
     while (true)
     {
+        /*
+            inputs
+        */
+
         // update qei
+        mc.fetchEncodersValue();
+
         // update sharp + other sensors
 
         // do com (serial, ...) - This might overwrite sensors inputs
@@ -50,14 +56,24 @@ int main(void)
                 debug.printf("Please say again\n");
         }
 
+        /*
+            Computations
+        */
+
         // update ia
+        mc.computePid();
+
+        /*
+            outputs
+        */
+
+        // move
+        mc.updateMotors();
 
         // debug
+        mc.debug(&debug);
 
         // sleep
-
-        mc.updateMovement(debug);
-
         Thread::wait(PID_UPDATE_INTERVAL*1000);
     }
 

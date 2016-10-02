@@ -35,15 +35,22 @@ public:
     MotionController(void);
     // todo
     // addOrder
-    void updateMovement(Debug debug);
 
-// protected:
-    Motor motor_l_;
-    Motor motor_r_;
+    void fetchEncodersValue(void);
+    void computePid(void);
+    void updateMotors(void);
+    void debug(Debug *debug);
 
-    QEI enc_l_;
-    QEI enc_r_;
+private:  // I/O
+    Motor motor_l_, motor_r_;
+    QEI enc_l_, enc_r_;
 
+protected:  // internal
+    int enc_l_val_, enc_r_val_;
+    float out_pid_dist_;
+    float out_pid_angle_;
+
+public:  // interface
     PID pid_dist_;
     PID pid_angle_;
 };

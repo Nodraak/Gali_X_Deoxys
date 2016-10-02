@@ -32,16 +32,16 @@ MotionController::MotionController(void) :
 }
 
 
-void MotionController::updateMovement(Debug debug) {
-    int enc_l_val = enc_l_.getPulses();
-    int enc_r_val = enc_r_.getPulses();
+void MotionController::fetchEncodersValue(void) {
+    enc_l_val_ = enc_l_.getPulses();
+    enc_r_val_ = enc_r_.getPulses();
+}
 
+
+void MotionController::computePid(void) {
     int input_dist = 0;
     float input_angle = 0;
-    float output_dist_pwm = 0;
-    float output_angle = 0;
-    float mot_l_val = 0;
-    float mot_r_val = 0;
+    float diff_ticks = 0, diff_rad = 0;
 
     /*
         == pid dist ==
@@ -49,12 +49,12 @@ void MotionController::updateMovement(Debug debug) {
 
     // get input
 
-    input_dist = (enc_l_val + enc_r_val) / 2;
+    input_dist = (enc_l_val_ + enc_r_val_) / 2;
     pid_dist_.setProcessValue(input_dist - MM_TO_TICKS(1000));
 
     // get pid output
 
-    output_dist_pwm = pid_dist_.compute();
+    out_pid_dist_ = pid_dist_.compute();
 
     /*
         == pid angle ==
@@ -63,8 +63,8 @@ void MotionController::updateMovement(Debug debug) {
     // get input
 
     // todo apply proper modulo to (enc_l_val - enc_r_val)
-    float diff_ticks = enc_r_val - enc_l_val;
-    float diff_rad = diff_ticks * 2*M_PI / TICKS_2PI;
+    diff_ticks = enc_r_val_ - enc_l_val_;
+    diff_rad = diff_ticks * 2*M_PI / TICKS_2PI;
 
     while (diff_rad < -M_PI)
         diff_rad += 2*M_PI;
@@ -76,25 +76,28 @@ void MotionController::updateMovement(Debug debug) {
     // get pid output
 
     pid_angle_.setProcessValue(input_angle);
-    output_angle = pid_angle_.compute();
+    out_pid_angle_ = pid_angle_.compute();
+}
 
-    /*
-        == set val to motor ==
-    */
 
-    mot_l_val = output_dist_pwm - output_angle;
+void MotionController::updateMotors(void) {
+    float mot_l_val = 0, mot_r_val = 0;
+
+    mot_l_val = out_pid_dist_ - out_pid_angle_;
     mot_l_val = constrain(mot_l_val, -1, 1);  // todo if one of the two if > 1, divide by the bigest of left/right values
     motor_l_.setSpeed(mot_l_val);
 
-    mot_r_val = output_dist_pwm + output_angle;
+    mot_r_val = out_pid_dist_ + out_pid_angle_;
     mot_r_val = constrain(mot_r_val, -1, 1);
     motor_r_.setSpeed(mot_r_val);
+}
 
 
-    debug.printf("[pid dist] in/out %d %.3f\n", input_dist, output_dist_pwm);
-    debug.printf("[pid angle] in/out %.3f %.3f\n", diff_rad, output_angle);
-    debug.printf("[mot val] %d %.3f | %d %.3f\n",
+void MotionController::debug(Debug *debug) {
+    debug->printf("[MC/in] %d %d\n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/out_pid] %.3f %.3f\n", out_pid_dist_, out_pid_angle_);
+    debug->printf("[MC/mot_val] %d %.3f | %d %.3f\n",
         motor_l_.getDirection(), motor_l_.getPwm(), motor_r_.getDirection(), motor_r_.getPwm()
     );
-    debug.printf("\n");
+    debug->printf("\n");
 }
