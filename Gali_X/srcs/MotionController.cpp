@@ -1,23 +1,24 @@
 
 #include "mbed.h"
 
-#include "QEI.h"
 #include "PID.h"
+#include "QEI.h"
 
 #include "Motor.h"
+#include "pinout.h"
 #include "utils.h"
+
 #include "MotionController.h"
 
 
 MotionController::MotionController(void) :
-    motor_l_(PA_8, PA_0, MOTOR_DIR_LEFT_FORWARD),
-    motor_r_(PB_10, PA_1, MOTOR_DIR_RIGHT_FORWARD),
-    enc_l_(PC_2, PC_3, NC, PULSES_PER_REV, QEI::X4_ENCODING),
-    enc_r_(PB_0, PA_4, NC, PULSES_PER_REV, QEI::X4_ENCODING),
+    motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD),
+    motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD),
+    enc_l_(ENC_L_DATA1, ENC_L_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
+    enc_r_(ENC_R_DATA1, ENC_R_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
     pid_dist_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL),
     pid_angle_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL)
 {
-
     pid_dist_.setInputLimits(-100*1000, 100*1000);  // encoders value
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
     pid_dist_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE

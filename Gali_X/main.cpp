@@ -2,12 +2,10 @@
 #include "mbed.h"
 #include "rtos.h"
 
-#include "QEI.h"
-#include "PID.h"
-
-#include "Motor.h"
-#include "utils.h"
 #include "Debug.h"
+#include "pinout.h"
+#include "utils.h"
+
 #include "MotionController.h"
 
 
@@ -17,7 +15,7 @@ int main(void)
 
     // init com (serial, wifi, xbee, ...)
 
-    Debug debug(USBTX, USBRX, PC_10, PC_11);
+    Debug debug(USBTX, USBRX, XBEE_TX, XBEE_RX);
 
     // MC
     MotionController mc;

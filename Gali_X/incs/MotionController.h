@@ -1,7 +1,11 @@
 #ifndef MOTION_CONTROLLER_H_INLCUDED
 #define MOTION_CONTROLLER_H_INLCUDED
 
+#include "PID.h"
+#include "QEI.h"
+
 #include "Debug.h"
+#include "Motor.h"
 
 
 #define PID_UPDATE_INTERVAL (1.0/10)  // sec
@@ -36,9 +40,26 @@ public:
     // todo
     // addOrder
 
+    /*
+        Save the encoders value to a working variable so that the various
+        computations and the debug are based on the same values within this
+        loop.
+    */
     void fetchEncodersValue(void);
+
+    /*
+        Compute the PIDs output based on the encoders value.
+    */
     void computePid(void);
+
+    /*
+        Apply the PIDs output to the motors.
+    */
     void updateMotors(void);
+
+    /*
+        Print some information about the inputs, outputs and internal states.
+    */
     void debug(Debug *debug);
 
 private:  // I/O
