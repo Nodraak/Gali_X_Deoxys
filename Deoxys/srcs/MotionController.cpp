@@ -19,13 +19,11 @@ MotionController::MotionController(void) :
     pid_dist_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL),
     pid_angle_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL)
 {
-    pid_dist_.setInputLimits(-100*1000, 100*1000);  // encoders value
+    pid_dist_.setInputLimits(-5*1000, 5*1000);  // encoders value
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
     pid_dist_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_dist_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
 
-    // PID pid_angle_(6.0, 0, 0, PID_UPDATE_INTERVAL);
-    // PID pid_angle_(0.3*angle_Ku, angle_Tu/2, angle_Tu/8, PID_UPDATE_INTERVAL);
     pid_angle_.setInputLimits(-M_PI, M_PI);  // angle. 0 toward, -pi on right, +pi on left
     pid_angle_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm). -1 right, +1 left, 0 nothing
     pid_angle_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
@@ -39,10 +37,80 @@ void MotionController::fetchEncodersValue(void) {
 }
 
 
+
+/*
+    diff_l and diff_r: enc distance in mm, + forward, - backward
+    cur_angle: current angle. in radian. facing east is 0. positive is CCW. (std maths)
+    cur_x and cur_y: current position. in mm. 0 is bottom left.
+
+    Return 0 on success.
+*/
+int calcNewPos(
+    int diff_l, int diff_r,
+    float cur_angle, int cur_x, int cur_y,
+    float *new_angle_, int16_t *new_x_, int16_t *new_y_
+) {
+    float distance = 0, radius = 0;
+    float dangle = 0, dx = 0, dy = 0;
+    float new_angle = 0;
+    int new_x = 0, new_y = 0;
+
+    if (diff_l == diff_r)
+    {
+        distance = diff_l;
+
+        dangle = 0;
+
+        dx = distance * cos(cur_angle);
+        dy = distance * sin(cur_angle);
+    }
+    else
+    {
+        distance = (diff_l + diff_r) / 2;
+        radius = 1.0 * ENC_POS_RADIUS * (diff_r + diff_l) / (diff_r - diff_l);
+
+        // angle
+        dangle = distance / radius;
+        new_angle = cur_angle + dangle;
+
+        // pos
+        dx = - radius * (cos(new_angle)-cos(cur_angle));
+        dy = radius * (sin(new_angle)-sin(cur_angle));
+
+    }
+
+    new_x = cur_x + dx;
+    new_y = cur_y + dy;
+
+    // update class members
+    *new_angle_ = new_angle;
+    *new_x_ = new_x;
+    *new_y_ = new_y;
+
+    return 0;
+}
+
+
+void MotionController::updatePositionAndOrder(void) {
+
+    if (
+        calcNewPos(
+            TICKS_TO_MM(enc_l_val_-enc_l_last_), TICKS_TO_MM(enc_r_val_-enc_r_last_),
+            angle_, pos_.x, pos_.y,
+            &angle_, &pos_.x, &pos_.y
+        ) != 0
+    )
+    {
+        printf("MotionController::updatePositionAndOrder - FUCK\n");
+    }
+}
+
+
 void MotionController::computePid(void) {
     int input_dist = 0;
     float input_angle = 0;
-    float diff_ticks = 0, diff_rad = 0;
+    int diff_ticks = 0;
+    float diff_rad = 0;
 
     /*
         == pid dist ==
@@ -51,7 +119,7 @@ void MotionController::computePid(void) {
     // get input
 
     input_dist = (enc_l_val_ + enc_r_val_) / 2;
-    pid_dist_.setProcessValue(input_dist - MM_TO_TICKS(1000));
+    pid_dist_.setProcessValue(input_dist-pid_dist_goal_);
 
     // get pid output
 
@@ -63,20 +131,13 @@ void MotionController::computePid(void) {
 
     // get input
 
-    // todo apply proper modulo to (enc_l_val - enc_r_val)
     diff_ticks = enc_r_val_ - enc_l_val_;
     diff_rad = diff_ticks * 2*M_PI / TICKS_2PI;
-
-    while (diff_rad < -M_PI)
-        diff_rad += 2*M_PI;
-    while (diff_rad > M_PI)
-        diff_rad -= 2*M_PI;
-
     input_angle = diff_rad;
 
     // get pid output
 
-    pid_angle_.setProcessValue(input_angle);
+    pid_angle_.setProcessValue(std_rad_angle(input_angle-pid_angle_goal_));
     out_pid_angle_ = pid_angle_.compute();
 }
 
@@ -95,10 +156,17 @@ void MotionController::updateMotors(void) {
 
 
 void MotionController::debug(Debug *debug) {
-    debug->printf("[MC/in] %d %d\n", enc_l_val_, enc_r_val_);
-    debug->printf("[MC/out_pid] %.3f %.3f\n", out_pid_dist_, out_pid_angle_);
-    debug->printf("[MC/mot_val] %d %.3f | %d %.3f\n",
+    debug->printf("[MC/in] %lld %lld\n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/out_pid] (dist angle) %.3f %.3f\n", out_pid_dist_, out_pid_angle_);
+    debug->printf("[MC/mot_val] (dir pwm) %d %.3f | %d %.3f\n",
         motor_l_.getDirection(), motor_l_.getPwm(), motor_r_.getDirection(), motor_r_.getPwm()
     );
-    debug->printf("\n");
+}
+
+void MotionController::pidDistSetGoal(float goal) {
+    pid_dist_goal_ = goal;
+}
+
+void MotionController::pidAngleSetGoal(float goal) {
+    pid_angle_goal_ = goal;
 }

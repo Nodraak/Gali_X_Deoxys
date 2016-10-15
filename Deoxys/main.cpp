@@ -12,6 +12,7 @@
 int main(void)
 {
     char buffer[BUFFER_SIZE];
+    Timer loop;
 
     // init com (serial, wifi, xbee, ...)
 
@@ -23,16 +24,20 @@ int main(void)
     // init sharp + other sensors
     // init servos + other actuators
 
-    // init timers ?
+    // init timers
+    loop.start();
+
     // init ia ?
 
-    // init tirette interrupt
+    // init tirette interrupt -> polling
 
-    mc.pid_dist_.setSetPoint(MM_TO_TICKS(2000));  // goal
-    mc.pid_angle_.setSetPoint(M_PI/2);  // goal
+    mc.pidDistSetGoal(0);
+    mc.pidAngleSetGoal(0);
 
     while (true)
     {
+        loop.reset();
+
         /*
             inputs
         */
@@ -46,17 +51,46 @@ int main(void)
 
         if (debug.get_line(buffer, BUFFER_SIZE) != -1)
         {
-            if (strcmp(buffer, "hello") == 0)
-                debug.printf("gotcha!\n");
-            else if (strcmp(buffer, "ping") == 0)
-                debug.printf("pong\n");
+            if (strcmp(buffer, "ping") == 0)
+                debug.printf(Debug::DEBUG_ERROR, "pong\n");
+            else if (strncmp(buffer, "dist", 4) == 0)
+            {
+                int val = atoi(&buffer[4+1]);
+                debug.printf(Debug::DEBUG_ERROR, "setting dist to %d\n", val);
+                mc.pidDistSetGoal(MM_TO_TICKS(val));
+            }
+            else if (strncmp(buffer, "angle", 5) == 0)
+            {
+                int val = atoi(&buffer[5+1]);
+
+                while (val < -180)
+                    val += 2*180;
+                while (val > 180)
+                    val -= 2*180;
+
+                debug.printf(Debug::DEBUG_ERROR, "setting angle to %d\n", val);
+                mc.pidAngleSetGoal(DEG2RAD(val));
+            }
+            else if (strncmp(buffer, "debug", 5) == 0)
+            {
+                if (strcmp(&buffer[5+1], "on") == 0)
+                    debug.set_level(Debug::DEBUG_DEBUG);
+                else if (strcmp(&buffer[5+1], "info") == 0)
+                    debug.set_level(Debug::DEBUG_INFO);
+                else if (strcmp(&buffer[5+1], "off") == 0)
+                    debug.set_level(Debug::DEBUG_ERROR);
+                else
+                    debug.printf(Debug::DEBUG_ERROR, "Error: unknown debug level \"%s\"\n", &buffer[5+1]);
+            }
             else
-                debug.printf("Please say again\n");
+                debug.printf(Debug::DEBUG_ERROR, "Please say again (\"%s\" is not a valid command)\n", buffer);
         }
 
         /*
             Computations
         */
+
+        mc.updatePositionAndOrder();
 
         // update ia
         mc.computePid();
@@ -70,6 +104,8 @@ int main(void)
 
         // debug
         mc.debug(&debug);
+
+        debug.printf("=> %d\n\n", loop.read_ms());
 
         // sleep
         Thread::wait(PID_UPDATE_INTERVAL*1000);

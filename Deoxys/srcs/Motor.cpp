@@ -9,7 +9,7 @@ float abs(float f);
 
 
 Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin), dir_(dir_pin) {
-    pwm_.period(0.001 * 0.1);      // 0.0001 == 10K Hz
+    pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
     setSpeed(0);
 
     forward_dir_ = forward_dir;

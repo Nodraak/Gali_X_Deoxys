@@ -1,4 +1,6 @@
 
+#include "mbed.h"
+
 #include "utils.h"
 
 
@@ -28,4 +30,12 @@ double constrain(double val, double min, double max)
         return max;
     else
         return val;
+}
+
+/*
+    Return the angle between -pi and +pi, modulo pi.
+*/
+double std_rad_angle(double val)
+{
+    return fmod(val+M_PI, 2*M_PI)-M_PI;
 }
