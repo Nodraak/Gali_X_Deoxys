@@ -14,4 +14,7 @@
 #define XBEE_TX     PC_10
 #define XBEE_RX     PC_11
 
+#define SCREEN_TX   PC_12
+#define SCREEN_RX   PD_2
+
 #endif

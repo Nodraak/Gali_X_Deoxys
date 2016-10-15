@@ -5,7 +5,8 @@
 #include "BufferedSerial.h"
 
 
-#define DEBUG_BUFFER_SIZE 512  // library default is 256
+#define INTERFACE_BUFFER_SIZE 256  // library default is 256
+#define BUFFER_SIZE 256
 
 
 class Debug {
@@ -14,16 +15,27 @@ public:
     typedef enum _Interface {
         DEBUG_PC,
         DEBUG_XBEE,
+        DEBUG_SCREEN,
+        DEBUG_LAST,
         DEBUG_ALL
     } Interface;
 
-    Debug(PinName pcTx, PinName pcRx, PinName xbeeTx, PinName xbeeRx);
+    typedef enum _Level {
+        DEBUG_DEBUG,    // all (io + internals) -> gui          -> on
+        DEBUG_INFO,     // basic info (inputs and outputs)      -> info
+        DEBUG_ERROR     // minimum                              -> off
+    } Level;
+
+    Debug(void);
     void printf(const char* format, ...);
+    void printf(Level level, const char* format, ...);
     int get_line(char *buffer, int buffer_length, Interface interface = DEBUG_ALL);
+    void set_level(Level level);
 
 protected:
-    BufferedSerial pc_;
-    BufferedSerial xbee_;
+    BufferedSerial interfaces_[DEBUG_LAST];
+    char *interfaces_str_[DEBUG_LAST];
+    Level level_;
 };
 
 #endif

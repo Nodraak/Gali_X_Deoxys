@@ -11,11 +11,11 @@
 
 int main(void)
 {
-    char buffer[1024];
+    char buffer[BUFFER_SIZE];
 
     // init com (serial, wifi, xbee, ...)
 
-    Debug debug(USBTX, USBRX, XBEE_TX, XBEE_RX);
+    Debug debug;
 
     // MC
     MotionController mc;
@@ -44,7 +44,7 @@ int main(void)
 
         // do com (serial, ...) - This might overwrite sensors inputs
 
-        if (debug.get_line(buffer, 1024) != -1)
+        if (debug.get_line(buffer, BUFFER_SIZE) != -1)
         {
             if (strcmp(buffer, "hello") == 0)
                 debug.printf("gotcha!\n");
