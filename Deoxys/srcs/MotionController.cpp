@@ -74,9 +74,8 @@ int calcNewPos(
         new_angle = cur_angle + dangle;
 
         // pos
-        dx = - radius * (cos(new_angle)-cos(cur_angle));
-        dy = radius * (sin(new_angle)-sin(cur_angle));
-
+        dx = radius * (sin(new_angle)-sin(cur_angle));
+        dy = - radius * (cos(new_angle)-cos(cur_angle));
     }
 
     new_x = cur_x + dx;

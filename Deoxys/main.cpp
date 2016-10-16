@@ -3,10 +3,12 @@
 #include "rtos.h"
 
 #include "Debug.h"
+#include "MotionController.h"
 #include "pinout.h"
 #include "utils.h"
 
-#include "MotionController.h"
+#include "test.h"
+#include "test_mc.h"
 
 
 int main(void)
@@ -17,6 +19,16 @@ int main(void)
     // init com (serial, wifi, xbee, ...)
 
     Debug debug;
+
+#ifdef RUN_TESTS
+    test_sizes(&debug);
+    test_mc(&debug);
+
+    debug.printf("Done.\n");
+    while (1)
+        ;
+
+#endif
 
     // MC
     MotionController mc;
