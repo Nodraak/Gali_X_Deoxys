@@ -22,19 +22,29 @@
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
+#define MAX_ORDERS_COUNT    20
 
-// typedef struct  _s_order {
-//     absolute / relative
-//     x/y
-//     dist
-//     angle
+// default pid tunning
+#define PID_DIST_KU 1.7
+#define PID_DIST_TU 0.7
+#define PID_ANGLE_KU 6.0
+#define PID_ANGLE_TU 0.2
 
-//     start encl/encr ? auto value - to know when to stop ?
+// order type can be OR'ed to combine different types
+typedef enum    _e_order_type {
+    ORDER_TYPE_POS      = (1 << 0),
+    ORDER_TYPE_DIST     = (1 << 1),
+    ORDER_TYPE_ANGLE    = (1 << 2),
+    ORDER_TYPE_DELAY    = (1 << 3)
+}               e_order_type;
 
-//     precision ?
-//     speed ?
-
-// }               s_order;
+typedef struct  _s_order {
+    bool enabled;  // 0: no order, 1: struct filled with an order
+    s_vector_float pos;
+    int dist;
+    float angle;  // radians
+    float delay;
+}               s_order;
 
 
 class MotionController {
@@ -76,12 +86,16 @@ public:
     void pidDistSetGoal(float goal);
     void pidAngleSetGoal(float goal);
 
+    void ordersReset(void);
+
+    int ordersAppend(e_order_type type, int16_t x, int16_t y, int dist, float angle, float delay);
 
 private:  // I/O
     Motor motor_l_, motor_r_;
     QEI enc_l_, enc_r_;
 
     int64_t enc_l_last_, enc_r_last_;
+    s_order orders_[MAX_ORDERS_COUNT];  // planned movement orders
 
 protected:  // internal
     // pid
@@ -93,15 +107,16 @@ protected:  // internal
     float out_pid_angle_;
 
     // robot infos
-    s_vector_int16 pos_;
+    s_vector_float pos_;
     float angle_;  // radians
+    float speed_;  // mm/sec
 };
 
 
 int calcNewPos(
     int diff_l, int diff_r,
-    float cur_angle, int cur_x, int cur_y,
-    float *new_angle_, int16_t *new_x_, int16_t *new_y_
+    float cur_angle, float cur_x, float cur_y,
+    float *new_angle_, float *new_x_, float *new_y_
 );
 
 #endif

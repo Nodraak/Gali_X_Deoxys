@@ -1,11 +1,9 @@
 
 #include "mbed.h"
 
-#include "Motor.h"
+#include "utils.h"
 
-// todo: clean this
-double map(double x, double in_min, double in_max, double out_min, double out_max);
-float abs(float f);
+#include "Motor.h"
 
 
 Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin), dir_(dir_pin) {
@@ -16,7 +14,7 @@ Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin)
 }
 
 void Motor::setSpeed(float speed) {
-    setPwm(abs(speed));
+    setPwm(ABS(speed));
     setDirection(speed >= 0);
 }
 

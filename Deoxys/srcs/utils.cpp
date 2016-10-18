@@ -3,12 +3,6 @@
 
 #include "utils.h"
 
-
-float abs(float f)
-{
-    return (f < 0) ? (-f) : f;
-}
-
 /*
     Re-maps a number from one range to another.
     Notes:
@@ -30,12 +24,4 @@ double constrain(double val, double min, double max)
         return max;
     else
         return val;
-}
-
-/*
-    Return the angle between -pi and +pi, modulo pi.
-*/
-double std_rad_angle(double val)
-{
-    return fmod(val+M_PI, 2*M_PI)-M_PI;
 }

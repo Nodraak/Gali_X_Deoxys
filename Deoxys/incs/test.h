@@ -7,6 +7,6 @@ void _ft_assert(Debug *debug, int cond, const char *file, int line);
 void test_sizes(Debug *debug);
 
 #define ft_assert(cond) _ft_assert(debug, cond, __FILE__, __LINE__)
-#define ft_assert_equal(f1, f2) ft_assert(abs((float)(f1-f2)) < 0.000001)
+#define ft_assert_equal(f1, f2) ft_assert(ABS(f1-f2) < 0.000001)
 
 #endif

@@ -16,8 +16,8 @@ MotionController::MotionController(void) :
     motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD),
     enc_l_(ENC_L_DATA1, ENC_L_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
     enc_r_(ENC_R_DATA1, ENC_R_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
-    pid_dist_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL),
-    pid_angle_(3.0, 0.0, 0.0, PID_UPDATE_INTERVAL)
+    pid_dist_(0.3*PID_DIST_KU, PID_DIST_TU/2, PID_DIST_TU/8, PID_UPDATE_INTERVAL),
+    pid_angle_(0.3*PID_ANGLE_KU, PID_ANGLE_TU/2, PID_ANGLE_TU/8, PID_UPDATE_INTERVAL)
 {
     pid_dist_.setInputLimits(-5*1000, 5*1000);  // encoders value
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
@@ -32,10 +32,12 @@ MotionController::MotionController(void) :
 
 
 void MotionController::fetchEncodersValue(void) {
+    enc_l_last_ = enc_l_val_;
+    enc_r_last_ = enc_r_val_;
+
     enc_l_val_ = enc_l_.getPulses();
     enc_r_val_ = enc_r_.getPulses();
 }
-
 
 
 /*
@@ -47,19 +49,20 @@ void MotionController::fetchEncodersValue(void) {
 */
 int calcNewPos(
     int diff_l, int diff_r,
-    float cur_angle, int cur_x, int cur_y,
-    float *new_angle_, int16_t *new_x_, int16_t *new_y_
+    float cur_angle, float cur_x, float cur_y,
+    float *new_angle_, float *new_x_, float *new_y_
 ) {
     float distance = 0, radius = 0;
     float dangle = 0, dx = 0, dy = 0;
     float new_angle = 0;
-    int new_x = 0, new_y = 0;
+    float new_x = 0, new_y = 0;
 
     if (diff_l == diff_r)
     {
         distance = diff_l;
 
         dangle = 0;
+        new_angle = cur_angle;
 
         dx = distance * cos(cur_angle);
         dy = distance * sin(cur_angle);
@@ -71,7 +74,7 @@ int calcNewPos(
 
         // angle
         dangle = distance / radius;
-        new_angle = cur_angle + dangle;
+        new_angle = std_rad_angle(cur_angle + dangle);
 
         // pos
         dx = radius * (sin(new_angle)-sin(cur_angle));
@@ -91,16 +94,39 @@ int calcNewPos(
 
 
 void MotionController::updatePositionAndOrder(void) {
+    int diff_l = 0, diff_r = 0;
+    float dx = 0, dy = 0;
 
-    if (
-        calcNewPos(
-            TICKS_TO_MM(enc_l_val_-enc_l_last_), TICKS_TO_MM(enc_r_val_-enc_r_last_),
-            angle_, pos_.x, pos_.y,
-            &angle_, &pos_.x, &pos_.y
-        ) != 0
-    )
+    diff_l = TICKS_TO_MM(enc_l_val_-enc_l_last_);
+    diff_r = TICKS_TO_MM(enc_r_val_-enc_r_last_);
+
+    // udate pos and speed
+
+    calcNewPos(
+        diff_l, diff_r,
+        angle_, pos_.x, pos_.y,
+        &angle_, &pos_.x, &pos_.y
+    );
+
+    speed_ = (diff_l + diff_r) / 2 / PID_UPDATE_INTERVAL;
+
+    // update order
+
+    if (DIST(pos_.x-orders_[0].pos.x, pos_.y-orders_[0].pos.y) < 50)
     {
-        printf("MotionController::updatePositionAndOrder - FUCK\n");
+        s_order *dest = orders_;
+        s_order *src = &orders_[1];
+        memmove(dest, src, sizeof(s_order));
+
+        // update the goals in function of the given order
+
+        // todo switch order_type
+
+        dx = orders_[0].pos.x - pos_.x;
+        dy = orders_[0].pos.y - pos_.y;
+
+        this->pidDistSetGoal(DIST(dx, dy));
+        this->pidAngleSetGoal(atan2(dy, dx));
     }
 }
 
@@ -142,24 +168,34 @@ void MotionController::computePid(void) {
 
 
 void MotionController::updateMotors(void) {
-    float mot_l_val = 0, mot_r_val = 0;
+    float mot_l_val = 0, mot_r_val = 0, m = 0;
 
     mot_l_val = out_pid_dist_ - out_pid_angle_;
-    mot_l_val = constrain(mot_l_val, -1, 1);  // todo if one of the two if > 1, divide by the bigest of left/right values
-    motor_l_.setSpeed(mot_l_val);
-
     mot_r_val = out_pid_dist_ + out_pid_angle_;
-    mot_r_val = constrain(mot_r_val, -1, 1);
+
+    // if the magnitude of one of the two is > 1, divide by the bigest of these
+    // two two magnitudes (in order to keep the scale)
+    if ((ABS(mot_l_val) > 1) || (ABS(mot_r_val) > 1))
+    {
+        m = ABS(MAX(mot_l_val, mot_r_val));
+        mot_l_val /= m;
+        mot_r_val /= m;
+    }
+
+    // todo take into account the current speed to prevent "derapage"
+
+    motor_l_.setSpeed(mot_l_val);
     motor_r_.setSpeed(mot_r_val);
 }
 
 
 void MotionController::debug(Debug *debug) {
-    debug->printf("[MC/in] %lld %lld\n", enc_l_val_, enc_r_val_);
-    debug->printf("[MC/out_pid] (dist angle) %.3f %.3f\n", out_pid_dist_, out_pid_angle_);
-    debug->printf("[MC/mot_val] (dir pwm) %d %.3f | %d %.3f\n",
+    debug->printf("[MC/i] %lld %lld\n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", out_pid_dist_, out_pid_angle_);
+    debug->printf("[MC/o_mot] (dir pwm) %d %.3f | %d %.3f\n",
         motor_l_.getDirection(), motor_l_.getPwm(), motor_r_.getDirection(), motor_r_.getPwm()
     );
+    debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
 }
 
 void MotionController::pidDistSetGoal(float goal) {
@@ -168,4 +204,29 @@ void MotionController::pidDistSetGoal(float goal) {
 
 void MotionController::pidAngleSetGoal(float goal) {
     pid_angle_goal_ = goal;
+}
+
+
+void MotionController::ordersReset(void) {
+    memset(orders_, 0, sizeof(s_order)*MAX_ORDERS_COUNT);
+}
+
+
+int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, int dist, float angle, float delay) {
+    int i = 0;
+
+    while ((orders_[i].enabled == true) && (i < MAX_ORDERS_COUNT))
+        ++i;
+
+    if (i == MAX_ORDERS_COUNT)
+        return 1;
+
+    orders_[i].enabled = true;
+    orders_[i].pos.x = x;
+    orders_[i].pos.y = y;
+    orders_[i].dist = dist;
+    orders_[i].angle = angle;
+    orders_[i].delay = delay;
+
+    return 0;
 }

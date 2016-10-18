@@ -8,11 +8,11 @@
 
 void test_mc(Debug *debug) {
     float angle;
-    int16_t x, y;
+    float x, y;
 
     int diff_l = 0, diff_r = 0;
     float cur_angle = 0;
-    int cur_x = 0, cur_y = 0;
+    float cur_x = 0, cur_y = 0;
 
     /*
         Stand still

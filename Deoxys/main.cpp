@@ -14,7 +14,8 @@
 int main(void)
 {
     char buffer[BUFFER_SIZE];
-    Timer loop;
+    int to_sleep = 0;
+    Timer match, loop;
 
     // init com (serial, wifi, xbee, ...)
 
@@ -37,6 +38,7 @@ int main(void)
     // init servos + other actuators
 
     // init timers
+    match.start();
     loop.start();
 
     // init ia ?
@@ -46,9 +48,11 @@ int main(void)
     mc.pidDistSetGoal(0);
     mc.pidAngleSetGoal(0);
 
+    match.reset();
     while (true)
     {
         loop.reset();
+        debug.printf("[timer/match] %.3f\n", match.read());
 
         /*
             inputs
@@ -117,10 +121,17 @@ int main(void)
         // debug
         mc.debug(&debug);
 
-        debug.printf("=> %d\n\n", loop.read_ms());
-
         // sleep
-        Thread::wait(PID_UPDATE_INTERVAL*1000);
+        to_sleep = PID_UPDATE_INTERVAL*1000 - loop.read_ms();
+        if (to_sleep > 0)
+        {
+            debug.printf("[timer/loop] %d\n\n", loop.read_ms());
+            Thread::wait(to_sleep);
+        }
+        else
+        {
+            debug.printf("[timer/loop] Warn: to_sleep == %d < 0\n\n", to_sleep);
+        }
     }
 
     // do some cleanup ?
