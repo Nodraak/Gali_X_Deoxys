@@ -5,6 +5,7 @@
 #include "BufferedSerial.h"
 
 
+#define DEBUG_SPEED 115200
 #define INTERFACE_BUFFER_SIZE 256  // library default is 256
 #define BUFFER_SIZE 256
 
@@ -34,7 +35,7 @@ public:
 
 protected:
     BufferedSerial interfaces_[DEBUG_LAST];
-    char *interfaces_str_[DEBUG_LAST];
+    const char *interfaces_str_[DEBUG_LAST];
     Level level_;
 };
 

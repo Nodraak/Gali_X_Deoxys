@@ -6,7 +6,9 @@
 #include "Motor.h"
 
 
-Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin), dir_(dir_pin) {
+Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir, PinName current_sense) :
+    pwm_(pwm_pin), dir_(dir_pin), current_sense_(current_sense)
+{
     pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
     setSpeed(0);
 

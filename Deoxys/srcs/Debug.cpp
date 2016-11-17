@@ -25,13 +25,22 @@ interfaces_str_{
     level_ = DEBUG_DEBUG;
 
     for (i = 0; i < DEBUG_LAST; ++i)
-        interfaces_[i].baud(115200);
+        interfaces_[i].baud(DEBUG_SPEED);
 
     this->printf("\n\n========================================\n\n");
     this->printf("Hello world ! (all)\n");
 
     for (i = 0; i < DEBUG_LAST; ++i)
         interfaces_[i].printf("Hello, world! (%s)\n", interfaces_str_[i]);
+
+    this->printf("\n");
+
+    long int f = MBED_BUILD_TIMESTAMP;
+    char buffer[32];
+    strftime(buffer, 32, "%H:%M:%S %a %V %Y-%m-%d", localtime(&f));
+    this->printf("MBED_BUILD_TIMESTAMP=%.3f (%s)\n", MBED_BUILD_TIMESTAMP, buffer);
+
+    this->printf("\n");
 }
 
 void Debug::printf(const char* format, ...) {
