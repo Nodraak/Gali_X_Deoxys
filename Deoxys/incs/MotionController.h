@@ -1,6 +1,12 @@
 #ifndef MOTION_CONTROLLER_H_INLCUDED
 #define MOTION_CONTROLLER_H_INLCUDED
 
+/*
+    The MotionController have the responsability to control the motors to move
+    the robot to the specified coordinates. The MotionController is uturly dumb,
+    all the smart path optimizations are made by the MotionPlaner.
+*/
+
 #include "PID.h"
 #include "QEI.h"
 
@@ -32,14 +38,17 @@
 
 // order type can be OR'ed to combine different types
 typedef enum    _e_order_type {
-    ORDER_TYPE_POS      = (1 << 0),
-    ORDER_TYPE_DIST     = (1 << 1),
-    ORDER_TYPE_ANGLE    = (1 << 2),
-    ORDER_TYPE_DELAY    = (1 << 3)
+    ORDER_TYPE_POS,
+    ORDER_TYPE_DIST,
+    ORDER_TYPE_ANGLE,
+    ORDER_TYPE_DELAY
 }               e_order_type;
 
 typedef struct  _s_order {
-    bool enabled;  // 0: no order, 1: struct filled with an order
+    bool enabled :1;  // 0: no order, 1: struct filled with an order
+
+    e_order_type type :3;
+
     s_vector_float pos;
     int dist;
     float angle;  // radians
@@ -62,7 +71,10 @@ public:
         Update the internal state of the MotionController given the value of the
         encoders ticks fetched by fetchEncodersValue().
     */
-    void updatePositionAndOrder(void);
+    // update the position the robot think it is
+    void updatePosition(void);
+    // recompute the distance and angle correction to apply
+    int updateCurOrder(void);
 
     /*
         Compute the PIDs output based on the internal state of the
@@ -86,35 +98,51 @@ public:
     void pidDistSetGoal(float goal);
     void pidAngleSetGoal(float goal);
 
+    /*
+        Clear all saved orders.
+    */
     void ordersReset(void);
 
+    /*
+        Add a new order to the list of orders to execute.
+    */
     int ordersAppend(e_order_type type, int16_t x, int16_t y, int dist, float angle, float delay);
 
-private:  // I/O
-    Motor motor_l_, motor_r_;
-    QEI enc_l_, enc_r_;
+    /*
+        Set the motors speed (range is 0-1).
+    */
+    void setMotor(float l, float r);
 
-    int64_t enc_l_last_, enc_r_last_;
+private:
+    /*
+        Discard the current order and execute the next one.
+        Should be called only when the current order is achieved.
+    */
+    void updateGoalToNextOrder(void);
+
+private:  // I/O
+    Motor motor_l_, motor_r_;  // io interfaces
+    QEI enc_l_, enc_r_;  // io interfaces
+    PID pid_dist_, pid_angle_;
+
+    int64_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
     s_order orders_[MAX_ORDERS_COUNT];  // planned movement orders
 
-protected:  // internal
     // pid
-    int64_t enc_l_val_, enc_r_val_;
-    PID pid_dist_;
-    PID pid_angle_;
-    float pid_dist_goal_, pid_angle_goal_;
-    float out_pid_dist_;
-    float out_pid_angle_;
+    int64_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
+    float pid_dist_goal_, pid_angle_goal_;  // units: mm and rad
+    float pid_dist_out_, pid_angle_out_;  // unit: between -1 and +1
 
+public:
     // robot infos
-    s_vector_float pos_;
-    float angle_;  // radians
-    float speed_;  // mm/sec
+    s_vector_float pos_;  // unit: mm
+    float angle_;  // unit: radians
+    float speed_;  // unit: mm/sec
 };
 
 
 int calcNewPos(
-    int diff_l, int diff_r,
+    float diff_l, float diff_r,
     float cur_angle, float cur_x, float cur_y,
     float *new_angle_, float *new_x_, float *new_y_
 );
