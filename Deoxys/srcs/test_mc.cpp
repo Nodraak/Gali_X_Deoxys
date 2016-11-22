@@ -14,9 +14,11 @@ void test_mc(Debug *debug) {
     float cur_angle = 0;
     float cur_x = 0, cur_y = 0;
 
-    /*
-        Stand still
-    */
+    debug->printf("Testing mc\n");
+
+/*
+    Stand still
+*/
 
     // stand still
     calcNewPos(diff_l, diff_r, cur_angle, cur_x, cur_y, &angle, &x, &y);

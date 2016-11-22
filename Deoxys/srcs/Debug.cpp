@@ -28,7 +28,7 @@ interfaces_str_{
         interfaces_[i].baud(DEBUG_SPEED);
 
     this->printf("\n\n========================================\n\n");
-    this->printf("Hello world ! (all)\n");
+    this->printf("Hello, world! (all)\n");
 
     for (i = 0; i < DEBUG_LAST; ++i)
         interfaces_[i].printf("Hello, world! (%s)\n", interfaces_str_[i]);

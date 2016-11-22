@@ -21,15 +21,21 @@ int main(void)
 
     Debug debug;
 
-#ifdef RUN_TESTS
+// #define STOP_AFTER_TESTS
+
+    debug.printf("[Tests] Starting\n");
+
     test_sizes(&debug);
     test_mc(&debug);
 
-    debug.printf("Done.\n");
+    debug.printf("[Tests] Done.\n");
+
+#ifdef STOP_AFTER_TESTS
     while (1)
         ;
-
 #endif
+
+    debug.printf("Initializing\n");
 
     // MC
     MotionController mc;
@@ -45,8 +51,7 @@ int main(void)
 
     // init tirette interrupt -> polling
 
-    mc.pidDistSetGoal(0);
-    mc.pidAngleSetGoal(0);
+    debug.printf("Initialisation done.\n\n");
 
     match.reset();
     while (true)
@@ -106,9 +111,13 @@ int main(void)
             Computations
         */
 
-        mc.updatePositionAndOrder();
+        mc.updatePosition();
+        if (mc.updateCurOrder() == 1)
+        {
+            if (mc.updateCurOrder() == 1)
+                debug.printf("mc.updateCurOrder() shit\n");
+        }
 
-        // update ia
         mc.computePid();
 
         /*

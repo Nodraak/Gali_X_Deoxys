@@ -36,7 +36,6 @@
 #define PID_ANGLE_KU 6.0
 #define PID_ANGLE_TU 0.2
 
-// order type can be OR'ed to combine different types
 typedef enum    _e_order_type {
     ORDER_TYPE_POS,
     ORDER_TYPE_DIST,
@@ -78,7 +77,7 @@ public:
 
     /*
         Compute the PIDs output based on the internal state of the
-        MotionController() fetched by fetchEncodersValue().
+        MotionController() computed by updateCurOrder().
     */
     void computePid(void);
 
