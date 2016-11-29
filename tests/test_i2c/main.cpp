@@ -67,6 +67,7 @@ int main(void)
     i2c.frequency(I2C_FREQ);
 
     ticker.attach(&send, 7.000);
+    wait(0.500);
 
     while (true)
     {
@@ -85,47 +86,61 @@ int main(void)
 #define I2C_SDA PB_9  // D14
 #define I2C_SCL PB_8  // D15
 
+BufferedSerial pc(USBTX, USBRX);
+I2CSlave slave(I2C_SDA, I2C_SCL);
+Ticker ticker;
+
+/*
+    Around 2*10**-6 sec per call if case: NoData.
+*/
+void callback(void)
+{
+    char buf[100] = "";
+    int i = 0;
+
+    i = slave.receive();
+    if (i == I2CSlave::NoData)
+        return;
+
+    memset(buf, 0, PAYLOAD_LEN+1);
+
+    switch (i)
+    {
+        case I2CSlave::ReadAddressed:
+            sprintf(buf, "pong");
+            slave.write(buf, PAYLOAD_LEN);
+            pc.printf("[%s] Read Addressed (sending \"pong\")\n", BOARD);
+            break;
+        case I2CSlave::WriteGeneral:
+            slave.read(buf, PAYLOAD_LEN);
+            pc.printf("[%s] Write General: \"%s\"\n", BOARD, buf);
+            break;
+        case I2CSlave::WriteAddressed:
+            slave.read(buf, PAYLOAD_LEN);
+            pc.printf("[%s] Write Addressed: \"%s\"\n", BOARD, buf);
+            break;
+        default:
+            pc.printf("[%s] received %d\n", BOARD, i);
+            break;
+    }
+}
 
 int main(void)
 {
-    char buf[100] = "";
-
-    BufferedSerial pc(USBTX, USBRX);
     pc.baud(9600);
     // pc.format(8, Serial::None, 1);
     pc.printf("[%s] Hello, world!\n", BOARD);
 
-    I2CSlave slave(I2C_SDA, I2C_SCL);
     slave.frequency(I2C_FREQ);
     slave.address(SLAVE_ADDR_SLAVE);
 
+    ticker.attach(&callback, 0.001);
+
     while (true)
     {
-        memset(buf, 0, PAYLOAD_LEN+1);
+        pc.printf("[%s] plop\n", BOARD);
 
-        int i = slave.receive();
-        switch (i)
-        {
-            case I2CSlave::NoData:
-                break;
-
-            case I2CSlave::ReadAddressed:
-                sprintf(buf, "pong");
-                slave.write(buf, PAYLOAD_LEN);
-                pc.printf("[%s] Read Addressed (sending \"pong\")\n", BOARD);
-                break;
-            case I2CSlave::WriteGeneral:
-                slave.read(buf, PAYLOAD_LEN);
-                pc.printf("[%s] Write General: \"%s\"\n", BOARD, buf);
-                break;
-            case I2CSlave::WriteAddressed:
-                slave.read(buf, PAYLOAD_LEN);
-                pc.printf("[%s] Write Addressed: \"%s\"\n", BOARD, buf);
-                break;
-            default:
-                pc.printf("[%s] received %d\n", BOARD, i);
-                break;
-        }
+        wait(1.000);
     }
 }
 
