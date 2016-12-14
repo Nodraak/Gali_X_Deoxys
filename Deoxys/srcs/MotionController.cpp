@@ -34,6 +34,7 @@ MotionController::MotionController(void) :
     this->pidAngleSetGoal(0);  // pid's error
 
     this->ordersReset();
+    order_count_ = 0;
 
     pos_.x = 0;
     pos_.y = 0;
@@ -134,11 +135,35 @@ void MotionController::updatePosition(void) {
 }
 
 
-int MotionController::updateCurOrder(void) {
+void calcDistThetaOrderPos(float *dist_, float *theta_) {
+    float dist = 0, theta = 0;
+
+    dist = *dist_;
+    theta = *theta_;
+
+    if ((theta < -M_PI/2) || (M_PI/2 < theta))
+    {
+        dist = -dist;
+        theta = std_rad_angle(theta+M_PI);
+    }
+
+    *dist_ = dist;
+    *theta_ = theta;
+}
+
+
+int MotionController::updateCurOrder(float match_timestamp) {
     s_order *cur_order = &orders_[0];
 
     float dx = 0, dy = 0, dist = 0;  // unit: mm
     float theta = 0;  // unit: rad
+
+    // default value in case of no orders to execute or next order reached
+    this->pidDistSetGoal(0);
+    this->pidAngleSetGoal(0);
+
+    if (order_count_ == 0)
+        return 0;
 
     // update the goals in function of the given order
 
@@ -150,68 +175,44 @@ int MotionController::updateCurOrder(void) {
 
             dist = DIST(dx, dy);
             theta = std_rad_angle(atan2(dy, dx) - angle_);
+            calcDistThetaOrderPos(&dist, &theta);
 
-            if (-M_PI/2 < theta && theta < M_PI/2)
-            {
-                // ok
-            }
-            else
-            {
-                dist = -dist;
-                theta = std_rad_angle(theta-M_PI);
-            }
-/*
-
-            this->pidDistSetGoal(dist);
-            this->pidAngleSetGoal(theta);
-
-            if (dist < 30)
-            {
-                updateGoalToNextOrder();
+            if (ABS(dist) < 30)
                 return 1;
-            }
 
             break;
 
         case ORDER_TYPE_ANGLE:
+            dist = 0;
             theta = std_rad_angle(cur_order->angle - angle_);
 
-            // this->pidDistSetGoal(0);
-            this->pidAngleSetGoal(theta);
-
             if (ABS(theta) < DEG2RAD(10))
-            {
-                updateGoalToNextOrder();
                 return 1;
-            }
 
             break;
 
+        case ORDER_TYPE_DELAY:
+            dist = 0;
+            theta = 0;
+
+            if (match_timestamp > last_order_timestamp_ + cur_order->delay)
+                return 1;
+
+            break;
     }
+
+    this->pidDistSetGoal(dist);
+    this->pidAngleSetGoal(theta);
 
     return 0;
 }
 
 
 void MotionController::computePid(void) {
-    /*
-        == pid dist ==
-    */
-
-    // get input
     pid_dist_.setProcessValue(-pid_dist_goal_);
-
-    // get pid output
     pid_dist_out_ = pid_dist_.compute();
 
-    /*
-        == pid angle ==
-    */
-
-    // get input
     pid_angle_.setProcessValue(-pid_angle_goal_);
-
-    // get pid output
     pid_angle_out_ = pid_angle_.compute();
 }
 
@@ -219,16 +220,24 @@ void MotionController::computePid(void) {
 void MotionController::updateMotors(void) {
     float mot_l_val = 0, mot_r_val = 0, m = 0;
 
-    mot_l_val = pid_dist_out_ - pid_angle_out_;
-    mot_r_val = pid_dist_out_ + pid_angle_out_;
-
-    // if the magnitude of one of the two is > 1, divide by the bigest of these
-    // two two magnitudes (in order to keep the scale)
-    if ((ABS(mot_l_val) > 1) || (ABS(mot_r_val) > 1))
+    if (order_count_ == 0)
     {
-        m = ABS(MAX(mot_l_val, mot_r_val));
-        mot_l_val /= m;
-        mot_r_val /= m;
+        mot_l_val = 0;
+        mot_r_val = 0;
+    }
+    else
+    {
+        mot_l_val = pid_dist_out_ - pid_angle_out_;
+        mot_r_val = pid_dist_out_ + pid_angle_out_;
+
+        // if the magnitude of one of the two is > 1, divide by the bigest of these
+        // two two magnitudes (in order to keep the scale)
+        if ((ABS(mot_l_val) > 1) || (ABS(mot_r_val) > 1))
+        {
+            m = ABS(MAX(mot_l_val, mot_r_val));
+            mot_l_val /= m;
+            mot_r_val /= m;
+        }
     }
 
     // todo take into account the current speed to prevent "derapage"
@@ -239,6 +248,8 @@ void MotionController::updateMotors(void) {
 
 
 void MotionController::debug(Debug *debug) {
+    int i = 0;
+
     debug->printf("[MC/i] %lld %lld\n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
     debug->printf("[MC/o_mot] (dir pwm current) %d %.3f (%.3f A) | %d %.3f (%.3f A)\n",
@@ -247,23 +258,24 @@ void MotionController::debug(Debug *debug) {
     );
     debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
 
-    int i = 0;
-    while ((orders_[i].enabled == true) && (i < MAX_ORDERS_COUNT))
+    if (order_count_ == 0)
+        debug->printf("[MC/orders] -\n");
+    else
     {
-            debug->printf("[MC/orders] %d -> %d %.0f %.0f %.0f\n",
+        for (i = 0; (i < order_count_) && (i < 3); ++i)
+        {
+            debug->printf("[MC/orders] %d/%d -> %d %.0f %.0f %.0f %.3f\n",
                 i,
+                order_count_,
                 orders_[i].type,
                 orders_[i].pos.x,
                 orders_[i].pos.y,
-                RAD2DEG(orders_[i].angle)
+                RAD2DEG(orders_[i].angle),
+                orders_[i].delay
             );
-
-        ++i;
+        }
     }
-
-    debug->printf("[MC/orders] Last %d\n", i-1);
 }
-
 
 void MotionController::pidDistSetGoal(float goal) {
     pid_dist_goal_ = goal;
@@ -280,30 +292,43 @@ void MotionController::ordersReset(void) {
 }
 
 
-int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, int dist, float angle, float delay) {
-    int i = 0;
-
-    while ((orders_[i].enabled == true) && (i < MAX_ORDERS_COUNT))
-        ++i;
-
-    if (i == MAX_ORDERS_COUNT)
+int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, float angle, uint16_t delay) {
+    if (order_count_ == MAX_ORDERS_COUNT)
         return 1;
 
-    orders_[i].enabled = true;
-    orders_[i].type = type;
-    orders_[i].pos.x = x;
-    orders_[i].pos.y = y;
-    orders_[i].dist = dist;
-    orders_[i].angle = angle;
-    orders_[i].delay = delay;
+    orders_[order_count_].type = type;
+    orders_[order_count_].pos.x = x;
+    orders_[order_count_].pos.y = y;
+    orders_[order_count_].angle = std_rad_angle(angle);
+    orders_[order_count_].delay = delay;
+
+    order_count_ ++;
 
     return 0;
 }
 
 
-void MotionController::updateGoalToNextOrder(void) {
-    // todo some checks will be needed here
-    memmove(orders_, &orders_[1], sizeof(s_order)*(MAX_ORDERS_COUNT-1));
+int MotionController::ordersAppendPos(int16_t x, int16_t y) {
+    return this->ordersAppend(ORDER_TYPE_POS, x, y, 0, 0);
+}
+
+
+int MotionController::ordersAppendAngle(float angle) {
+    return this->ordersAppend(ORDER_TYPE_ANGLE, 0, 0, angle, 0);
+}
+
+
+int MotionController::ordersAppendDelay(uint16_t delay) {
+    return this->ordersAppend(ORDER_TYPE_DELAY, 0, 0, 0, delay);
+}
+
+
+void MotionController::updateGoalToNextOrder(float match_timestamp) {
+    // todo some checks will be needed here ?
+    memmove(&orders_[0], &orders_[1], sizeof(s_order)*(order_count_-1));
+
+    order_count_ --;
+    last_order_timestamp_ = match_timestamp;
 }
 
 

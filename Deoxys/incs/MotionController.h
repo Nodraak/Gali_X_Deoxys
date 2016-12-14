@@ -38,20 +38,16 @@
 
 typedef enum    _e_order_type {
     ORDER_TYPE_POS,
-    ORDER_TYPE_DIST,
     ORDER_TYPE_ANGLE,
     ORDER_TYPE_DELAY
 }               e_order_type;
 
 typedef struct  _s_order {
-    bool enabled :1;  // 0: no order, 1: struct filled with an order
-
-    e_order_type type :3;
-
+    e_order_type type;
     s_vector_float pos;
-    int dist;
-    float angle;  // radians
-    float delay;
+    float angle;        // radians
+    float delay;        // sec
+
 }               s_order;
 
 
@@ -73,7 +69,7 @@ public:
     // update the position the robot think it is
     void updatePosition(void);
     // recompute the distance and angle correction to apply
-    int updateCurOrder(void);
+    int updateCurOrder(float match_timestamp);
 
     /*
         Compute the PIDs output based on the internal state of the
@@ -105,19 +101,23 @@ public:
     /*
         Add a new order to the list of orders to execute.
     */
-    int ordersAppend(e_order_type type, int16_t x, int16_t y, int dist, float angle, float delay);
+private:
+    int ordersAppend(e_order_type type, int16_t x, int16_t y, float angle, uint16_t delay);
+public:
+    int ordersAppendPos(int16_t x, int16_t y);
+    int ordersAppendAngle(float angle);
+    int ordersAppendDelay(uint16_t delay);
 
     /*
         Set the motors speed (range is 0-1).
     */
     void setMotor(float l, float r);
 
-private:
     /*
         Discard the current order and execute the next one.
         Should be called only when the current order is achieved.
     */
-    void updateGoalToNextOrder(void);
+    void updateGoalToNextOrder(float match_timestamp);
 
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
@@ -126,6 +126,8 @@ private:  // I/O
 
     int64_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
     s_order orders_[MAX_ORDERS_COUNT];  // planned movement orders
+    uint8_t order_count_;
+    float last_order_timestamp_;  // s from match start
 
     // pid
     int64_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
@@ -145,5 +147,7 @@ int calcNewPos(
     float cur_angle, float cur_x, float cur_y,
     float *new_angle_, float *new_x_, float *new_y_
 );
+
+void calcDistThetaOrderPos(float *dist_, float *theta_);
 
 #endif

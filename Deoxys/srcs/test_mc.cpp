@@ -103,3 +103,64 @@ void test_mc(Debug *debug) {
     // TODO
 
 }
+
+
+void test_calcDistThetaOrderPos(Debug *debug) {
+    float dist = 0, theta = 0;
+
+    dist = 100;
+    theta = DEG2RAD(179);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(-1));
+
+    dist = 100;
+    theta = DEG2RAD(135);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(-45));
+
+    dist = 100;
+    theta = DEG2RAD(91);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(-89));
+
+
+    dist = 100;
+    theta = DEG2RAD(89);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, 100);
+    ft_assert_equal(theta, DEG2RAD(89));
+
+    dist = 100;
+    theta = DEG2RAD(0);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, 100);
+    ft_assert_equal(theta, DEG2RAD(0));
+
+    dist = 100;
+    theta = DEG2RAD(-89);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, 100);
+    ft_assert_equal(theta, DEG2RAD(-89));
+
+
+    dist = 100;
+    theta = DEG2RAD(-91);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(89));
+
+    dist = 100;
+    theta = DEG2RAD(-135);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(45));
+
+    dist = 100;
+    theta = DEG2RAD(-179);
+    calcDistThetaOrderPos(&dist, &theta);
+    ft_assert_equal(dist, -100);
+    ft_assert_equal(theta, DEG2RAD(1));
+}

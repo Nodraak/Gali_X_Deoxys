@@ -27,6 +27,7 @@ int main(void)
 
     test_sizes(&debug);
     test_mc(&debug);
+    test_calcDistThetaOrderPos(&debug);
 
     debug.printf("[Tests] Done.\n");
 
@@ -112,11 +113,8 @@ int main(void)
         */
 
         mc.updatePosition();
-        if (mc.updateCurOrder() == 1)
-        {
-            if (mc.updateCurOrder() == 1)
-                debug.printf("mc.updateCurOrder() shit\n");
-        }
+        if (mc.updateCurOrder(match.read()) == 1)
+            mc.updateGoalToNextOrder(match.read());
 
         mc.computePid();
 
