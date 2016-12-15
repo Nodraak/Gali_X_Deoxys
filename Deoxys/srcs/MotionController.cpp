@@ -63,7 +63,7 @@ void MotionController::fetchEncodersValue(void) {
 
     Return 0 on success.
 */
-int calcNewPos(
+int mc_calcNewPos(
     float diff_l, float diff_r,
     float cur_angle, float cur_x, float cur_y,
     float *new_angle_, float *new_x_, float *new_y_
@@ -125,7 +125,7 @@ void MotionController::updatePosition(void) {
     diff_l = TICKS_TO_MM(enc_l_val_-enc_l_last_);
     diff_r = TICKS_TO_MM(enc_r_val_-enc_r_last_);
 
-    calcNewPos(
+    mc_calcNewPos(
         diff_l, diff_r,
         angle_, pos_.x, pos_.y,
         &angle_, &pos_.x, &pos_.y
@@ -135,7 +135,7 @@ void MotionController::updatePosition(void) {
 }
 
 
-void calcDistThetaOrderPos(float *dist_, float *theta_) {
+void mc_calcDistThetaOrderPos(float *dist_, float *theta_) {
     float dist = 0, theta = 0;
 
     dist = *dist_;
@@ -152,42 +152,40 @@ void calcDistThetaOrderPos(float *dist_, float *theta_) {
 }
 
 
-int MotionController::updateCurOrder(float match_timestamp) {
-    s_order *cur_order = &orders_[0];
+int mc_updateCurOrder(
+    s_vector_float cur_pos,  float cur_angle, s_order *cur_order, float time_since_last_order_finished,
+    float *dist_, float *theta_
+) {
+    float dx = 0, dy = 0;
+    float dist = 0, theta = 0;  // units: mm, rad
+    int ret = 0;
 
-    float dx = 0, dy = 0, dist = 0;  // unit: mm
-    float theta = 0;  // unit: rad
-
-    // default value in case of no orders to execute or next order reached
-    this->pidDistSetGoal(0);
-    this->pidAngleSetGoal(0);
-
-    if (order_count_ == 0)
-        return 0;
+    dist = *dist_;
+    theta = *theta_;
 
     // update the goals in function of the given order
 
     switch (cur_order->type)
     {
         case ORDER_TYPE_POS:
-            dx = cur_order->pos.x - pos_.x;
-            dy = cur_order->pos.y - pos_.y;
+            dx = cur_order->pos.x - cur_pos.x;
+            dy = cur_order->pos.y - cur_pos.y;
 
             dist = DIST(dx, dy);
-            theta = std_rad_angle(atan2(dy, dx) - angle_);
-            calcDistThetaOrderPos(&dist, &theta);
+            theta = std_rad_angle(atan2(dy, dx) - cur_angle);
+            mc_calcDistThetaOrderPos(&dist, &theta);
 
             if (ABS(dist) < 30)
-                return 1;
+                ret = 1;
 
             break;
 
         case ORDER_TYPE_ANGLE:
             dist = 0;
-            theta = std_rad_angle(cur_order->angle - angle_);
+            theta = std_rad_angle(cur_order->angle - cur_angle);
 
             if (ABS(theta) < DEG2RAD(10))
-                return 1;
+                ret = 1;
 
             break;
 
@@ -195,16 +193,32 @@ int MotionController::updateCurOrder(float match_timestamp) {
             dist = 0;
             theta = 0;
 
-            if (match_timestamp > last_order_timestamp_ + cur_order->delay)
-                return 1;
+            if (time_since_last_order_finished > cur_order->delay)
+                ret = 1;
 
             break;
     }
 
+    *dist_ = dist;
+    *theta_ = theta;
+
+    return ret;
+}
+
+
+int MotionController::updateCurOrder(float match_timestamp) {
+    float dist = 0, theta = 0;  // units: mm, rad
+    int ret = 0;
+
+    if (order_count_ == 0)
+        ret = 0;
+    else
+        ret = mc_updateCurOrder(pos_, angle_, &orders_[0], match_timestamp-last_order_timestamp_, &dist, &theta);
+
     this->pidDistSetGoal(dist);
     this->pidAngleSetGoal(theta);
 
-    return 0;
+    return ret;
 }
 
 

@@ -18,7 +18,6 @@ int main(void)
     Timer match, loop;
 
     // init com (serial, wifi, xbee, ...)
-
     Debug debug;
 
 // #define STOP_AFTER_TESTS
@@ -26,8 +25,9 @@ int main(void)
     debug.printf("[Tests] Starting\n");
 
     test_sizes(&debug);
-    test_mc(&debug);
-    test_calcDistThetaOrderPos(&debug);
+    test_mc_calcNewPos(&debug);
+    test_mc_calcDistThetaOrderPos(&debug);
+    test_mc_updateCurOrder(&debug);
 
     debug.printf("[Tests] Done.\n");
 

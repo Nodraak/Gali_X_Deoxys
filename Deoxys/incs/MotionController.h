@@ -142,12 +142,17 @@ public:
 };
 
 
-int calcNewPos(
+int mc_calcNewPos(
     float diff_l, float diff_r,
     float cur_angle, float cur_x, float cur_y,
     float *new_angle_, float *new_x_, float *new_y_
 );
 
-void calcDistThetaOrderPos(float *dist_, float *theta_);
+void mc_calcDistThetaOrderPos(float *dist_, float *theta_);
+
+int mc_updateCurOrder(
+    s_vector_float cur_pos,  float cur_angle, s_order *cur_order, float time_since_last_order_finished,
+    float *dist_, float *theta_
+);
 
 #endif

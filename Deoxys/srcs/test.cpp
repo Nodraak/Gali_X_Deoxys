@@ -1,10 +1,10 @@
 
 #include "test.h"
 
-void _ft_assert(Debug *debug, int cond, const char *file, const char *func, int line) {
+void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line) {
     if (!cond)
     {
-        debug->printf("FAILED ASSERT in %s (%s) at line %d.\n", file, func, line);
+        debug->printf("FAILED ASSERT \"%s\" in %s (%s) at line %d.\n", s_cond, file, func, line);
         while (1)
             ;
     }
