@@ -1,5 +1,8 @@
 
-MBED_COMPILE_OPTIONS = -N out
+
+BOARD=F303K8
+# BOARD=L476RG
+MBED_COMPILE_OPTIONS = -N out -m NUCLEO_$(BOARD) -t GCC_ARM -v -DMBED_HEAP_STATS_ENABLED=1 -DMBED_STACK_STATS_ENABLED=1
 
 .PHONY: all re build upload
 
@@ -14,5 +17,5 @@ re:
 	echo " Yeah! \o/"
 
 upload:
-	cp .build/NUCLEO_L476RG/GCC_ARM/out.bin /media/nodraak/NODE_L476RG/
-
+	st-flash --reset write .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin 0x8000000
+	# cf. https://github.com/texane/stlink

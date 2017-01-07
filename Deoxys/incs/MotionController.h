@@ -15,7 +15,6 @@
 
 #include "utils.h"
 
-
 #define PID_UPDATE_INTERVAL (1.0/10)  // sec
 
 #define ENC_RADIUS          28                      // one enc radius

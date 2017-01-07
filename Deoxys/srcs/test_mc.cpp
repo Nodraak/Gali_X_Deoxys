@@ -1,7 +1,7 @@
 
+#include "Debug.h"
 #include "MotionController.h"
 #include "utils.h"
-
 #include "test.h"
 #include "test_mc.h"
 

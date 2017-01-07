@@ -12,10 +12,10 @@
 
 
 MotionController::MotionController(void) :
-    motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CURRENT_SENSE),
-    motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CURRENT_SENSE),
-    enc_l_(ENC_L_DATA1, ENC_L_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
-    enc_r_(ENC_R_DATA1, ENC_R_DATA2, NC, PULSES_PER_REV, QEI::X4_ENCODING),
+    motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CUR),
+    motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CUR),
+    enc_l_(ENC_L_DATA1, ENC_L_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
+    enc_r_(ENC_R_DATA1, ENC_R_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
     pid_dist_(0.3*PID_DIST_KU, PID_DIST_TU/2, PID_DIST_TU/8, PID_UPDATE_INTERVAL),
     pid_angle_(0.3*PID_ANGLE_KU, PID_ANGLE_TU/2, PID_ANGLE_TU/8, PID_UPDATE_INTERVAL)
 {
@@ -45,7 +45,6 @@ MotionController::MotionController(void) :
     enc_l_last_ = 0;
     enc_r_last_ = 0;
 }
-
 
 void MotionController::fetchEncodersValue(void) {
     enc_l_last_ = enc_l_val_;
@@ -264,13 +263,17 @@ void MotionController::updateMotors(void) {
 void MotionController::debug(Debug *debug) {
     int i = 0;
 
-    debug->printf("[MC/i] %lld %lld\n", enc_l_val_, enc_r_val_);
-    debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
-    debug->printf("[MC/o_mot] (dir pwm current) %d %.3f (%.3f A) | %d %.3f (%.3f A)\n",
+    debug->printf(
+        "[MC/i] %ld %ld\n"
+        "[MC/t_pid] (dist angle) %.3f %.3f\n"
+        "[MC/o_mot] (dir pwm current) %d %.3f (%.3f A) | %d %.3f (%.3f A)\n"
+        "[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n",
+        enc_l_val_, enc_r_val_,
+        pid_dist_out_, pid_angle_out_,
         motor_l_.getDirection(), motor_l_.getPwm(), motor_l_.current_sense_.read()*4,
-        motor_r_.getDirection(), motor_r_.getPwm(), motor_r_.current_sense_.read()*4
+        motor_r_.getDirection(), motor_r_.getPwm(), motor_r_.current_sense_.read()*4,
+        pos_.x, pos_.y, RAD2DEG(angle_), speed_
     );
-    debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
 
     if (order_count_ == 0)
         debug->printf("[MC/orders] -\n");

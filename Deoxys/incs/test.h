@@ -5,6 +5,7 @@
 
 void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line);
 void test_sizes(Debug *debug);
+void test_run_all(Debug *debug, bool infinite_loop_after_tests);
 
 // TODO http://stackoverflow.com/questions/5459868/c-preprocessor-concatenate-int-to-string#5459929
 #define ft_assert(cond) _ft_assert(debug, cond, #cond, __FILE__, __FUNCTION__, __LINE__)
