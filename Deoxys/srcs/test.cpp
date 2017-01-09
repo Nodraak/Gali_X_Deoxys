@@ -31,7 +31,7 @@ void test_run_all(Debug *debug)
 void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line) {
     if (!cond)
     {
-        debug->printf("FAILED ASSERT \"%s\" in %s (%s) at line %d.\n", s_cond, file, func, line);
+        debug->printf("ASSERT FAILED at %s:%d (func %s) \"%s\"\n", file, line, func, s_cond);
         while (1)
             ;
     }

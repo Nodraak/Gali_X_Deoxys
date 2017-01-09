@@ -62,12 +62,15 @@ public:
     void fetchEncodersValue(void);
 
     /*
-        Update the internal state of the MotionController given the value of the
-        encoders ticks fetched by fetchEncodersValue().
+        Update the internal state of the MotionController (position, speed, ...)
+        given the value of the encoders ticks fetched by fetchEncodersValue().
     */
-    // update the position the robot think it is
     void updatePosition(void);
-    // recompute the distance and angle correction to apply
+
+    /*
+        Recompute the distance and angle correction to apply.
+        Returns 0 if ok, 1 if the current order has been reached.
+    */
     int updateCurOrder(float match_timestamp);
 
     /*
