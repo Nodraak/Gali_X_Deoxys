@@ -1,3 +1,4 @@
+#ifndef DISABLE_TESTS
 
 #include "Debug.h"
 #include "MotionController.h"
@@ -181,3 +182,5 @@ void test_mc_updateCurOrder(Debug *debug) {
 
     // todo more tests
 }
+
+#endif // DISABLE_TESTS

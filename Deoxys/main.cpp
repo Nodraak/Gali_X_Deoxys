@@ -140,7 +140,7 @@ int main(void)
     Debug *debug = new Debug;
 
     mem_stats(debug);
-    test_run_all(debug, false);
+    test_run_all(debug);
 
     /*
         Initializing

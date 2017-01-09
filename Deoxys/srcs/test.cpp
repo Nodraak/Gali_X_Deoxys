@@ -2,6 +2,32 @@
 #include "test_mc.h"
 #include "test.h"
 
+void test_run_all(Debug *debug)
+{
+#ifdef DISABLE_TESTS
+    debug->printf("[Tests] skipping tests (DISABLE_TESTS is defined)\n");
+#else // DISABLE_TESTS
+    debug->printf("[Tests] Starting\n");
+
+    test_sizes(debug);
+    test_mc_calcNewPos(debug);
+    test_mc_calcDistThetaOrderPos(debug);
+    test_mc_updateCurOrder(debug);
+
+    debug->printf("[Tests] Done.\n");
+
+#ifdef INFINITE_LOOP_AFTER_TESTS
+    while (1)
+    {
+        debug->printf("I'm alive\n");
+        wait(1);
+    }
+#endif // INFINITE_LOOP_AFTER_TESTS
+#endif // DISABLE_TESTS
+}
+
+#ifndef DISABLE_TESTS
+
 void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line) {
     if (!cond)
     {
@@ -19,20 +45,4 @@ void test_sizes(Debug *debug) {
     ft_assert(sizeof(int64_t) == 8);
 }
 
-void test_run_all(Debug *debug, bool infinite_loop_after_tests)
-{
-    debug->printf("[Tests] Starting\n");
-
-    test_sizes(debug);
-    test_mc_calcNewPos(debug);
-    test_mc_calcDistThetaOrderPos(debug);
-    test_mc_updateCurOrder(debug);
-
-    debug->printf("[Tests] Done.\n");
-
-    while (infinite_loop_after_tests)
-    {
-        debug->printf("I'm alive\n");
-        wait(1);
-    }
-}
+#endif // DISABLE_TESTS
