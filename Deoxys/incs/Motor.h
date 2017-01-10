@@ -17,7 +17,9 @@
 class Motor {
 
 public:
-    Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir, PinName current_sense);
+    Motor(
+        PinName pwm_pin, PinName dir_pin, bool forward_dir, PinName current_sense, PinName thermal_flag, PinName brake
+    );
 
     /*
         Set speed (direction and pwm).
@@ -55,6 +57,8 @@ protected:
 
 public:
     AnalogIn current_sense_;
+    DigitalIn thermal_flag_;
+    DigitalOut brake_;
 };
 
 #endif
