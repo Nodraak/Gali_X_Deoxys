@@ -69,10 +69,19 @@ public:
 
     /*
         Recompute the distance and angle correction to apply.
-        Returns 0 if ok, 1 if the current order has been reached.
+        If the current order has been reached, it loads the next one by calling
+        updateGoalToNextOrder().
     */
-    int updateCurOrder(float match_timestamp);
+    void updateCurOrder(float match_timestamp);
 
+private:
+    /*
+        Discard the current order and execute the next one.
+        Should be called only when the current order is achieved.
+    */
+    void updateGoalToNextOrder(float match_timestamp);
+
+public:
     /*
         Compute the PIDs output based on the internal state of the
         MotionController() computed by updateCurOrder().
@@ -106,33 +115,34 @@ public:
 private:
     int ordersAppend(e_order_type type, int16_t x, int16_t y, float angle, uint16_t delay);
 public:
-    int ordersAppendPos(int16_t x, int16_t y);
-    int ordersAppendAngle(float angle);
-    int ordersAppendDelay(uint16_t delay);
+    int ordersAppendAbsPos(int16_t x, int16_t y);
+    int ordersAppendAbsAngle(float angle);
+    int ordersAppendAbsDelay(uint16_t delay);
+
+    int ordersAppendRelDist(int16_t dist);
+    int ordersAppendRelAngle(float angle);
 
     /*
         Set the motors speed (range is 0-1).
-    */
-    void setMotor(float l, float r);
 
-    /*
-        Discard the current order and execute the next one.
-        Should be called only when the current order is achieved.
+        ** WARNING **
+        This function is dangerous and has side effects. You should not called
+        it unless you know what you are doing.
     */
-    void updateGoalToNextOrder(float match_timestamp);
+    void setMotor(float l, float r, Debug *debug, char *reason);
 
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
     QEI enc_l_, enc_r_;  // io interfaces
     PID pid_dist_, pid_angle_;
 
-    int64_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
+    int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
     s_order orders_[MAX_ORDERS_COUNT];  // planned movement orders
     uint8_t order_count_;
     float last_order_timestamp_;  // s from match start
 
     // pid
-    int64_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
+    int32_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
     float pid_dist_goal_, pid_angle_goal_;  // units: mm and rad
     float pid_dist_out_, pid_angle_out_;  // unit: between -1 and +1
 

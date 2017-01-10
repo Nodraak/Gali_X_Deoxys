@@ -104,34 +104,78 @@ int demo_1(MotionController *mc)
 
     int e = 0;
 
-    e += mc->ordersAppendPos(EX_DIST,    0);
-                    e += mc->ordersAppendDelay(0.500);
-            e += mc->ordersAppendAngle(DEG2RAD(90));
-                    e += mc->ordersAppendDelay(0.500);
-    e += mc->ordersAppendPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendDelay(0.500);
-            e += mc->ordersAppendAngle(DEG2RAD(180));
-                    e += mc->ordersAppendDelay(0.500);
-    e += mc->ordersAppendPos(200,        EX_DIST);
-                    e += mc->ordersAppendDelay(0.500);
-            e += mc->ordersAppendAngle(DEG2RAD(90));
-            e += mc->ordersAppendAngle(DEG2RAD(0));
-            e += mc->ordersAppendAngle(DEG2RAD(270));
-            e += mc->ordersAppendAngle(DEG2RAD(180));
-                    e += mc->ordersAppendDelay(0.500);
-    e += mc->ordersAppendPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendDelay(0.500);
-            e += mc->ordersAppendAngle(DEG2RAD(270));
-                    e += mc->ordersAppendDelay(0.500);
-    e += mc->ordersAppendPos(EX_DIST,    0);
-                    e += mc->ordersAppendDelay(0.500);
-            e += mc->ordersAppendAngle(DEG2RAD(0));
-                    e += mc->ordersAppendDelay(0.500);
-    e += mc->ordersAppendPos(0,          0);
+    e += mc->ordersAppendAbsPos(EX_DIST,    0);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendAbsPos(200,        EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
+            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
+            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
+            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendAbsPos(EX_DIST,    0);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendAbsPos(0,          0);
 
     return e;
 }
 
+
+int demo_2(MotionController *mc)
+{
+    #define EX_DIST 1000
+
+    int e = 0;
+
+    e += mc->ordersAppendRelDist(EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendRelDist(EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendRelDist(EX_DIST-200);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendRelDist(-(EX_DIST-200));
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendRelDist(EX_DIST);
+                    e += mc->ordersAppendAbsDelay(0.500);
+            e += mc->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->ordersAppendAbsDelay(0.500);
+    e += mc->ordersAppendRelDist(-EX_DIST);
+
+    return e;
+}
+
+
+/*
+void i_am_alive(Debug *debug, char *s)
+{
+    Thread::wait(0.5);
+    debug->printf("I am alive! (%s)\n", s);
+    Thread::wait(0.5);
+}
+*/
 
 int main(void)
 {
@@ -165,7 +209,7 @@ int main(void)
 
     if (ret != 0)
     {
-        debug->printf("ERROR MC.ordersAppend() %d\n", ret);
+        debug->printf("ERROR MC.ordersAppendAbs() %d\n", ret);
         while (1)
             ;
     }
@@ -206,9 +250,7 @@ int main(void)
         */
 
         mc->updatePosition();
-        if (mc->updateCurOrder(match.read()) == 1)
-            mc->updateGoalToNextOrder(match.read());
-
+        mc->updateCurOrder(match.read());
         mc->computePid();
 
         /*

@@ -1,8 +1,6 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 
-#define BUFFER_SIZE 256
-
 typedef struct _s_vector_uint16 {
     int16_t x, y;
 } s_vector_int16;

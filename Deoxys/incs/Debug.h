@@ -5,9 +5,9 @@
 #include "BufferedSerial.h"
 
 
-#define DEBUG_SPEED 115200
-#define INTERFACE_BUFFER_SIZE 256  // library default is 256
-#define BUFFER_SIZE 256
+#define DEBUG_SPEED             115200
+#define INTERFACE_BUFFER_SIZE   256  // library default is 256
+#define BUFFER_SIZE             INTERFACE_BUFFER_SIZE
 
 
 class Debug {

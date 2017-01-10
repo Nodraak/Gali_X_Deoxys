@@ -1,5 +1,6 @@
 
 #include "mbed.h"
+#include <cstring>  // memcpy
 
 #include "PID.h"
 #include "QEI.h"
@@ -205,19 +206,17 @@ int mc_updateCurOrder(
 }
 
 
-int MotionController::updateCurOrder(float match_timestamp) {
+void MotionController::updateCurOrder(float match_timestamp) {
     float dist = 0, theta = 0;  // units: mm, rad
-    int ret = 0;
 
-    if (order_count_ == 0)
-        ret = 0;
-    else
-        ret = mc_updateCurOrder(pos_, angle_, &orders_[0], match_timestamp-last_order_timestamp_, &dist, &theta);
+    if (order_count_ != 0)
+    {
+        if (mc_updateCurOrder(pos_, angle_, &orders_[0], match_timestamp-last_order_timestamp_, &dist, &theta))
+            this->updateGoalToNextOrder(match_timestamp);
+    }
 
     this->pidDistSetGoal(dist);
     this->pidAngleSetGoal(theta);
-
-    return ret;
 }
 
 
@@ -263,7 +262,7 @@ void MotionController::updateMotors(void) {
 void MotionController::debug(Debug *debug) {
     int i = 0;
 
-    debug->printf("[MC/i] %ld %ld\n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/i] %d %d\n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
     debug->printf("[MC/o_mot] (dir pwm current) %d %.3f (%.3f A) | %d %.3f (%.3f A)\n",
         motor_l_.getDirection(), motor_l_.getPwm(), motor_l_.current_sense_.read()*4,
@@ -309,11 +308,24 @@ int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, floa
     if (order_count_ == MAX_ORDERS_COUNT)
         return 1;
 
+    memcpy(&orders_[order_count_], &orders_[order_count_-1], sizeof(s_order));
+
     orders_[order_count_].type = type;
-    orders_[order_count_].pos.x = x;
-    orders_[order_count_].pos.y = y;
-    orders_[order_count_].angle = std_rad_angle(angle);
-    orders_[order_count_].delay = delay;
+
+    switch (type) {
+        case ORDER_TYPE_POS:
+            orders_[order_count_].pos.x = x;
+            orders_[order_count_].pos.y = y;
+            break;
+
+        case ORDER_TYPE_ANGLE:
+            orders_[order_count_].angle = std_rad_angle(angle);
+            break;
+
+        case ORDER_TYPE_DELAY:
+            orders_[order_count_].delay = delay;
+            break;
+    }
 
     order_count_ ++;
 
@@ -321,20 +333,35 @@ int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, floa
 }
 
 
-int MotionController::ordersAppendPos(int16_t x, int16_t y) {
+int MotionController::ordersAppendAbsPos(int16_t x, int16_t y) {
     return this->ordersAppend(ORDER_TYPE_POS, x, y, 0, 0);
 }
 
 
-int MotionController::ordersAppendAngle(float angle) {
+int MotionController::ordersAppendAbsAngle(float angle) {
     return this->ordersAppend(ORDER_TYPE_ANGLE, 0, 0, angle, 0);
 }
 
 
-int MotionController::ordersAppendDelay(uint16_t delay) {
+int MotionController::ordersAppendAbsDelay(uint16_t delay) {
     return this->ordersAppend(ORDER_TYPE_DELAY, 0, 0, 0, delay);
 }
 
+int MotionController::ordersAppendRelDist(int16_t dist) {
+    s_order *last_order = &orders_[order_count_-1];
+    return this->ordersAppend(
+        ORDER_TYPE_POS,
+        last_order->pos.x + dist*cos(last_order->angle), last_order->pos.y + dist*sin(last_order->angle),
+        last_order->angle, last_order->delay
+    );
+}
+
+int MotionController::ordersAppendRelAngle(float angle) {
+    s_order *last_order = &orders_[order_count_-1];
+    return this->ordersAppend(
+        ORDER_TYPE_ANGLE, last_order->pos.x, last_order->pos.y, last_order->angle + angle, last_order->delay
+    );
+}
 
 void MotionController::updateGoalToNextOrder(float match_timestamp) {
     // todo some checks will be needed here ?
@@ -344,9 +371,9 @@ void MotionController::updateGoalToNextOrder(float match_timestamp) {
     last_order_timestamp_ = match_timestamp;
 }
 
+void MotionController::setMotor(float l, float r, Debug *debug, char *reason) {
+    this->ordersReset();  // override orders and pid to make sure they don't interfere
 
-void MotionController::setMotor(float l, float r) {
-    // todo clear orders_ ??
     motor_l_.setSpeed(l);
     motor_r_.setSpeed(r);
 }
