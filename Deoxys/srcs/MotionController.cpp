@@ -289,6 +289,19 @@ void MotionController::debug(Debug *debug) {
     }
 }
 
+void MotionController::debug(CanMessenger *cm) {
+    cm->send_msg_CQB_MC_pos(pos_.x, pos_.y);
+    cm->send_msg_CQB_MC_angle_speed(RAD2DEG(angle_), speed_);
+
+    cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
+    cm->send_msg_CQB_MC_pids(pid_dist_out_, pid_angle_out_);
+    cm->send_msg_CQB_MC_motors(-motor_l_.getPwm()*(-1*motor_l_.getDirection()), -motor_r_.getPwm()*(-1*motor_r_.getDirection()));
+
+    // cm->send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
+    // cm->send_msg_CQB_MC_order_angle(float angle);
+    // cm->send_msg_CQB_MC_order_delay(float delay);
+}
+
 void MotionController::pidDistSetGoal(float goal) {
     pid_dist_goal_ = goal;
 }

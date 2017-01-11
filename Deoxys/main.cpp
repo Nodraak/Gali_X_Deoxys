@@ -5,6 +5,7 @@
 
 #include "Debug.h"
 #include "MotionController.h"
+#include "Messenger.h"
 #include "pinout.h"
 #include "utils.h"
 
@@ -24,6 +25,7 @@ void mem_stats(Debug *debug)
     debug->printf("Debug            %d\n", sizeof(Debug));
     debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
     debug->printf("Timer            %d\n", sizeof(Timer));
+    debug->printf("CanMessenger     %d\n", sizeof(CanMessenger));
 
     mbed_stats_heap_t heap_stats;
     osEvent info;
@@ -185,6 +187,7 @@ int main(void)
 
     mem_stats(debug);
     test_run_all(debug);
+    Thread::wait(500);
 
     /*
         Initializing
@@ -196,6 +199,7 @@ int main(void)
     Timer match, loop;  // todo dynamic alloc ?
     match.start();
     loop.start();
+    CanMessenger *messenger = new CanMessenger;
 
     // init sharp + other sensors
     // init servos + other actuators
@@ -205,7 +209,7 @@ int main(void)
 
     // init tirette interrupt -> polling
 
-    int ret = demo_1(mc);
+    int ret = demo_2(mc);
 
     if (ret != 0)
     {
@@ -245,6 +249,25 @@ int main(void)
 
         com_handle(debug, mc);
 
+        Message rec_msg;
+        while (messenger->read_msg(&rec_msg))
+        {
+            debug->printf("Message %d %d -", rec_msg.id, rec_msg.len);
+            debug->printf(" %x", rec_msg.payload.raw_data[0]);
+            debug->printf(" %x", rec_msg.payload.raw_data[1]);
+            debug->printf(" %x", rec_msg.payload.raw_data[2]);
+            debug->printf(" %x", rec_msg.payload.raw_data[3]);
+
+            debug->printf(" ");
+
+            debug->printf(" %x", rec_msg.payload.raw_data[4]);
+            debug->printf(" %x", rec_msg.payload.raw_data[5]);
+            debug->printf(" %x", rec_msg.payload.raw_data[6]);
+            debug->printf(" %x", rec_msg.payload.raw_data[7]);
+
+            debug->printf("\n");
+        }
+
         /*
             Computations
         */
@@ -262,6 +285,7 @@ int main(void)
 
         // debug
         mc->debug(debug);
+        mc->debug(messenger);
 
         // sleep
         to_sleep = PID_UPDATE_INTERVAL*1000 - loop.read_ms();

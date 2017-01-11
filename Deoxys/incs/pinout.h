@@ -71,6 +71,8 @@
     #define XBEE_RX         D0
     #define SCREEN_TX       D1
     #define SCREEN_RX       D0
+    #define CAN_TX          D2  // PA_12
+    #define CAN_RX          D10 // PA_11
 
 #endif
 

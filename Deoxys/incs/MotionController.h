@@ -12,6 +12,7 @@
 
 #include "Debug.h"
 #include "Motor.h"
+#include "Messenger.h"
 
 #include "utils.h"
 
@@ -97,6 +98,7 @@ public:
         Print some information about the inputs, outputs and internal states.
     */
     void debug(Debug *debug);
+    void debug(CanMessenger *cm);
 
     /*
         Set the goal that the MotionController will make the robot move to.
