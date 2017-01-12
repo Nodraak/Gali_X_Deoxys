@@ -68,7 +68,7 @@ int _get_line(BufferedSerial *interface, char *buffer, int buffer_length) {
     for (i = 0; (i < buffer_length-1) && interface->readable(); ++i)
     {
         buffer[i] = interface->getc();
-        if (buffer[i] == '\n')
+        if ((buffer[i] == '\r') || (buffer[i] == '\n'))
             break;
     }
 
@@ -89,7 +89,7 @@ int Debug::get_line(char *buffer, int buffer_length, Interface interface) {
         }
     }
 
-    return -1;  // should not happen
+    return -1;  // nothing to read
 }
 
 void Debug::set_level(Level level) {

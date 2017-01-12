@@ -37,7 +37,7 @@ upload:
 
 debug_openocd:
 	# openocd -f board/st_nucleo_f401re.cfg -c "gdb_memory_map enable" -c "gdb_flash_program enable"
-	openocd -f ./Openocd/st_nucleo_f303k8.cfg -c "gdb_memory_map disable"
+	openocd -f ../Openocd/st_nucleo_f303k8.cfg -c "gdb_memory_map disable"
 # -c "gdb_flash_program enable"
 
 debug_gdb:

@@ -28,4 +28,7 @@ typedef struct _s_vector_float {
 double map(double x, double in_min, double in_max, double out_min, double out_max);
 double constrain(double val, double min, double max);
 
+#define MAIN_LOOP_FPS       25
+#define PID_UPDATE_INTERVAL (1.0/MAIN_LOOP_FPS)
+
 #endif

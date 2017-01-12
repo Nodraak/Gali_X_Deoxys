@@ -2,12 +2,17 @@
 #include "Debug.h"
 #include "Messenger.h"
 
+#ifdef TARGET_NUCLEO_F303K8
 #include "MotionController.h"
-
+#endif
 
 // do com (serial, ...) - This might overwrite sensors inputs
 // todo move this shit in a ~class~ separate file
+#ifdef TARGET_NUCLEO_F303K8
 void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *mc)
+#else
+void com_handle_serial(Debug *debug, CanMessenger *messenger)
+#endif
 {
     char buffer[BUFFER_SIZE], *ptr = NULL;
 
@@ -37,7 +42,9 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *
 
             int val = atoi(ptr);
             debug->printf("Order rel dist %d mm\n", val);
+#ifdef TARGET_NUCLEO_F303K8
             mc->ordersAppendRelDist(val);
+#endif
         }
         else if (strncmp(ptr, "angle", 5) == 0)
         {
@@ -50,15 +57,20 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *
                 val -= 2*180;
 
             debug->printf("Order rel angle %d deg\n", val);
+#ifdef TARGET_NUCLEO_F303K8
             mc->ordersAppendRelAngle(DEG2RAD(val));
+#endif
         }
     }
     else
         debug->printf("Please say again (\"%s\" is not a valid command)\n", buffer);
 }
 
-
+#ifdef TARGET_NUCLEO_F303K8
 void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
+#else
+void com_handle_can(Debug *debug, CanMessenger *messenger)
+#endif
 {
     Message rec_msg;
     while (messenger->read_msg(&rec_msg))
@@ -81,6 +93,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
             case Message::MT_CQB_MC_order:
                 switch (rec_msg.payload.CQB_MC_order.type)
                 {
+#ifdef TARGET_NUCLEO_F303K8
                     case ORDER_TYPE_POS:
                         mc->ordersAppendAbsPos(
                             rec_msg.payload.CQB_MC_order.order_data.pos.x,
@@ -97,6 +110,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
                             rec_msg.payload.CQB_MC_order.order_data.delay
                         );
                         break;
+ #endif
                 }
                 break;
             default:

@@ -3,25 +3,20 @@
 #include "rtos.h"
 #include "mbed_stats.h"
 
-#include "Debug.h"
-#include "MotionController.h"
-#include "Messenger.h"
-#include "pinout.h"
-#include "utils.h"
+#include "common/Debug.h"
+#include "common/Messenger.h"
+#include "common/com.h"
+#include "common/utils.h"
 
-#include "test.h"
-#include "test_mc.h"
+#include "common/test.h"
+
+#include "pinout.h"
+
 
 
 void mem_stats(Debug *debug)
 {
     debug->printf("----- sizeof\n");
-    debug->printf("MotionController %d\n", sizeof(MotionController));
-    debug->printf("\tMotor          %d*2=%d\n", sizeof(Motor), sizeof(Motor)*2);
-    debug->printf("\tQEI            %d*2=%d\n", sizeof(QEI), sizeof(QEI)*2);
-    debug->printf("\tPID            %d*2=%d\n", sizeof(PID), sizeof(PID)*2);
-    debug->printf("\ts_order        %d*%d=%d\n", sizeof(s_order), MAX_ORDERS_COUNT, sizeof(s_order)*MAX_ORDERS_COUNT);
-    // debug->printf("\ts_vector_float %d\n", sizeof(s_vector_float));
     debug->printf("Debug            %d\n", sizeof(Debug));
     debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
     debug->printf("Timer            %d\n", sizeof(Timer));
@@ -55,130 +50,6 @@ void mem_stats(Debug *debug)
 }
 
 
-void com_handle(Debug *debug, MotionController *mc)
-{
-    char buffer[BUFFER_SIZE];
-
-    // do com (serial, ...) - This might overwrite sensors inputs
-    // todo move this shit in a ~class~ separate file
-    if (debug->get_line(buffer, BUFFER_SIZE) != -1)
-    {
-        if (strcmp(buffer, "ping") == 0)
-            debug->printf(Debug::DEBUG_ERROR, "pong\n");
-        else if (strncmp(buffer, "dist", 4) == 0)
-        {
-            int val = atoi(&buffer[4+1]);
-            debug->printf(Debug::DEBUG_ERROR, "setting dist to %d\n", val);
-            mc->pidDistSetGoal(MM_TO_TICKS(val));
-        }
-        else if (strncmp(buffer, "angle", 5) == 0)
-        {
-            int val = atoi(&buffer[5+1]);
-
-            while (val < -180)
-                val += 2*180;
-            while (val > 180)
-                val -= 2*180;
-
-            debug->printf(Debug::DEBUG_ERROR, "setting angle to %d\n", val);
-            mc->pidAngleSetGoal(DEG2RAD(val));
-        }
-        else if (strncmp(buffer, "debug", 5) == 0)
-        {
-            if (strcmp(&buffer[5+1], "on") == 0)
-                debug->set_level(Debug::DEBUG_DEBUG);
-            else if (strcmp(&buffer[5+1], "info") == 0)
-                debug->set_level(Debug::DEBUG_INFO);
-            else if (strcmp(&buffer[5+1], "off") == 0)
-                debug->set_level(Debug::DEBUG_ERROR);
-            else
-                debug->printf(Debug::DEBUG_ERROR, "Error: unknown debug level \"%s\"\n", &buffer[5+1]);
-        }
-        else
-            debug->printf(Debug::DEBUG_ERROR, "Please say again (\"%s\" is not a valid command)\n", buffer);
-    }
-}
-
-
-int demo_1(MotionController *mc)
-{
-    #define EX_DIST 1000
-
-    int e = 0;
-
-    e += mc->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(200,        EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(0,          0);
-
-    return e;
-}
-
-
-int demo_2(MotionController *mc)
-{
-    #define EX_DIST 1000
-
-    int e = 0;
-
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST-200);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(-(EX_DIST-200));
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(-EX_DIST);
-
-    return e;
-}
-
-
-/*
-void i_am_alive(Debug *debug, char *s)
-{
-    Thread::wait(0.5);
-    debug->printf("I am alive! (%s)\n", s);
-    Thread::wait(0.5);
-}
-*/
-
 int main(void)
 {
     int to_sleep = 0;
@@ -195,7 +66,6 @@ int main(void)
 
     debug->printf("Initializing\n");
 
-    MotionController *mc = new MotionController;
     Timer match, loop;  // todo dynamic alloc ?
     match.start();
     loop.start();
@@ -208,15 +78,6 @@ int main(void)
     // init ia ?
 
     // init tirette interrupt -> polling
-
-    int ret = demo_2(mc);
-
-    if (ret != 0)
-    {
-        debug->printf("ERROR MC.ordersAppendAbs() %d\n", ret);
-        while (1)
-            ;
-    }
 
     debug->printf("Initialisation done.\n\n");
 
@@ -242,12 +103,10 @@ int main(void)
             inputs
         */
 
-        // update qei
-        mc->fetchEncodersValue();
-
         // update sharp + other sensors
 
-        com_handle(debug, mc);
+        com_handle_serial(debug, messenger);
+        com_handle_can(debug, messenger);
 
         Message rec_msg;
         while (messenger->read_msg(&rec_msg))
@@ -272,23 +131,15 @@ int main(void)
             Computations
         */
 
-        mc->updatePosition();
-        mc->updateCurOrder(match.read());
-        mc->computePid();
 
         /*
             outputs
         */
 
-        // move
-        mc->updateMotors();
-
         // debug
-        mc->debug(debug);
-        mc->debug(messenger);
 
         // sleep
-        to_sleep = PID_UPDATE_INTERVAL*1000 - loop.read_ms();
+        to_sleep = 1000/MAIN_LOOP_FPS - loop.read_ms();
         if (to_sleep > 0)
         {
             debug->printf("[timer/loop] %d\n\n", loop.read_ms());

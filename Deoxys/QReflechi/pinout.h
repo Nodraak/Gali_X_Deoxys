@@ -21,6 +21,8 @@
     #define XBEE_RX     PC_11
     #define SCREEN_TX   PC_12
     #define SCREEN_RX   PD_2
+    #define CAN_TX      PA_12
+    #define CAN_RX      PA_11
 
 #endif // TARGET_NUCLEO_L476RG
 

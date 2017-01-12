@@ -21,6 +21,8 @@ public:
             pos: info (most likely attribute of the class)
     */
     typedef enum    _e_message_type {
+        MT_ping = 0,
+
         /*
             From CQBOUGE
         */
@@ -39,6 +41,10 @@ public:
 
         CP = CAN Payload
     */
+
+    typedef struct {
+        char payload[8];
+    } CP_ping;
 
     /*
         From CQBOUGE
@@ -79,6 +85,7 @@ public:
             } pos;
             float angle;
             float delay;
+            // todo relative dist + angle
         } order_data;
     } CP_CQB_MC_order;
 
@@ -88,6 +95,8 @@ public:
 
     typedef union {
         char raw_data[8];
+
+        CP_ping ping;
 
         CP_CQB_MC_pos CQB_MC_pos;
 
@@ -123,17 +132,18 @@ public:
 
     int read_msg(Message *msg);
 
-    void send_msg_CQB_MC_pos(float x, float y);
-    void send_msg_CQB_MC_angle_speed(float angle, float speed);
-    void send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
-    void send_msg_CQB_MC_pids(float dist, float angle);
-    void send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
-    void send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
-    void send_msg_CQB_MC_order_angle(float angle);
-    void send_msg_CQB_MC_order_delay(float delay);
+    int send_msg_ping(char payload_[8]);
+    int send_msg_CQB_MC_pos(float x, float y);
+    int send_msg_CQB_MC_angle_speed(float angle, float speed);
+    int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
+    int send_msg_CQB_MC_pids(float dist, float angle);
+    int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
+    int send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
+    int send_msg_CQB_MC_order_angle(float angle);
+    int send_msg_CQB_MC_order_delay(float delay);
 
 private:
-    void send_msg(Message msg);
+    int send_msg(Message msg);
 
 private:
     CAN can_;

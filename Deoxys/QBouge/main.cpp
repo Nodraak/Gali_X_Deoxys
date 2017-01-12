@@ -3,14 +3,16 @@
 #include "rtos.h"
 #include "mbed_stats.h"
 
-#include "Debug.h"
-#include "MotionController.h"
-#include "Messenger.h"
-#include "pinout.h"
-#include "utils.h"
+#include "common/Debug.h"
+#include "common/Messenger.h"
+#include "common/com.h"
+#include "common/utils.h"
+#include "QBouge/MotionController.h"
 
-#include "test.h"
-#include "test_mc.h"
+#include "common/test.h"
+#include "QBouge/test_mc.h"
+
+#include "pinout.h"
 
 
 void mem_stats(Debug *debug)
@@ -52,51 +54,6 @@ void mem_stats(Debug *debug)
     debug->printf("Stack used %d of %d bytes\n", max_stack, stack_size);
 
     debug->printf("-----\n");
-}
-
-
-void com_handle(Debug *debug, MotionController *mc)
-{
-    char buffer[BUFFER_SIZE];
-
-    // do com (serial, ...) - This might overwrite sensors inputs
-    // todo move this shit in a ~class~ separate file
-    if (debug->get_line(buffer, BUFFER_SIZE) != -1)
-    {
-        if (strcmp(buffer, "ping") == 0)
-            debug->printf(Debug::DEBUG_ERROR, "pong\n");
-        else if (strncmp(buffer, "dist", 4) == 0)
-        {
-            int val = atoi(&buffer[4+1]);
-            debug->printf(Debug::DEBUG_ERROR, "setting dist to %d\n", val);
-            mc->pidDistSetGoal(MM_TO_TICKS(val));
-        }
-        else if (strncmp(buffer, "angle", 5) == 0)
-        {
-            int val = atoi(&buffer[5+1]);
-
-            while (val < -180)
-                val += 2*180;
-            while (val > 180)
-                val -= 2*180;
-
-            debug->printf(Debug::DEBUG_ERROR, "setting angle to %d\n", val);
-            mc->pidAngleSetGoal(DEG2RAD(val));
-        }
-        else if (strncmp(buffer, "debug", 5) == 0)
-        {
-            if (strcmp(&buffer[5+1], "on") == 0)
-                debug->set_level(Debug::DEBUG_DEBUG);
-            else if (strcmp(&buffer[5+1], "info") == 0)
-                debug->set_level(Debug::DEBUG_INFO);
-            else if (strcmp(&buffer[5+1], "off") == 0)
-                debug->set_level(Debug::DEBUG_ERROR);
-            else
-                debug->printf(Debug::DEBUG_ERROR, "Error: unknown debug level \"%s\"\n", &buffer[5+1]);
-        }
-        else
-            debug->printf(Debug::DEBUG_ERROR, "Please say again (\"%s\" is not a valid command)\n", buffer);
-    }
 }
 
 
@@ -170,15 +127,6 @@ int demo_2(MotionController *mc)
 }
 
 
-/*
-void i_am_alive(Debug *debug, char *s)
-{
-    Thread::wait(0.5);
-    debug->printf("I am alive! (%s)\n", s);
-    Thread::wait(0.5);
-}
-*/
-
 int main(void)
 {
     int to_sleep = 0;
@@ -187,7 +135,7 @@ int main(void)
 
     mem_stats(debug);
     test_run_all(debug);
-    Thread::wait(500);
+    Thread::wait(10);
 
     /*
         Initializing
@@ -221,6 +169,7 @@ int main(void)
     debug->printf("Initialisation done.\n\n");
 
     mem_stats(debug);
+    Thread::wait(10);
 
     /*
         Ready, wait for tirette
@@ -247,26 +196,8 @@ int main(void)
 
         // update sharp + other sensors
 
-        com_handle(debug, mc);
-
-        Message rec_msg;
-        while (messenger->read_msg(&rec_msg))
-        {
-            debug->printf("Message %d %d -", rec_msg.id, rec_msg.len);
-            debug->printf(" %x", rec_msg.payload.raw_data[0]);
-            debug->printf(" %x", rec_msg.payload.raw_data[1]);
-            debug->printf(" %x", rec_msg.payload.raw_data[2]);
-            debug->printf(" %x", rec_msg.payload.raw_data[3]);
-
-            debug->printf(" ");
-
-            debug->printf(" %x", rec_msg.payload.raw_data[4]);
-            debug->printf(" %x", rec_msg.payload.raw_data[5]);
-            debug->printf(" %x", rec_msg.payload.raw_data[6]);
-            debug->printf(" %x", rec_msg.payload.raw_data[7]);
-
-            debug->printf("\n");
-        }
+        com_handle_serial(debug, messenger, mc);
+        com_handle_can(debug, messenger, mc);
 
         /*
             Computations
@@ -288,10 +219,10 @@ int main(void)
         mc->debug(messenger);
 
         // sleep
-        to_sleep = PID_UPDATE_INTERVAL*1000 - loop.read_ms();
+        to_sleep = 1000/MAIN_LOOP_FPS - loop.read_ms();
         if (to_sleep > 0)
         {
-            debug->printf("[timer/loop] %d\n\n", loop.read_ms());
+            debug->printf("[timer/loop] %d (%d)\n\n", loop.read_ms(), to_sleep);
             Thread::wait(to_sleep);
         }
         else

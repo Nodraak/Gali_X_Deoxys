@@ -16,8 +16,6 @@
 
 #include "utils.h"
 
-#define PID_UPDATE_INTERVAL (1.0/10)  // sec
-
 #define ENC_RADIUS          28                      // one enc radius
 #define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter
 #define TICKS_PER_MM        16.5
