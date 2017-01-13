@@ -1,9 +1,11 @@
 
-#include "Debug.h"
-#include "Messenger.h"
+#include "common/Debug.h"
+#include "common/Messenger.h"
+
+#include "com.h"
 
 #ifdef TARGET_NUCLEO_F303K8
-#include "MotionController.h"
+#include "QBouge/MotionController.h"
 #endif
 
 // do com (serial, ...) - This might overwrite sensors inputs

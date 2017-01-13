@@ -3,7 +3,7 @@
 
 #ifndef DISABLE_TESTS
 
-#include "Debug.h"
+#include "common/Debug.h"
 
 void test_mc_calcNewPos(Debug *debug);
 void test_mc_calcDistThetaOrderPos(Debug *debug);

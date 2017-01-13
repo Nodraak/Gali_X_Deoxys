@@ -5,9 +5,9 @@
 #include "PID.h"
 #include "QEI.h"
 
-#include "Motor.h"
+#include "common/utils.h"
+#include "QBouge/Motor.h"
 #include "pinout.h"
-#include "utils.h"
 
 #include "MotionController.h"
 

@@ -10,11 +10,11 @@
 #include "PID.h"
 #include "QEI.h"
 
-#include "Debug.h"
-#include "Motor.h"
-#include "Messenger.h"
+#include "common/Debug.h"
+#include "common/Messenger.h"
+#include "common/utils.h"
+#include "QBouge/Motor.h"
 
-#include "utils.h"
 
 #define ENC_RADIUS          28                      // one enc radius
 #define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter

@@ -1,9 +1,10 @@
 #ifndef DISABLE_TESTS
 
-#include "Debug.h"
-#include "MotionController.h"
-#include "utils.h"
-#include "test.h"
+#include "common/Debug.h"
+#include "common/utils.h"
+#include "common/test.h"
+#include "QBouge/MotionController.h"
+
 #include "test_mc.h"
 
 
