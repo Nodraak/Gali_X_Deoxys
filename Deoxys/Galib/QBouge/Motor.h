@@ -5,7 +5,7 @@
 
 #define PWM_MIN 0.08  // pwm value at which the robot start moving
 #define PWM_MAX 1.00  // should be 1.00 during matchs
-#define PWM_ERROR_TOLERANCE 0.05
+#define PWM_ERROR_TOLERANCE 0.05  // value under which a pwm value is considered zero
 
 #define MOTOR_DIR_LEFT_FORWARD 0
 #define MOTOR_DIR_LEFT_BACKWARD 1
@@ -22,38 +22,60 @@ public:
     );
 
     /*
-        Set speed (direction and pwm).
-        Value between -1 and +1.
-    */
-    void setSpeed(float speed);
-
-    /*
-        Set unsigned PWM value.
-    */
-    void setPwm(float pwm);
-
-    /*
         Set direction.
             false (0): backward
             true (1): forward
     */
-    void setDirection(bool dir);
+    void setDir(bool dir);
 
     /*
-        Get unsigned PWM value.
+        Set unsigned PWM value.
+        Value between 0 and 1.
     */
-    float getPwm(void);
+    void setUPwm(float uPwm);
+
+    /*
+        Set speed (direction and pwm).
+        Value between -1 and +1.
+    */
+    void setSPwm(float sPwm);
 
     /*
         Get direction.
-        Cf. setDirection().
+            false (0): backward
+            true (1): forward
     */
-    bool getDirection(void);
+    bool getDir(void);
+
+    /*
+        Set unsigned PWM value.
+        Value between 0 and 1.
+    */
+    float getUPwm(void);
+
+    /*
+        Get theorical speed (direction and pwm).
+        Value between -1 and +1.
+    */
+    float getSPwm(void);
+
+    /*
+        Compute and save the actual speed of the wheel. This value is computed
+        from encoder ticks.
+    */
+    void updateSpeed(int32_t ticks_since_last_loop);
+
+    /*
+        Return the computed speed.
+        Unit: mm/sec
+    */
+    float getSpeed(void);
 
 protected:
     PwmOut pwm_;
     DigitalOut dir_;
     bool forward_dir_;
+    float speed_;  // unit: mm/sec
 
 public:
     AnalogIn current_sense_;

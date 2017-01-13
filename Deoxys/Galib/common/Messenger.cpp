@@ -56,11 +56,25 @@ int CanMessenger::read_msg(Message *dest) {
     CanMessenger::send_msg_*
 */
 
-int CanMessenger::send_msg_ping(char payload_[8]) {
+int CanMessenger::send_msg_ping(char data[8]) {
     Message::CP_ping payload;
-    memcpy(payload.payload, payload_, 8);
+    memcpy(payload.data, data, 8);
 
     return this->send_msg(Message(Message::MT_ping, sizeof(payload), (Message::u_payload){.ping = payload}));
+}
+
+int CanMessenger::send_msg_pong(char data[8]) {
+    Message::e_message_type message_type;
+    Message::CP_pong payload;
+
+#ifdef TARGET_NUCLEO_F303K8
+    message_type = Message::MT_CQB_pong;
+#else
+    message_type = Message::MT_CQR_pong;
+#endif
+    memcpy(payload.data, data, 8);
+
+    return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
 }
 
 int CanMessenger::send_msg_CQB_MC_pos(float x, float y) {

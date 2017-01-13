@@ -21,19 +21,26 @@ public:
             pos: info (most likely attribute of the class)
     */
     typedef enum    _e_message_type {
-        MT_ping = 0,
+        MT_ping,
 
         /*
             From CQBOUGE
         */
         // info
-        MT_CQB_MC_pos = 1,
+        MT_CQB_pong,
+        MT_CQB_MC_pos,
         // debug
-        MT_CQB_MC_angle_speed = 2,
-        MT_CQB_MC_encs = 3,
-        MT_CQB_MC_pids = 4,
-        MT_CQB_MC_motors = 5,
-        MT_CQB_MC_order = 6,
+        MT_CQB_MC_angle_speed,
+        MT_CQB_MC_encs,
+        MT_CQB_MC_pids,
+        MT_CQB_MC_motors,
+        MT_CQB_MC_order,
+
+        /*
+            From CQREFLECHI
+        */
+        // info
+        MT_CQR_pong,
     }               e_message_type;
 
     /*
@@ -43,8 +50,12 @@ public:
     */
 
     typedef struct {
-        char payload[8];
+        char data[8];
     } CP_ping;
+
+    typedef struct {
+        char data[8];
+    } CP_pong;
 
     /*
         From CQBOUGE
@@ -97,6 +108,7 @@ public:
         char raw_data[8];
 
         CP_ping ping;
+        CP_pong pong;
 
         CP_CQB_MC_pos CQB_MC_pos;
 
@@ -132,7 +144,8 @@ public:
 
     int read_msg(Message *msg);
 
-    int send_msg_ping(char payload_[8]);
+    int send_msg_ping(char data[8]);
+    int send_msg_pong(char data[8]);
     int send_msg_CQB_MC_pos(float x, float y);
     int send_msg_CQB_MC_angle_speed(float angle, float speed);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);

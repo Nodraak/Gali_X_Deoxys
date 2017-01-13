@@ -1,10 +1,6 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 
-typedef struct _s_vector_uint16 {
-    int16_t x, y;
-} s_vector_int16;
-
 typedef struct _s_vector_float {
     float x, y;
 } s_vector_float;

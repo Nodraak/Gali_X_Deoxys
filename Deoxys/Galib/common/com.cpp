@@ -26,11 +26,6 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
     if (strcmp(ptr, "ping") == 0)
     {
         debug->printf("pong\n");
-
-        char buffer2[8];
-        memset(buffer2, 0, 8);
-        buffer2[0] = 1;
-        debug->printf("pong via can: %d\n", messenger->send_msg_ping(buffer2));
     }
     else if (strncmp(ptr, "order", 5) == 0)
     {
@@ -79,15 +74,17 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
 
         switch (rec_msg.id)
         {
-            char buffer[8];
-
             case Message::MT_ping:
-                debug->printf("ping %d\n", rec_msg.payload.ping.payload[0]);
-                if (rec_msg.payload.ping.payload[0] == 10)
-                    break;
-                memset(buffer, 0, 8);
-                buffer[0] = rec_msg.payload.ping.payload[0]+1;
-                messenger->send_msg_ping(buffer);
+                debug->printf("ping (responding)\n");
+                messenger->send_msg_pong(rec_msg.payload.ping.data);
+                break;
+
+            case Message::MT_CQB_pong:
+                debug->printf("pong (CQB)\n");
+                break;
+
+            case Message::MT_CQR_pong:
+                debug->printf("pong (CQR)\n");
                 break;
 
             case Message::MT_CQB_MC_order:

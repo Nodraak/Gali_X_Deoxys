@@ -2,6 +2,7 @@
 #include "mbed.h"
 
 #include "utils.h"
+#include "QBouge/MotionController.h"
 
 #include "Motor.h"
 
@@ -12,36 +13,57 @@ Motor::Motor(
     pwm_(pwm_pin), dir_(dir_pin), current_sense_(current_sense), thermal_flag_(thermal_flag), brake_(brake)
 {
     pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
-    setSpeed(0);
+    this->setSPwm(0);
 
     forward_dir_ = forward_dir;
 }
 
-void Motor::setSpeed(float speed) {
-    setPwm(ABS(speed));
-    setDirection(speed >= 0);
+void Motor::setDir(bool dir) {
+    dir_ = dir ? forward_dir_ : !forward_dir_;
 }
 
-void Motor::setPwm(float pwm) {
-    if (pwm < PWM_ERROR_TOLERANCE)
+void Motor::setUPwm(float uPwm) {
+    if (uPwm < PWM_ERROR_TOLERANCE)
         pwm_ = 0;
     else
     {
-        float val = map(pwm, 0, 1, PWM_MIN, 1);
+        float val = map(uPwm, 0, 1, PWM_MIN, 1);
+
+        // cap based on absolute max (define). That way, changing PWM_MAX does not change the PIDs settings.
         if (val > PWM_MAX)
             val = PWM_MAX;
+
+        // cap based on current speed of the wheel
+        // todo: improve this (by reading speed_ for ex)
+        float max_pwm = this->getUPwm() + 0.5;
+        if (val > max_pwm)
+            val = max_pwm;
+
         pwm_ = val;
     }
 }
 
-void Motor::setDirection(bool dir) {
-    dir_ = dir ? forward_dir_ : !forward_dir_;
+void Motor::setSPwm(float sPwm) {
+    this->setUPwm(ABS(sPwm));
+    this->setDir(sPwm >= 0);
 }
 
-float Motor::getPwm(void) {
+bool Motor::getDir(void) {
+    return dir_ == forward_dir_;
+}
+
+float Motor::getUPwm(void) {
     return pwm_.read();
 }
 
-bool Motor::getDirection(void) {
-    return dir_ == forward_dir_;
+float Motor::getSPwm(void) {
+    return this->getDir() ? this->getUPwm() : -this->getUPwm();
+}
+
+void Motor::updateSpeed(int32_t ticks_since_last_loop) {
+    speed_ = TICKS_TO_MM(ticks_since_last_loop) / PID_UPDATE_INTERVAL;
+}
+
+float Motor::getSpeed(void) {
+    return speed_;
 }

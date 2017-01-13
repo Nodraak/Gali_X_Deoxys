@@ -131,6 +131,8 @@ void MotionController::updatePosition(void) {
         &angle_, &pos_.x, &pos_.y
     );
 
+    motor_l_.updateSpeed(diff_l);
+    motor_r_.updateSpeed(diff_r);
     speed_ = TICKS_TO_MM(diff_l + diff_r) / 2 / PID_UPDATE_INTERVAL;
 }
 
@@ -252,10 +254,8 @@ void MotionController::updateMotors(void) {
         }
     }
 
-    // todo take into account the current speed to prevent "derapage"
-
-    motor_l_.setSpeed(mot_l_val);
-    motor_r_.setSpeed(mot_r_val);
+    motor_l_.setSPwm(mot_l_val);
+    motor_r_.setSPwm(mot_r_val);
 }
 
 
@@ -264,9 +264,9 @@ void MotionController::debug(Debug *debug) {
 
     debug->printf("[MC/i] %d %d\n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
-    debug->printf("[MC/o_mot] (dir pwm current) %d %.3f (%.3f A) | %d %.3f (%.3f A)\n",
-        motor_l_.getDirection(), motor_l_.getPwm(), motor_l_.current_sense_.read()*4,
-        motor_r_.getDirection(), motor_r_.getPwm(), motor_r_.current_sense_.read()*4
+    debug->printf("[MC/o_mot] (pwm current) %.3f (%.3f A) | %.3f (%.3f A)\n",
+        motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
+        motor_r_.getSPwm(), motor_r_.current_sense_.read()*4
     );
     debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
 
@@ -295,7 +295,7 @@ void MotionController::debug(CanMessenger *cm) {
 
     cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
     cm->send_msg_CQB_MC_pids(pid_dist_out_, pid_angle_out_);
-    cm->send_msg_CQB_MC_motors(-motor_l_.getPwm()*(-1*motor_l_.getDirection()), -motor_r_.getPwm()*(-1*motor_r_.getDirection()));
+    cm->send_msg_CQB_MC_motors(motor_l_.getSPwm(), motor_r_.getSPwm());
 
     // cm->send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
     // cm->send_msg_CQB_MC_order_angle(float angle);
@@ -387,6 +387,6 @@ void MotionController::updateGoalToNextOrder(float match_timestamp) {
 void MotionController::setMotor(float l, float r, Debug *debug, char *reason) {
     this->ordersReset();  // override orders and pid to make sure they don't interfere
 
-    motor_l_.setSpeed(l);
-    motor_r_.setSpeed(r);
+    motor_l_.setSPwm(l);
+    motor_r_.setSPwm(r);
 }
