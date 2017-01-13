@@ -1,53 +1,16 @@
 
 #include "mbed.h"
 #include "rtos.h"
-#include "mbed_stats.h"
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/com.h"
+#include "common/mem_stats.h"
 #include "common/utils.h"
 
 #include "common/test.h"
 
 #include "pinout.h"
-
-
-
-void mem_stats(Debug *debug)
-{
-    debug->printf("----- sizeof\n");
-    debug->printf("Debug            %d\n", sizeof(Debug));
-    debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
-    debug->printf("Timer            %d\n", sizeof(Timer));
-    debug->printf("CanMessenger     %d\n", sizeof(CanMessenger));
-
-    mbed_stats_heap_t heap_stats;
-    osEvent info;
-    osThreadId main_id = osThreadGetId();
-
-    debug->printf("----- heap\n");
-
-    mbed_stats_heap_get(&heap_stats);
-    debug->printf("Current heap: %d\n", heap_stats.current_size);
-    debug->printf("Max heap size: %d\n", heap_stats.max_size);
-
-    debug->printf("----- stack\n");
-
-    info = _osThreadGetInfo(main_id, osThreadInfoStackSize);
-    if (info.status != osOK)
-        error("Could not get stack size");
-    uint32_t stack_size = (uint32_t)info.value.v;
-
-    info = _osThreadGetInfo(main_id, osThreadInfoStackMax);
-    if (info.status != osOK)
-        error("Could not get max stack");
-    uint32_t max_stack = (uint32_t)info.value.v;
-
-    debug->printf("Stack used %d of %d bytes\n", max_stack, stack_size);
-
-    debug->printf("-----\n");
-}
 
 
 int main(void)
