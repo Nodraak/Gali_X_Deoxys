@@ -69,9 +69,10 @@ int CanMessenger::send_msg_pong(char data[8]) {
     Message::e_message_type message_type;
     Message::CP_pong payload;
 
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
     message_type = Message::MT_CQB_pong;
-#else
+#endif
+#ifdef IAM_QREFLECHI
     message_type = Message::MT_CQR_pong;
 #endif
     memcpy(payload.data, data, 8);

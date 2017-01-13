@@ -4,15 +4,16 @@
 
 #include "com.h"
 
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
 #include "QBouge/MotionController.h"
 #endif
 
 // do com (serial, ...) - This might overwrite sensors inputs
 // todo move this shit in a ~class~ separate file
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
 void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *mc)
-#else
+#endif
+#ifdef IAM_QREFLECHI
 void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #endif
 {
@@ -39,7 +40,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 
             int val = atoi(ptr);
             debug->printf("Order rel dist %d mm\n", val);
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
             mc->ordersAppendRelDist(val);
 #endif
         }
@@ -54,7 +55,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
                 val -= 2*180;
 
             debug->printf("Order rel angle %d deg\n", val);
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
             mc->ordersAppendRelAngle(DEG2RAD(val));
 #endif
         }
@@ -63,9 +64,10 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
         debug->printf("Please say again (\"%s\" is not a valid command)\n", buffer);
 }
 
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
 void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
-#else
+#endif
+#ifdef IAM_QREFLECHI
 void com_handle_can(Debug *debug, CanMessenger *messenger)
 #endif
 {
@@ -92,7 +94,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
             case Message::MT_CQB_MC_order:
                 switch (rec_msg.payload.CQB_MC_order.type)
                 {
-#ifdef TARGET_NUCLEO_F303K8
+#ifdef IAM_QBOUGE
                     case ORDER_TYPE_POS:
                         mc->ordersAppendAbsPos(
                             rec_msg.payload.CQB_MC_order.order_data.pos.x,
