@@ -21,6 +21,7 @@ public:
             pos: info (most likely attribute of the class)
     */
     typedef enum    _e_message_type {
+        MT_empty,
         MT_ping,
 
         /*

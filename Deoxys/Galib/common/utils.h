@@ -5,6 +5,10 @@ typedef struct _s_vector_float {
     float x, y;
 } s_vector_float;
 
+typedef struct _s_vector_int16 {
+    int16_t x, y;
+} s_vector_int16;
+
 #define RAD2DEG(val)        ((val)*180/M_PI)
 #define DEG2RAD(val)        ((val)*M_PI/180)
 

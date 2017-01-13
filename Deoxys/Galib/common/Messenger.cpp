@@ -14,7 +14,7 @@
 */
 
 Message::Message(void) {
-    // id = ; // todo ?
+    id = MT_empty;
     len = 0;
     memset(payload.raw_data, 0, 8);
 }

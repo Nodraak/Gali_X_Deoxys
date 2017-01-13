@@ -8,8 +8,10 @@
 #include "QBouge/MotionController.h"
 #endif
 
-// do com (serial, ...) - This might overwrite sensors inputs
-// todo move this shit in a ~class~ separate file
+/*
+    do com (serial, can, ...) - This might overwrite sensors inputs
+*/
+
 #ifdef IAM_QBOUGE
 void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *mc)
 #endif

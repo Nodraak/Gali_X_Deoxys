@@ -377,7 +377,6 @@ int MotionController::ordersAppendRelAngle(float angle) {
 }
 
 void MotionController::updateGoalToNextOrder(float match_timestamp) {
-    // todo some checks will be needed here ?
     memmove(&orders_[0], &orders_[1], sizeof(s_order)*(order_count_-1));
 
     order_count_ --;

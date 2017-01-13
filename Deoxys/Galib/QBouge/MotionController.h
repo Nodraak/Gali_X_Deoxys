@@ -42,7 +42,7 @@ typedef enum    _e_order_type {
 
 typedef struct  _s_order {
     e_order_type type;
-    s_vector_float pos;
+    s_vector_int16 pos;
     float angle;        // radians
     float delay;        // sec
 
