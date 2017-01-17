@@ -14,6 +14,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/Motor.h"
 
@@ -28,7 +29,6 @@
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
-#define MAX_ORDERS_COUNT    20
 
 // default pid tunning
 #define PID_DIST_KU 1.7
@@ -36,24 +36,11 @@
 #define PID_ANGLE_KU 6.0
 #define PID_ANGLE_TU 0.2
 
-typedef enum    _e_order_type {
-    ORDER_TYPE_POS,
-    ORDER_TYPE_ANGLE,
-    ORDER_TYPE_DELAY
-}               e_order_type;
-
-typedef struct  _s_order {
-    e_order_type type;
-    s_vector_int16 pos;
-    float angle;        // radians
-    float delay;        // sec
-
-}               s_order;
-
 
 class MotionController {
 public:
     MotionController(void);
+    ~MotionController(void);
 
     /*
         Save the encoders value to a working variable so that the various
@@ -75,14 +62,6 @@ public:
     */
     void updateCurOrder(float match_timestamp);
 
-private:
-    /*
-        Discard the current order and execute the next one.
-        Should be called only when the current order is achieved.
-    */
-    void updateGoalToNextOrder(float match_timestamp);
-
-public:
     /*
         Compute the PIDs output based on the internal state of the
         MotionController() computed by updateCurOrder().
@@ -107,24 +86,6 @@ public:
     void pidAngleSetGoal(float goal);
 
     /*
-        Clear all saved orders.
-    */
-    void ordersReset(void);
-
-    /*
-        Add a new order to the list of orders to execute.
-    */
-private:
-    int ordersAppend(e_order_type type, int16_t x, int16_t y, float angle, uint16_t delay);
-public:
-    int ordersAppendAbsPos(int16_t x, int16_t y);
-    int ordersAppendAbsAngle(float angle);
-    int ordersAppendAbsDelay(uint16_t delay);
-
-    int ordersAppendRelDist(int16_t dist);
-    int ordersAppendRelAngle(float angle);
-
-    /*
         Set the motors speed (range is 0-1).
 
         ** WARNING **
@@ -139,8 +100,6 @@ private:  // I/O
     PID pid_dist_, pid_angle_;
 
     int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
-    s_order orders_[MAX_ORDERS_COUNT];  // planned movement orders
-    uint8_t order_count_;
     float last_order_timestamp_;  // s from match start
 
     // pid
@@ -153,6 +112,9 @@ public:
     s_vector_float pos_;  // unit: mm
     float angle_;  // unit: radians
     float speed_;  // unit: mm/sec
+
+    // planned orders
+    OrdersFIFO *orders_;
 };
 
 

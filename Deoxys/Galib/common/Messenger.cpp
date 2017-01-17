@@ -2,6 +2,7 @@
 #include <cstring>
 #include "mbed.h"
 
+#include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/MotionController.h"
 #include "pinout.h"

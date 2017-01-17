@@ -4,6 +4,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 #include "common/com.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
@@ -21,30 +22,30 @@ int demo_1(MotionController *mc)
 
     int e = 0;
 
-    e += mc->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(200,        EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(90));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
-            e += mc->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(270));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendAbsAngle(DEG2RAD(0));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendAbsPos(0,          0);
+    e += mc->orders_->ordersAppendAbsPos(EX_DIST,    0);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendAbsPos(EX_DIST,    EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(180));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendAbsPos(200,        EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(90));
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(0));
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(270));
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(180));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendAbsPos(EX_DIST,    EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(270));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendAbsPos(EX_DIST,    0);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(0));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendAbsPos(0,          0);
 
     return e;
 }
@@ -56,30 +57,30 @@ int demo_2(MotionController *mc)
 
     int e = 0;
 
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST-200);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-            e += mc->ordersAppendRelAngle(DEG2RAD(-90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(-(EX_DIST-200));
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(EX_DIST);
-                    e += mc->ordersAppendAbsDelay(0.500);
-            e += mc->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->ordersAppendAbsDelay(0.500);
-    e += mc->ordersAppendRelDist(-EX_DIST);
+    e += mc->orders_->ordersAppendRelDist(EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendRelDist(EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendRelDist(EX_DIST-200);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendRelDist(-(EX_DIST-200));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendRelDist(EX_DIST);
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+            e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
+                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+    e += mc->orders_->ordersAppendRelDist(-EX_DIST);
 
     return e;
 }

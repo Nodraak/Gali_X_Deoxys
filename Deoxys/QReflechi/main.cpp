@@ -4,6 +4,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 #include "common/com.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
@@ -33,6 +34,7 @@ int main(void)
     match.start();
     loop.start();
     CanMessenger *messenger = new CanMessenger;
+    OrdersFIFO *orders = new OrdersFIFO(30); // todo define
 
     // init sharp + other sensors
     // init servos + other actuators

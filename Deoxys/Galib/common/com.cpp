@@ -43,7 +43,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
             int val = atoi(ptr);
             debug->printf("Order rel dist %d mm\n", val);
 #ifdef IAM_QBOUGE
-            mc->ordersAppendRelDist(val);
+            mc->orders_->ordersAppendRelDist(val);
 #endif
         }
         else if (strncmp(ptr, "angle", 5) == 0)
@@ -58,7 +58,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 
             debug->printf("Order rel angle %d deg\n", val);
 #ifdef IAM_QBOUGE
-            mc->ordersAppendRelAngle(DEG2RAD(val));
+            mc->orders_->ordersAppendRelAngle(DEG2RAD(val));
 #endif
         }
     }
@@ -98,18 +98,18 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
                 {
 #ifdef IAM_QBOUGE
                     case ORDER_TYPE_POS:
-                        mc->ordersAppendAbsPos(
+                        mc->orders_->ordersAppendAbsPos(
                             rec_msg.payload.CQB_MC_order.order_data.pos.x,
                             rec_msg.payload.CQB_MC_order.order_data.pos.y
                         );
                         break;
                     case ORDER_TYPE_ANGLE:
-                        mc->ordersAppendAbsAngle(
+                        mc->orders_->ordersAppendAbsAngle(
                             rec_msg.payload.CQB_MC_order.order_data.angle
                         );
                         break;
                     case ORDER_TYPE_DELAY:
-                        mc->ordersAppendAbsDelay(
+                        mc->orders_->ordersAppendAbsDelay(
                             rec_msg.payload.CQB_MC_order.order_data.delay
                         );
                         break;

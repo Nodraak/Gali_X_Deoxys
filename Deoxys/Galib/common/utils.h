@@ -1,6 +1,8 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 
+#include "mbed.h"
+
 typedef struct _s_vector_float {
     float x, y;
 } s_vector_float;

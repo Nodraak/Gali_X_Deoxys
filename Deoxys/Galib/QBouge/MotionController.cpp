@@ -7,6 +7,7 @@
 #include "QEI.h"
 
 #include "common/utils.h"
+#include "common/OrdersFIFO.h"
 #include "QBouge/Motor.h"
 #include "pinout.h"
 
@@ -35,8 +36,7 @@ MotionController::MotionController(void) :
     pid_angle_.setSetPoint(0);
     this->pidAngleSetGoal(0);  // pid's error
 
-    this->ordersReset();
-    order_count_ = 0;
+    orders_ = new OrdersFIFO(5);  // todo define
 
     pos_.x = 0;
     pos_.y = 0;
@@ -47,6 +47,12 @@ MotionController::MotionController(void) :
     enc_l_last_ = 0;
     enc_r_last_ = 0;
 }
+
+
+MotionController::~MotionController(void) {
+    delete orders_;
+}
+
 
 void MotionController::fetchEncodersValue(void) {
     enc_l_last_ = enc_l_val_;
@@ -200,6 +206,12 @@ int mc_updateCurOrder(
                 ret = 1;
 
             break;
+
+        case ORDER_TYPE_NONE:
+            // todo
+            dist = 0;
+            theta = 0;
+            break;
     }
 
     *dist_ = dist;
@@ -212,10 +224,13 @@ int mc_updateCurOrder(
 void MotionController::updateCurOrder(float match_timestamp) {
     float dist = 0, theta = 0;  // units: mm, rad
 
-    if (order_count_ != 0)
+    if (orders_->size() != 0)
     {
-        if (mc_updateCurOrder(pos_, angle_, &orders_[0], match_timestamp-last_order_timestamp_, &dist, &theta))
-            this->updateGoalToNextOrder(match_timestamp);
+        if (mc_updateCurOrder(pos_, angle_, orders_->front(), match_timestamp-last_order_timestamp_, &dist, &theta))
+        {
+            this->orders_->pop();
+            last_order_timestamp_ = match_timestamp;
+        }
     }
 
     this->pidDistSetGoal(dist);
@@ -235,7 +250,7 @@ void MotionController::computePid(void) {
 void MotionController::updateMotors(void) {
     float mot_l_val = 0, mot_r_val = 0, m = 0;
 
-    if (order_count_ == 0)
+    if (orders_->size() == 0)
     {
         mot_l_val = 0;
         mot_r_val = 0;
@@ -271,20 +286,20 @@ void MotionController::debug(Debug *debug) {
     );
     debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
 
-    if (order_count_ == 0)
-        debug->printf("[MC/orders] -\n");
+    if (orders_->size() == 0)
+        debug->printf("[MC/orders] empty\n");
     else
     {
-        for (i = 0; (i < order_count_) && (i < 3); ++i)
+        for (i = 0; i < orders_->size(); ++i)
         {
             debug->printf("[MC/orders] %d/%d -> %d %.0f %.0f %.0f %.3f\n",
                 i,
-                order_count_,
-                orders_[i].type,
-                orders_[i].pos.x,
-                orders_[i].pos.y,
-                RAD2DEG(orders_[i].angle),
-                orders_[i].delay
+                orders_->size(),
+                orders_->elem(i)->type,
+                orders_->elem(i)->pos.x,
+                orders_->elem(i)->pos.y,
+                RAD2DEG(orders_->elem(i)->angle),
+                orders_->elem(i)->delay
             );
         }
     }
@@ -307,85 +322,12 @@ void MotionController::pidDistSetGoal(float goal) {
     pid_dist_goal_ = goal;
 }
 
-
 void MotionController::pidAngleSetGoal(float goal) {
     pid_angle_goal_ = goal;
 }
 
-
-void MotionController::ordersReset(void) {
-    memset(orders_, 0, sizeof(s_order)*MAX_ORDERS_COUNT);
-}
-
-
-int MotionController::ordersAppend(e_order_type type, int16_t x, int16_t y, float angle, uint16_t delay) {
-    if (order_count_ == MAX_ORDERS_COUNT)
-        return 1;
-
-    memcpy(&orders_[order_count_], &orders_[order_count_-1], sizeof(s_order));
-
-    orders_[order_count_].type = type;
-
-    switch (type) {
-        case ORDER_TYPE_POS:
-            orders_[order_count_].pos.x = x;
-            orders_[order_count_].pos.y = y;
-            break;
-
-        case ORDER_TYPE_ANGLE:
-            orders_[order_count_].angle = std_rad_angle(angle);
-            break;
-
-        case ORDER_TYPE_DELAY:
-            orders_[order_count_].delay = delay;
-            break;
-    }
-
-    order_count_ ++;
-
-    return 0;
-}
-
-
-int MotionController::ordersAppendAbsPos(int16_t x, int16_t y) {
-    return this->ordersAppend(ORDER_TYPE_POS, x, y, 0, 0);
-}
-
-
-int MotionController::ordersAppendAbsAngle(float angle) {
-    return this->ordersAppend(ORDER_TYPE_ANGLE, 0, 0, angle, 0);
-}
-
-
-int MotionController::ordersAppendAbsDelay(uint16_t delay) {
-    return this->ordersAppend(ORDER_TYPE_DELAY, 0, 0, 0, delay);
-}
-
-int MotionController::ordersAppendRelDist(int16_t dist) {
-    s_order *last_order = &orders_[order_count_-1];
-    return this->ordersAppend(
-        ORDER_TYPE_POS,
-        last_order->pos.x + dist*cos(last_order->angle), last_order->pos.y + dist*sin(last_order->angle),
-        last_order->angle, last_order->delay
-    );
-}
-
-int MotionController::ordersAppendRelAngle(float angle) {
-    s_order *last_order = &orders_[order_count_-1];
-    return this->ordersAppend(
-        ORDER_TYPE_ANGLE, last_order->pos.x, last_order->pos.y, last_order->angle + angle, last_order->delay
-    );
-}
-
-void MotionController::updateGoalToNextOrder(float match_timestamp) {
-    memmove(&orders_[0], &orders_[1], sizeof(s_order)*(order_count_-1));
-
-    order_count_ --;
-    last_order_timestamp_ = match_timestamp;
-}
-
 void MotionController::setMotor(float l, float r, Debug *debug, char *reason) {
-    this->ordersReset();  // override orders and pid to make sure they don't interfere
+    this->orders_->reset();  // override orders and pid to make sure they don't interfere
 
     motor_l_.setSPwm(l);
     motor_r_.setSPwm(r);

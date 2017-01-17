@@ -22,7 +22,7 @@ void mem_stats(Debug *debug)
     debug->printf("\tMotor          %d*2=%d\n", sizeof(Motor), sizeof(Motor)*2);
     debug->printf("\tQEI            %d*2=%d\n", sizeof(QEI), sizeof(QEI)*2);
     debug->printf("\tPID            %d*2=%d\n", sizeof(PID), sizeof(PID)*2);
-    debug->printf("\ts_order        %d*%d=%d\n", sizeof(s_order), MAX_ORDERS_COUNT, sizeof(s_order)*MAX_ORDERS_COUNT);
+    debug->printf("\ts_order        %d\n", sizeof(s_order));
 #endif
     debug->printf("Debug            %d\n", sizeof(Debug));
     debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
