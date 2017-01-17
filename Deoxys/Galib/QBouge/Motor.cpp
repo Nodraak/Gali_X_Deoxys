@@ -4,6 +4,7 @@
 
 #include "common/utils.h"
 #include "QBouge/MotionController.h"
+#include "config.h"
 
 #include "Motor.h"
 

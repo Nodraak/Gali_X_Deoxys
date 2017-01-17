@@ -1,6 +1,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 
 #include "com.h"
 
@@ -45,6 +46,9 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #ifdef IAM_QBOUGE
             mc->orders_->ordersAppendRelDist(val);
 #endif
+#ifdef IAM_QREFLECHI
+            messenger->send_msg_CQB_MC_order_rel_dist(val);
+#endif
         }
         else if (strncmp(ptr, "angle", 5) == 0)
         {
@@ -59,6 +63,9 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
             debug->printf("Order rel angle %d deg\n", val);
 #ifdef IAM_QBOUGE
             mc->orders_->ordersAppendRelAngle(DEG2RAD(val));
+#endif
+#ifdef IAM_QREFLECHI
+            messenger->send_msg_CQB_MC_order_rel_angle(DEG2RAD(val));
 #endif
         }
     }
@@ -97,19 +104,29 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
                 switch (rec_msg.payload.CQB_MC_order.type)
                 {
 #ifdef IAM_QBOUGE
-                    case ORDER_TYPE_POS:
+                    case ORDER_COM_TYPE_ABS_POS:
                         mc->orders_->ordersAppendAbsPos(
-                            rec_msg.payload.CQB_MC_order.order_data.pos.x,
-                            rec_msg.payload.CQB_MC_order.order_data.pos.y
+                            rec_msg.payload.CQB_MC_order.order_data.abs_pos.x,
+                            rec_msg.payload.CQB_MC_order.order_data.abs_pos.y
                         );
                         break;
-                    case ORDER_TYPE_ANGLE:
+                    case ORDER_COM_TYPE_ABS_ANGLE:
                         mc->orders_->ordersAppendAbsAngle(
-                            rec_msg.payload.CQB_MC_order.order_data.angle
+                            rec_msg.payload.CQB_MC_order.order_data.abs_angle
                         );
                         break;
-                    case ORDER_TYPE_DELAY:
-                        mc->orders_->ordersAppendAbsDelay(
+                    case ORDER_COM_TYPE_REL_DIST:
+                        mc->orders_->ordersAppendRelDist(
+                            rec_msg.payload.CQB_MC_order.order_data.rel_dist
+                        );
+                        break;
+                    case ORDER_COM_TYPE_REL_ANGLE:
+                        mc->orders_->ordersAppendRelAngle(
+                            rec_msg.payload.CQB_MC_order.order_data.rel_angle
+                        );
+                        break;
+                    case ORDER_COM_TYPE_DELAY:
+                        mc->orders_->ordersAppendDelay(
                             rec_msg.payload.CQB_MC_order.order_data.delay
                         );
                         break;

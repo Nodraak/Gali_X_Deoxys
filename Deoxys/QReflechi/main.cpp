@@ -11,6 +11,7 @@
 
 #include "common/test.h"
 
+#include "config.h"
 #include "pinout.h"
 
 
@@ -34,7 +35,7 @@ int main(void)
     match.start();
     loop.start();
     CanMessenger *messenger = new CanMessenger;
-    OrdersFIFO *orders = new OrdersFIFO(30); // todo define
+    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
     // init sharp + other sensors
     // init servos + other actuators

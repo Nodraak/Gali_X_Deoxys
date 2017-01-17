@@ -13,6 +13,7 @@
 #include "common/test.h"
 #include "QBouge/test_mc.h"
 
+#include "config.h"
 #include "pinout.h"
 
 
@@ -23,28 +24,28 @@ int demo_1(MotionController *mc)
     int e = 0;
 
     e += mc->orders_->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendAbsPos(200,        EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(90));
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(0));
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(270));
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(180));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendAbsPos(EX_DIST,    EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(270));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendAbsPos(EX_DIST,    0);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendAbsAngle(DEG2RAD(0));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendAbsPos(0,          0);
 
     return e;
@@ -58,28 +59,28 @@ int demo_2(MotionController *mc)
     int e = 0;
 
     e += mc->orders_->ordersAppendRelDist(EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendRelDist(EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendRelDist(EX_DIST-200);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(-90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendRelDist(-(EX_DIST-200));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendRelDist(EX_DIST);
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
             e += mc->orders_->ordersAppendRelAngle(DEG2RAD(90));
-                    e += mc->orders_->ordersAppendAbsDelay(0.500);
+                    e += mc->orders_->ordersAppendDelay(0.500);
     e += mc->orders_->ordersAppendRelDist(-EX_DIST);
 
     return e;

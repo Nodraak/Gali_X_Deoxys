@@ -29,7 +29,6 @@
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
-
 // default pid tunning
 #define PID_DIST_KU 1.7
 #define PID_DIST_TU 0.7
@@ -115,6 +114,7 @@ public:
 
     // planned orders
     OrdersFIFO *orders_;
+    s_order_exe current_order_;
 };
 
 
@@ -127,7 +127,7 @@ int mc_calcNewPos(
 void mc_calcDistThetaOrderPos(float *dist_, float *theta_);
 
 int mc_updateCurOrder(
-    s_vector_float cur_pos,  float cur_angle, s_order *cur_order, float time_since_last_order_finished,
+    s_vector_float cur_pos,  float cur_angle, s_order_exe *cur_order, float time_since_last_order_finished,
     float *dist_, float *theta_
 );
 

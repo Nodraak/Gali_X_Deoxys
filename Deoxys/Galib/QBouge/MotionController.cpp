@@ -9,6 +9,7 @@
 #include "common/utils.h"
 #include "common/OrdersFIFO.h"
 #include "QBouge/Motor.h"
+#include "config.h"
 #include "pinout.h"
 
 #include "MotionController.h"
@@ -36,7 +37,8 @@ MotionController::MotionController(void) :
     pid_angle_.setSetPoint(0);
     this->pidAngleSetGoal(0);  // pid's error
 
-    orders_ = new OrdersFIFO(5);  // todo define
+    orders_ = new OrdersFIFO(ORDERS_COUNT);
+    current_order_.type = ORDER_EXE_TYPE_NONE;
 
     pos_.x = 0;
     pos_.y = 0;
@@ -162,7 +164,7 @@ void mc_calcDistThetaOrderPos(float *dist_, float *theta_) {
 
 
 int mc_updateCurOrder(
-    s_vector_float cur_pos,  float cur_angle, s_order *cur_order, float time_since_last_order_finished,
+    s_vector_float cur_pos,  float cur_angle, s_order_exe *cur_order, float time_since_last_order_finished,
     float *dist_, float *theta_
 ) {
     float dx = 0, dy = 0;
@@ -176,7 +178,7 @@ int mc_updateCurOrder(
 
     switch (cur_order->type)
     {
-        case ORDER_TYPE_POS:
+        case ORDER_EXE_TYPE_POS:
             dx = cur_order->pos.x - cur_pos.x;
             dy = cur_order->pos.y - cur_pos.y;
 
@@ -189,7 +191,7 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_TYPE_ANGLE:
+        case ORDER_EXE_TYPE_ANGLE:
             dist = 0;
             theta = std_rad_angle(cur_order->angle - cur_angle);
 
@@ -198,7 +200,7 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_TYPE_DELAY:
+        case ORDER_EXE_TYPE_DELAY:
             dist = 0;
             theta = 0;
 
@@ -207,7 +209,7 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_TYPE_NONE:
+        case ORDER_EXE_TYPE_NONE:
             // todo
             dist = 0;
             theta = 0;
@@ -226,8 +228,38 @@ void MotionController::updateCurOrder(float match_timestamp) {
 
     if (orders_->size() != 0)
     {
-        if (mc_updateCurOrder(pos_, angle_, orders_->front(), match_timestamp-last_order_timestamp_, &dist, &theta))
+        if (mc_updateCurOrder(pos_, angle_, &current_order_, match_timestamp-last_order_timestamp_, &dist, &theta))
         {
+            s_order_com *next = this->orders_->front();
+
+            switch (next->type)
+            {
+                case ORDER_COM_TYPE_NONE:
+                    current_order_.type = ORDER_EXE_TYPE_NONE;
+                    break;
+                case ORDER_COM_TYPE_ABS_POS:
+                    current_order_.type = ORDER_EXE_TYPE_POS;
+                    current_order_.pos.x = next->order_data.abs_pos.x;
+                    current_order_.pos.y = next->order_data.abs_pos.y;
+                    break;
+                case ORDER_COM_TYPE_ABS_ANGLE:
+                    current_order_.type = ORDER_EXE_TYPE_ANGLE;
+                    current_order_.angle = next->order_data.abs_angle;
+                    break;
+                case ORDER_COM_TYPE_REL_DIST:
+                    // current_order_.type = ORDER_EXE_TYPE_REL_DIST;
+                    // todo
+                    break;
+                case ORDER_COM_TYPE_REL_ANGLE:
+                    current_order_.type = ORDER_EXE_TYPE_ANGLE;
+                    current_order_.angle += next->order_data.rel_angle;
+                    break;
+                case ORDER_COM_TYPE_DELAY:
+                    current_order_.type = ORDER_EXE_TYPE_DELAY;
+                    current_order_.delay = next->order_data.delay;
+                    break;
+            }
+
             this->orders_->pop();
             last_order_timestamp_ = match_timestamp;
         }

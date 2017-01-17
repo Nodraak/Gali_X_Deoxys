@@ -1,6 +1,7 @@
 #ifndef MESSENGER_H_INCLUDED
 #define MESSENGER_H_INCLUDED
 
+#include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
 class Message {
@@ -87,19 +88,7 @@ public:
         float pwm_r;
     } CP_CQB_MC_motors;
 
-    typedef struct {
-        uint8_t type;
-        char padding[3];
-        union {
-            struct {
-                int16_t x;
-                int16_t y;
-            } pos;
-            float angle;
-            float delay;
-            // todo relative dist + angle
-        } order_data;
-    } CP_CQB_MC_order;
+    typedef s_order_com CP_CQB_MC_order;
 
     /*
         ** CAN Message **
@@ -134,9 +123,8 @@ public:
 
     e_message_type id;  // lower = higher priority
     // todo id:11 -> width of 'Message::id' exceeds its type
-    unsigned int len:4;  // max len of a CAN message is 8 bytes
+    uint8_t len;  // max len of a CAN message is 8 bytes
     u_payload payload;
-
 };
 
 class CanMessenger {
@@ -147,13 +135,17 @@ public:
 
     int send_msg_ping(char data[8]);
     int send_msg_pong(char data[8]);
+
     int send_msg_CQB_MC_pos(float x, float y);
     int send_msg_CQB_MC_angle_speed(float angle, float speed);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
-    int send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
-    int send_msg_CQB_MC_order_angle(float angle);
+
+    int send_msg_CQB_MC_order_abs_pos(int16_t x, int16_t y);
+    int send_msg_CQB_MC_order_abs_angle(float angle);
+    int send_msg_CQB_MC_order_rel_dist(int32_t dist);
+    int send_msg_CQB_MC_order_rel_angle(float angle);
     int send_msg_CQB_MC_order_delay(float delay);
 
 private:

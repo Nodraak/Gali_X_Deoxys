@@ -1,0 +1,9 @@
+#ifndef CONFIG_H_INCLUDED
+#define CONFIG_H_INCLUDED
+
+#define MAIN_LOOP_FPS       100
+#define PID_UPDATE_INTERVAL (1.0/MAIN_LOOP_FPS)
+
+#define ORDERS_COUNT        5
+
+#endif // CONFIG_H_INCLUDED

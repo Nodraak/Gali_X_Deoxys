@@ -30,9 +30,6 @@ typedef struct _s_vector_int16 {
 double map(double x, double in_min, double in_max, double out_min, double out_max);
 double constrain(double val, double min, double max);
 
-#define MAIN_LOOP_FPS       25
-#define PID_UPDATE_INTERVAL (1.0/MAIN_LOOP_FPS)
-
 // check we know who we are
 #ifndef IAM_QBOUGE
     #ifndef IAM_QREFLECHI

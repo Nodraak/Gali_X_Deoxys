@@ -188,7 +188,7 @@ void test_mc_updateCurOrder(Debug *debug) {
 #else // #ifndef DISABLE_TESTS
 
 void test_mc_calcNewPos(Debug *debug) {}
-void test_mc_calcDistThetaOrderPos(Debug *debug) {}
+void test_mc_calcDistThetaOrderPos(Debug *debug) {}
 void test_mc_updateCurOrder(Debug *debug) {}
 
 #endif // #ifndef DISABLE_TESTS

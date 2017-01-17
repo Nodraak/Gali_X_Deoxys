@@ -117,24 +117,38 @@ int CanMessenger::send_msg_CQB_MC_motors(float pwm_l, float pwm_r) {
     return this->send_msg(Message(Message::MT_CQB_MC_motors, sizeof(payload), (Message::u_payload){.CQB_MC_motors = payload}));
 }
 
-int CanMessenger::send_msg_CQB_MC_order_pos(int16_t x, int16_t y) {
+int CanMessenger::send_msg_CQB_MC_order_abs_pos(int16_t x, int16_t y) {
     Message::CP_CQB_MC_order payload;
-    payload.type = ORDER_TYPE_POS;
-    payload.order_data.pos.x = x;
-    payload.order_data.pos.y = y;
+    payload.type = ORDER_COM_TYPE_ABS_POS;
+    payload.order_data.abs_pos.x = x;
+    payload.order_data.abs_pos.y = y;
     return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_order = payload}));
 }
 
-int CanMessenger::send_msg_CQB_MC_order_angle(float angle) {
+int CanMessenger::send_msg_CQB_MC_order_abs_angle(float angle) {
     Message::CP_CQB_MC_order payload;
-    payload.type = ORDER_TYPE_ANGLE;
-    payload.order_data.angle = angle;
+    payload.type = ORDER_COM_TYPE_ABS_ANGLE;
+    payload.order_data.abs_angle = angle;
+    return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_order = payload}));
+}
+
+int CanMessenger::send_msg_CQB_MC_order_rel_dist(int32_t dist) {
+    Message::CP_CQB_MC_order payload;
+    payload.type = ORDER_COM_TYPE_REL_DIST;
+    payload.order_data.rel_dist = dist;
+    return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_order = payload}));
+}
+
+int CanMessenger::send_msg_CQB_MC_order_rel_angle(float angle) {
+    Message::CP_CQB_MC_order payload;
+    payload.type = ORDER_COM_TYPE_REL_ANGLE;
+    payload.order_data.rel_angle = angle;
     return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_order = payload}));
 }
 
 int CanMessenger::send_msg_CQB_MC_order_delay(float delay) {
     Message::CP_CQB_MC_order payload;
-    payload.type = ORDER_TYPE_DELAY;
+    payload.type = ORDER_COM_TYPE_DELAY;
     payload.order_data.delay = delay;
     return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_order = payload}));
 }
