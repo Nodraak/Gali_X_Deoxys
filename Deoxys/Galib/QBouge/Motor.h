@@ -1,3 +1,5 @@
+#ifdef IAM_QBOUGE
+
 #ifndef MOTOR_H_INCLUDED
 #define MOTOR_H_INCLUDED
 
@@ -83,4 +85,5 @@ public:
     DigitalOut brake_;
 };
 
-#endif
+#endif // #ifndef MOTOR_H_INCLUDED
+#endif // #ifdef IAM_QBOUGE

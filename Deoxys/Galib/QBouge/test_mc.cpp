@@ -1,4 +1,4 @@
-#ifndef DISABLE_TESTS
+#ifdef IAM_QBOUGE
 
 #include "common/Debug.h"
 #include "common/utils.h"
@@ -7,6 +7,7 @@
 
 #include "test_mc.h"
 
+#ifndef DISABLE_TESTS
 
 void test_mc_calcNewPos(Debug *debug) {
     float angle;
@@ -184,4 +185,11 @@ void test_mc_updateCurOrder(Debug *debug) {
     // todo more tests
 }
 
-#endif // DISABLE_TESTS
+#else // #ifndef DISABLE_TESTS
+
+void test_mc_calcNewPos(Debug *debug) {}
+void test_mc_calcDistThetaOrderPos(Debug *debug) {}
+void test_mc_updateCurOrder(Debug *debug) {}
+
+#endif // #ifndef DISABLE_TESTS
+#endif // #ifdef IAM_QBOUGE

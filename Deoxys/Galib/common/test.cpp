@@ -1,19 +1,21 @@
 
-#include "test_mc.h"
+#ifdef IAM_QBOUGE
+#include "QBouge/test_mc.h"
+#endif
 #include "test.h"
+
+#ifndef DISABLE_TESTS
 
 void test_run_all(Debug *debug)
 {
-#ifdef DISABLE_TESTS
-    debug->printf("[Tests] skipping tests (DISABLE_TESTS is defined)\n");
-#else // DISABLE_TESTS
     debug->printf("[Tests] Starting\n");
 
     test_sizes(debug);
+#ifdef IAM_QBOUGE
     test_mc_calcNewPos(debug);
     test_mc_calcDistThetaOrderPos(debug);
     test_mc_updateCurOrder(debug);
-
+#endif
     debug->printf("[Tests] Done.\n");
 
 #ifdef INFINITE_LOOP_AFTER_TESTS
@@ -23,10 +25,7 @@ void test_run_all(Debug *debug)
         wait(1);
     }
 #endif // INFINITE_LOOP_AFTER_TESTS
-#endif // DISABLE_TESTS
 }
-
-#ifndef DISABLE_TESTS
 
 void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line) {
     if (!cond)
@@ -45,4 +44,12 @@ void test_sizes(Debug *debug) {
     ft_assert(sizeof(int64_t) == 8);
 }
 
-#endif // DISABLE_TESTS
+#else // #ifndef DISABLE_TESTS
+
+void test_run_all(Debug *debug) {
+    debug->printf("[Tests] skipping tests (DISABLE_TESTS is defined)\n");
+}
+void _ft_assert(Debug *debug, int cond, const char *s_cond, const char *file, const char *func, int line) {}
+void test_sizes(Debug *debug) {}
+
+#endif // #ifndef DISABLE_TESTS

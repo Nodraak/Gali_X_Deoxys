@@ -1,3 +1,4 @@
+#ifdef IAM_QBOUGE
 
 #include "mbed.h"
 
@@ -12,10 +13,11 @@ Motor::Motor(
 ) :
     pwm_(pwm_pin), dir_(dir_pin), current_sense_(current_sense), thermal_flag_(thermal_flag), brake_(brake)
 {
-    pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
-    this->setSPwm(0);
-
     forward_dir_ = forward_dir;
+
+    pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
+
+    this->setSPwm(0);
 }
 
 void Motor::setDir(bool dir) {
@@ -67,3 +69,5 @@ void Motor::updateSpeed(int32_t ticks_since_last_loop) {
 float Motor::getSpeed(void) {
     return speed_;
 }
+
+#endif // #ifdef IAM_QBOUGE

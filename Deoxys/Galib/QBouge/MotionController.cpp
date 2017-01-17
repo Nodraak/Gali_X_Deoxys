@@ -1,3 +1,4 @@
+#ifdef IAM_QBOUGE
 
 #include "mbed.h"
 #include <cstring>  // memcpy
@@ -389,3 +390,5 @@ void MotionController::setMotor(float l, float r, Debug *debug, char *reason) {
     motor_l_.setSPwm(l);
     motor_r_.setSPwm(r);
 }
+
+#endif // #ifdef IAM_QBOUGE

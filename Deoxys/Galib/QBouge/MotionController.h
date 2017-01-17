@@ -1,3 +1,5 @@
+#ifdef IAM_QBOUGE
+
 #ifndef MOTION_CONTROLLER_H_INLCUDED
 #define MOTION_CONTROLLER_H_INLCUDED
 
@@ -167,4 +169,5 @@ int mc_updateCurOrder(
     float *dist_, float *theta_
 );
 
-#endif
+#endif // #ifndef MOTION_CONTROLLER_H_INLCUDED
+#endif // #ifdef IAM_QBOUGE
