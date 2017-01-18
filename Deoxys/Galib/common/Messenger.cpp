@@ -61,7 +61,10 @@ int CanMessenger::read_msg(Message *dest) {
 
 int CanMessenger::send_msg_ping(char data[8]) {
     Message::CP_ping payload;
-    memcpy(payload.data, data, 8);
+    if (data != NULL)
+        memcpy(payload.data, data, 8);
+    else
+        memset(payload.data, 0, 8);
 
     return this->send_msg(Message(Message::MT_ping, sizeof(payload), (Message::u_payload){.ping = payload}));
 }
@@ -76,7 +79,10 @@ int CanMessenger::send_msg_pong(char data[8]) {
 #ifdef IAM_QREFLECHI
     message_type = Message::MT_CQR_pong;
 #endif
-    memcpy(payload.data, data, 8);
+    if (data != NULL)
+        memcpy(payload.data, data, 8);
+    else
+        memset(payload.data, 0, 8);
 
     return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
 }

@@ -247,8 +247,9 @@ void MotionController::updateCurOrder(float match_timestamp) {
                     current_order_.angle = next->order_data.abs_angle;
                     break;
                 case ORDER_COM_TYPE_REL_DIST:
-                    // current_order_.type = ORDER_EXE_TYPE_REL_DIST;
-                    // todo
+                    current_order_.type = ORDER_EXE_TYPE_POS;
+                    current_order_.pos.x += next->order_data.rel_dist * cos(current_order_.angle);
+                    current_order_.pos.y += next->order_data.rel_dist * sin(current_order_.angle);
                     break;
                 case ORDER_COM_TYPE_REL_ANGLE:
                     current_order_.type = ORDER_EXE_TYPE_ANGLE;

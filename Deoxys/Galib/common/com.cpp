@@ -32,6 +32,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
     if (strcmp(ptr, "ping") == 0)
     {
         debug->printf("pong\n");
+        // messenger->send_msg_pong(NULL);
     }
     else if (strncmp(ptr, "order", 5) == 0)
     {
@@ -83,8 +84,6 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
     Message rec_msg;
     while (messenger->read_msg(&rec_msg))
     {
-        debug->printf("Messager::read_msg() == 1 - rec_msg.id=%d\n", rec_msg.id);
-
         switch (rec_msg.id)
         {
             case Message::MT_ping:
@@ -103,7 +102,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
             case Message::MT_CQB_MC_order:
 #ifdef IAM_QBOUGE
                 mc->orders_->push(rec_msg.payload.CQB_MC_order);
- #endif
+#endif
                 break;
             default:
                 // todo other cases

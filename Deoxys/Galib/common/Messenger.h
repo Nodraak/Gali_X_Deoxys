@@ -133,6 +133,7 @@ public:
 
     int read_msg(Message *msg);
 
+    // data can be NULL if not payload is to be send with the pin/pong message.
     int send_msg_ping(char data[8]);
     int send_msg_pong(char data[8]);
 

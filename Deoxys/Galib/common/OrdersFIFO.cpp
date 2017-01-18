@@ -22,7 +22,7 @@ int OrdersFIFO::push(s_order_com item) {
     if (order_count_ == fifo_size_)
         return 1;
 
-    memmove(&orders_[0], item, sizeof(s_order_com));
+    memmove(&orders_[order_count_], &item, sizeof(s_order_com));
     order_count_ ++;
 
     return 0;
