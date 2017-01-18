@@ -18,7 +18,7 @@ void OrdersFIFO::reset(void) {
     order_count_ = 0;
 }
 
-int OrdersFIFO::push(s_order_com *item) {
+int OrdersFIFO::push(s_order_com item) {
     if (order_count_ == fifo_size_)
         return 1;
 
@@ -58,40 +58,43 @@ uint8_t OrdersFIFO::size(void) {
     return order_count_;
 }
 
-/******************************************************************************/
 
-int OrdersFIFO::ordersAppendAbsPos(int16_t x, int16_t y) {
+/*
+    Order_make*
+*/
+
+s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ABS_POS;
     tmp.order_data.abs_pos.x = x;
     tmp.order_data.abs_pos.y = y;
-    return this->push(&tmp);
+    return tmp;
 }
 
-int OrdersFIFO::ordersAppendAbsAngle(float angle) {
+s_order_com OrderCom_makeAbsAngle(float angle) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ABS_ANGLE;
     tmp.order_data.abs_angle = angle;
-    return this->push(&tmp);
+    return tmp;
 }
 
-int OrdersFIFO::ordersAppendRelDist(int32_t dist) {
+s_order_com OrderCom_makeRelDist(int32_t dist) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_REL_DIST;
     tmp.order_data.rel_dist = dist;
-    return this->push(&tmp);
+    return tmp;
 }
 
-int OrdersFIFO::ordersAppendRelAngle(float angle) {
+s_order_com OrderCom_makeRelAngle(float angle) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_REL_ANGLE;
     tmp.order_data.rel_angle = angle;
-    return this->push(&tmp);
+    return tmp;
 }
 
-int OrdersFIFO::ordersAppendDelay(float delay) {
+s_order_com OrderCom_makeDelay(float delay) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_DELAY;
     tmp.order_data.delay = delay;
-    return this->push(&tmp);
+    return tmp;
 }

@@ -142,11 +142,7 @@ public:
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
 
-    int send_msg_CQB_MC_order_abs_pos(int16_t x, int16_t y);
-    int send_msg_CQB_MC_order_abs_angle(float angle);
-    int send_msg_CQB_MC_order_rel_dist(int32_t dist);
-    int send_msg_CQB_MC_order_rel_angle(float angle);
-    int send_msg_CQB_MC_order_delay(float delay);
+    int send_msg_CQB_MC_order(s_order_com order);
 
 private:
     int send_msg(Message msg);

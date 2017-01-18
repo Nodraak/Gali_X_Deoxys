@@ -70,12 +70,12 @@ public:
     void reset(void);
 
     /*
-        Append an elem.
+        Append a new order to the list of orders to execute.
         Returns
             0 if success
             1 if error (fifo is full)
     */
-    int push(s_order_com *item);
+    int push(s_order_com item);
 
     /*
         Remove the first elem.
@@ -107,23 +107,19 @@ public:
      */
     uint8_t size(void);
 
-    /*
-        Add a new order to the list of orders to execute.
-        0 if success, 1 if error
-    */
-
-    int ordersAppendAbsPos(int16_t x, int16_t y);
-    int ordersAppendAbsAngle(float angle);
-
-    int ordersAppendRelDist(int32_t dist);
-    int ordersAppendRelAngle(float angle);
-
-    int ordersAppendDelay(float delay);
-
 private:
     s_order_com *orders_;
     uint16_t order_count_;
     uint16_t fifo_size_;
 };
+
+
+s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y);
+s_order_com OrderCom_makeAbsAngle(float angle);
+
+s_order_com OrderCom_makeRelDist(int32_t dist);
+s_order_com OrderCom_makeRelAngle(float angle);
+
+s_order_com OrderCom_makeDelay(float delay);
 
 #endif // #ifndef ORDER_H_INCLUDED
