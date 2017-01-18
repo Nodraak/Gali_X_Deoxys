@@ -85,7 +85,7 @@ int main(void)
         */
 
         mc->updatePosition();
-        mc->updateCurOrder(match.read());
+        mc->updateCurOrder(match.read(), messenger);
         mc->computePid();
 
         /*

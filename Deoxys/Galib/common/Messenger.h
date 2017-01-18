@@ -4,6 +4,8 @@
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
+#define CAN_BUS_FREQUENCY (100*1000)  // max (for MCP2551 module) is 1 MHz
+
 class Message {
 
 public:
@@ -25,18 +27,22 @@ public:
         MT_empty,
         MT_ping,
 
+        MT_order,
+
         /*
             From CQBOUGE
         */
-        // info
+
         MT_CQB_pong,
+
+        // MC
         MT_CQB_MC_pos,
-        // debug
         MT_CQB_MC_angle_speed,
         MT_CQB_MC_encs,
         MT_CQB_MC_pids,
         MT_CQB_MC_motors,
-        MT_CQB_MC_order,
+
+        MT_CQB_next_order_request,
 
         /*
             From CQREFLECHI
@@ -58,6 +64,8 @@ public:
     typedef struct {
         char data[8];
     } CP_pong;
+
+    typedef s_order_com CP_order;
 
     /*
         From CQBOUGE
@@ -88,7 +96,10 @@ public:
         float pwm_r;
     } CP_CQB_MC_motors;
 
-    typedef s_order_com CP_CQB_MC_order;
+    typedef struct {
+        uint8_t count;
+        char padding[7];
+    } CP_CQB_next_order_request;
 
     /*
         ** CAN Message **
@@ -100,13 +111,16 @@ public:
         CP_ping ping;
         CP_pong pong;
 
+        CP_order order;
+
         CP_CQB_MC_pos CQB_MC_pos;
 
         CP_CQB_MC_angle_speed CQB_MC_angle_speed;
         CP_CQB_MC_encs CQB_MC_encs;
         CP_CQB_MC_pids CQB_MC_pids;
         CP_CQB_MC_motors CQB_MC_motors;
-        CP_CQB_MC_order CQB_MC_order;
+
+        CP_CQB_next_order_request CQB_next_order_request;
 
     } u_payload;
 
@@ -137,13 +151,15 @@ public:
     int send_msg_ping(char data[8]);
     int send_msg_pong(char data[8]);
 
+    int send_msg_order(s_order_com order);
+
     int send_msg_CQB_MC_pos(float x, float y);
     int send_msg_CQB_MC_angle_speed(float angle, float speed);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
 
-    int send_msg_CQB_MC_order(s_order_com order);
+    int send_msg_CQB_next_order_request(uint8_t count);
 
 private:
     int send_msg(Message msg);

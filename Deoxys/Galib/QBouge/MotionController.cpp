@@ -7,6 +7,7 @@
 #include "QEI.h"
 
 #include "common/utils.h"
+#include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #include "QBouge/Motor.h"
 #include "config.h"
@@ -223,7 +224,7 @@ int mc_updateCurOrder(
 }
 
 
-void MotionController::updateCurOrder(float match_timestamp) {
+void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messenger) {
     float dist = 0, theta = 0;  // units: mm, rad
 
     if (orders_->size() != 0)
@@ -265,6 +266,9 @@ void MotionController::updateCurOrder(float match_timestamp) {
             last_order_timestamp_ = match_timestamp;
         }
     }
+
+    if (ORDERS_COUNT - orders_->size() != 0)
+        messenger->send_msg_CQB_next_order_request(ORDERS_COUNT-orders_->size());
 
     this->pidDistSetGoal(dist);
     this->pidAngleSetGoal(theta);

@@ -59,7 +59,7 @@ public:
         If the current order has been reached, it loads the next one by calling
         updateGoalToNextOrder().
     */
-    void updateCurOrder(float match_timestamp);
+    void updateCurOrder(float match_timestamp, CanMessenger *messenger);
 
     /*
         Compute the PIDs output based on the internal state of the

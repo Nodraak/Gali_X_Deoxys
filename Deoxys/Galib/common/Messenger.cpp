@@ -32,7 +32,7 @@ Message::Message(e_message_type id_, unsigned int len_, u_payload payload_) {
 */
 
 CanMessenger::CanMessenger(void) : can_(CAN_RX, CAN_TX) {
-    can_.frequency(100*1000);
+    can_.frequency(CAN_BUS_FREQUENCY);
 }
 
 int CanMessenger::send_msg(Message msg) {
@@ -87,12 +87,16 @@ int CanMessenger::send_msg_pong(char data[8]) {
     return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
 }
 
+int CanMessenger::send_msg_order(s_order_com order) {
+    return this->send_msg(Message(Message::MT_order, sizeof(order), (Message::u_payload){.order = order}));
+}
+
 int CanMessenger::send_msg_CQB_MC_pos(float x, float y) {
     Message::CP_CQB_MC_pos payload;
     payload.pos.x = x;
     payload.pos.y = y;
 
-    return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(payload), (Message::u_payload){.CQB_MC_pos = payload}));
+    return this->send_msg(Message(Message::MT_CQB_MC_pos, sizeof(payload), (Message::u_payload){.CQB_MC_pos = payload}));
 }
 
 int CanMessenger::send_msg_CQB_MC_angle_speed(float angle, float speed) {
@@ -123,6 +127,10 @@ int CanMessenger::send_msg_CQB_MC_motors(float pwm_l, float pwm_r) {
     return this->send_msg(Message(Message::MT_CQB_MC_motors, sizeof(payload), (Message::u_payload){.CQB_MC_motors = payload}));
 }
 
-int CanMessenger::send_msg_CQB_MC_order(s_order_com order) {
-    return this->send_msg(Message(Message::MT_CQB_MC_order, sizeof(order), (Message::u_payload){.CQB_MC_order = order}));
+int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
+    Message::CP_CQB_next_order_request payload;
+    payload.count = count;
+    return this->send_msg(Message(
+        Message::MT_CQB_next_order_request, sizeof(payload), (Message::u_payload){.CQB_next_order_request = payload}
+    ));
 }

@@ -16,7 +16,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
 #ifdef IAM_QREFLECHI
 
 void com_handle_serial(Debug *debug, CanMessenger *messenger);
-void com_handle_can(Debug *debug, CanMessenger *messenger);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #endif
 

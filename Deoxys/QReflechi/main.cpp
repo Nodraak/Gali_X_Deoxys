@@ -81,26 +81,7 @@ int main(void)
         // update sharp + other sensors
 
         com_handle_serial(debug, messenger);
-        com_handle_can(debug, messenger);
-
-        Message rec_msg;
-        while (messenger->read_msg(&rec_msg))
-        {
-            debug->printf("Message %d %d -", rec_msg.id, rec_msg.len);
-            debug->printf(" %x", rec_msg.payload.raw_data[0]);
-            debug->printf(" %x", rec_msg.payload.raw_data[1]);
-            debug->printf(" %x", rec_msg.payload.raw_data[2]);
-            debug->printf(" %x", rec_msg.payload.raw_data[3]);
-
-            debug->printf(" ");
-
-            debug->printf(" %x", rec_msg.payload.raw_data[4]);
-            debug->printf(" %x", rec_msg.payload.raw_data[5]);
-            debug->printf(" %x", rec_msg.payload.raw_data[6]);
-            debug->printf(" %x", rec_msg.payload.raw_data[7]);
-
-            debug->printf("\n");
-        }
+        com_handle_can(debug, messenger, orders);
 
         /*
             Computations

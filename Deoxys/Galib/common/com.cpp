@@ -48,7 +48,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
             mc->orders_->push(OrderCom_makeRelDist(val));
 #endif
 #ifdef IAM_QREFLECHI
-            messenger->send_msg_CQB_MC_order(OrderCom_makeRelDist(val));
+            messenger->send_msg_order(OrderCom_makeRelDist(val));
 #endif
         }
         else if (strncmp(ptr, "angle", 5) == 0)
@@ -66,7 +66,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
             mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(val)));
 #endif
 #ifdef IAM_QREFLECHI
-            messenger->send_msg_CQB_MC_order(OrderCom_makeRelAngle(DEG2RAD(val)));
+            messenger->send_msg_order(OrderCom_makeRelAngle(DEG2RAD(val)));
 #endif
         }
     }
@@ -78,7 +78,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
 #endif
 #ifdef IAM_QREFLECHI
-void com_handle_can(Debug *debug, CanMessenger *messenger)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 {
     Message rec_msg;
@@ -99,11 +99,20 @@ void com_handle_can(Debug *debug, CanMessenger *messenger)
                 debug->printf("pong (CQR)\n");
                 break;
 
-            case Message::MT_CQB_MC_order:
 #ifdef IAM_QBOUGE
-                mc->orders_->push(rec_msg.payload.CQB_MC_order);
-#endif
+            case Message::MT_order:
+                mc->orders_->push(rec_msg.payload.order);
+                // todo ack if ok, else send error
                 break;
+#endif
+
+#ifdef IAM_QREFLECHI
+            case Message::MT_CQB_next_order_request:
+                messenger->send_msg_order(*orders->front());
+                orders->pop(); // todo wait for ack before poping
+                break;
+#endif
+
             default:
                 // todo other cases
                 debug->printf("Unhandled CAN msg (id=%d)\n", rec_msg.id);
