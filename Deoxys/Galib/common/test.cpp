@@ -1,4 +1,5 @@
 
+#include "common/OrdersFIFO.h"
 #ifdef IAM_QBOUGE
 #include "QBouge/test_mc.h"
 #endif
@@ -42,6 +43,8 @@ void test_sizes(Debug *debug) {
     ft_assert(sizeof(int16_t) == 2);
     ft_assert(sizeof(int32_t) == 4);
     ft_assert(sizeof(int64_t) == 8);
+
+    ft_assert(sizeof(s_order_com) == 8); // todo test_(orders|messenger) ??
 }
 
 #else // #ifndef DISABLE_TESTS

@@ -169,7 +169,7 @@ void test_mc_calcDistThetaOrderPos(Debug *debug) {
 
 void test_mc_updateCurOrder(Debug *debug) {
     s_vector_float cur_pos = {.x=1500, .y=1000};
-    s_order cur_order = {.type=ORDER_TYPE_POS, .pos={.x=1000, .y=1000}, .angle=DEG2RAD(0), .delay=0};
+    s_order_exe cur_order = {.type=ORDER_EXE_TYPE_POS, .pos={.x=1000, .y=1000}, .angle=DEG2RAD(0), .delay=0};
     float cur_angle = DEG2RAD(0), time_since_last_order_finished = 1.000;
     int ret = 0;
     float dist = 0, theta = 0;

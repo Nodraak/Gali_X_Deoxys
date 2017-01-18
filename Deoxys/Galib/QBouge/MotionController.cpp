@@ -323,17 +323,43 @@ void MotionController::debug(Debug *debug) {
         debug->printf("[MC/orders] empty\n");
     else
     {
+        debug->printf(
+            "[MC/orders] (type - pos angle delay) %d - %d %d %.0f %.0f\n",
+            current_order_.type, current_order_.pos.x, current_order_.pos.y, current_order_.angle, current_order_.delay
+        );
+
         for (i = 0; i < orders_->size(); ++i)
         {
-            debug->printf("[MC/orders] %d/%d -> %d %.0f %.0f %.0f %.3f\n",
-                i,
-                orders_->size(),
-                orders_->elem(i)->type,
-                orders_->elem(i)->pos.x,
-                orders_->elem(i)->pos.y,
-                RAD2DEG(orders_->elem(i)->angle),
-                orders_->elem(i)->delay
-            );
+            s_order_com *cur = orders_->elem(i);
+
+            debug->printf("[MC/orders] %d/%d -> ", i, orders_->size());
+
+            switch (cur->type)
+            {
+                case ORDER_COM_TYPE_NONE:
+                    debug->printf("NONE\n");
+                    break;
+
+                case ORDER_COM_TYPE_ABS_POS:
+                    debug->printf("ABS_POS %d %d\n", cur->order_data.abs_pos.x, cur->order_data.abs_pos.y);
+                    break;
+
+                case ORDER_COM_TYPE_ABS_ANGLE:
+                    debug->printf("ABS_ANGLE %.0f\n", cur->order_data.abs_angle);
+                    break;
+
+                case ORDER_COM_TYPE_REL_DIST:
+                    debug->printf("REL_DIST %d\n", cur->order_data.rel_dist);
+                    break;
+
+                case ORDER_COM_TYPE_REL_ANGLE:
+                    debug->printf("REL_ANGLE %0.f\n", cur->order_data.rel_angle);
+                    break;
+
+                case ORDER_COM_TYPE_DELAY:
+                    debug->printf("DELAY %f\n", cur->order_data.delay);
+                    break;
+            }
         }
     }
 }

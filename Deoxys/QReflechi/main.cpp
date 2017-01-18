@@ -11,6 +11,7 @@
 
 #include "common/test.h"
 
+#include "demos.h"
 #include "config.h"
 #include "pinout.h"
 
@@ -36,6 +37,14 @@ int main(void)
     loop.start();
     CanMessenger *messenger = new CanMessenger;
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
+
+    int ret = demo_2(orders);
+    if (ret != 0)
+    {
+        debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
+        while (1)
+            ;
+    }
 
     // init sharp + other sensors
     // init servos + other actuators

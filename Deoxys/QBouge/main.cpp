@@ -17,76 +17,6 @@
 #include "pinout.h"
 
 
-int demo_1(MotionController *mc)
-{
-    #define EX_DIST 1000
-
-    int e = 0;
-
-    e += mc->orders_->push(OrderCom_makeAbsPos(EX_DIST,    0));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeAbsPos(EX_DIST,    EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(180)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeAbsPos(200,        EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(90)));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(0)));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(270)));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(180)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeAbsPos(EX_DIST,    EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(270)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeAbsPos(EX_DIST,    0));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeAbsAngle(DEG2RAD(0)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeAbsPos(0,          0));
-
-    return e;
-}
-
-
-int demo_2(MotionController *mc)
-{
-    #define EX_DIST 1000
-
-    int e = 0;
-
-    e += mc->orders_->push(OrderCom_makeRelDist(EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeRelDist(EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeRelDist(EX_DIST-200));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(-90)));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(-90)));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(-90)));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(-90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeRelDist(-(EX_DIST-200)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeRelDist(EX_DIST));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-            e += mc->orders_->push(OrderCom_makeRelAngle(DEG2RAD(90)));
-                    e += mc->orders_->push(OrderCom_makeDelay(0.500));
-    e += mc->orders_->push(OrderCom_makeRelDist(-EX_DIST));
-
-    return e;
-}
-
-
 int main(void)
 {
     int to_sleep = 0;
@@ -116,15 +46,6 @@ int main(void)
     // init ia ?
 
     // init tirette interrupt -> polling
-
-    int ret = demo_2(mc);
-
-    if (ret != 0)
-    {
-        debug->printf("ERROR MC.ordersAppendAbs() %d\n", ret);
-        while (1)
-            ;
-    }
 
     debug->printf("Initialisation done.\n\n");
 
