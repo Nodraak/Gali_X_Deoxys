@@ -5,6 +5,8 @@
 #include "common/Debug.h"
 #include "common/Messenger.h"
 
+#include "config.h"
+
 #ifdef IAM_QBOUGE
 #include "PID.h"
 #include "QEI.h"
@@ -17,16 +19,23 @@
 void mem_stats(Debug *debug)
 {
     debug->printf("----- sizeof\n");
+
+    debug->printf("Debug            %d\n", sizeof(Debug));
+    debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
+
 #ifdef IAM_QBOUGE
     debug->printf("MotionController %d\n", sizeof(MotionController));
     debug->printf("\tMotor          %d*2=%d\n", sizeof(Motor), sizeof(Motor)*2);
     debug->printf("\tQEI            %d*2=%d\n", sizeof(QEI), sizeof(QEI)*2);
     debug->printf("\tPID            %d*2=%d\n", sizeof(PID), sizeof(PID)*2);
-    debug->printf("\ts_order_exe    %d\n", sizeof(s_order_exe));
+    debug->printf("\ts_order_exe    %d*%d=%d\n", sizeof(s_order_exe), ORDERS_COUNT, sizeof(s_order_exe)*ORDERS_COUNT);
 #endif
-    debug->printf("\ts_order_com    %d\n", sizeof(s_order_com));
-    debug->printf("Debug            %d\n", sizeof(Debug));
-    debug->printf("\tBufferedSerial %d*%d=%d\n", sizeof(BufferedSerial), Debug::DEBUG_LAST, sizeof(BufferedSerial)*Debug::DEBUG_LAST);
+
+#ifdef IAM_QREFLECHI
+    debug->printf("s_order_exe    %d*%d=%d\n", sizeof(s_order_exe), ORDERS_COUNT, sizeof(s_order_exe)*ORDERS_COUNT);
+#endif
+
+    debug->printf("s_order_com    %d\n", sizeof(s_order_com));
     debug->printf("Timer            %d\n", sizeof(Timer));
     debug->printf("CanMessenger     %d\n", sizeof(CanMessenger));
 

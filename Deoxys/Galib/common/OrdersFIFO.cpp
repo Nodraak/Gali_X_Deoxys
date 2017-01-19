@@ -3,6 +3,23 @@
 #include "common/OrdersFIFO.h"
 
 
+const char *e2s_order_com_type[ORDER_COM_TYPE_LAST] = {
+    "NONE",
+    "ABS_POS",
+    "ABS_ANGLE",
+    "REL_DIST",
+    "REL_ANGLE",
+    "DELAY"
+};
+
+const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
+    "NONE",
+    "POS",
+    "ANGLE",
+    "DELAY"
+};
+
+
 OrdersFIFO::OrdersFIFO(uint8_t fifo_size) {
     fifo_size_ = fifo_size;
     orders_ = new s_order_com[fifo_size];

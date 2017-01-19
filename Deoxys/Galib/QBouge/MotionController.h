@@ -91,7 +91,7 @@ public:
         This function is dangerous and has side effects. You should not called
         it unless you know what you are doing.
     */
-    void setMotor(float l, float r, Debug *debug, char *reason);
+    void setMotor(float l, float r);
 
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces

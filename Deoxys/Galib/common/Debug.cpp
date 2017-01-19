@@ -33,6 +33,13 @@ interfaces_str_{
     for (i = 0; i < DEBUG_LAST; ++i)
         interfaces_[i].printf("Hello, world! (%s)\n", interfaces_str_[i]);
 
+#ifdef IAM_QBOUGE
+    this->printf("IAM_QBOUGE\n");
+#endif
+#ifdef IAM_QREFLECHI
+    this->printf("IAM_QREFLECHI\n");
+#endif
+
     this->printf("\n");
 }
 

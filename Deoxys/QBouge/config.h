@@ -2,6 +2,8 @@
 #define CONFIG_H_INCLUDED
 
 #define MAIN_LOOP_FPS       100
+#define SEND_DEBUG_INFO_FPS 2
+
 #define PID_UPDATE_INTERVAL (1.0/MAIN_LOOP_FPS)
 
 #define ORDERS_COUNT        5

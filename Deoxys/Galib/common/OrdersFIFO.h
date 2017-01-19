@@ -19,8 +19,11 @@ typedef enum    _e_order_com_type {
     ORDER_COM_TYPE_ABS_ANGLE,
     ORDER_COM_TYPE_REL_DIST,
     ORDER_COM_TYPE_REL_ANGLE,
-    ORDER_COM_TYPE_DELAY
+    ORDER_COM_TYPE_DELAY,
+    ORDER_COM_TYPE_LAST
 }               e_order_com_type;
+
+extern const char *e2s_order_com_type[ORDER_COM_TYPE_LAST];
 
 typedef struct  _s_order_com {
     uint8_t type;
@@ -45,8 +48,11 @@ typedef enum    _e_order_exe_type {
     ORDER_EXE_TYPE_NONE,
     ORDER_EXE_TYPE_POS,
     ORDER_EXE_TYPE_ANGLE,
-    ORDER_EXE_TYPE_DELAY
+    ORDER_EXE_TYPE_DELAY,
+    ORDER_EXE_TYPE_LAST
 }               e_order_exe_type;
+
+extern const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST];
 
 typedef struct  _s_order_exe {
     e_order_exe_type type;

@@ -7,6 +7,7 @@
 
 #include "test_mc.h"
 
+
 #ifndef DISABLE_TESTS
 
 void test_mc_calcNewPos(Debug *debug) {

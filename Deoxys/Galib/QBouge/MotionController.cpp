@@ -327,55 +327,58 @@ void MotionController::updateMotors(void) {
 void MotionController::debug(Debug *debug) {
     int i = 0;
 
-    debug->printf("[MC/i] %d %d\n", enc_l_val_, enc_r_val_);
-    debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
+    debug->printf("[MC/i] (ticks l r) %d %d \n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/t_pid] (dist angle) %f %f\n", pid_dist_out_, pid_angle_out_);
     debug->printf("[MC/o_mot] (pwm current) %.3f (%.3f A) | %.3f (%.3f A)\n",
         motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
         motor_r_.getSPwm(), motor_r_.current_sense_.read()*4
     );
-    debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %.0f %.0f\n", pos_.x, pos_.y, RAD2DEG(angle_), speed_);
+    debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %d %.0f\n", pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_);
 
     if (orders_->size() == 0)
         debug->printf("[MC/orders] empty\n");
     else
     {
+        debug->printf("[MC/orders] (type - pos angle delay)\n");
         debug->printf(
-            "[MC/orders] (type - pos angle delay) %d - %d %d %.0f %.0f\n",
-            current_order_.type, current_order_.pos.x, current_order_.pos.y, current_order_.angle, current_order_.delay
+            "[MC/orders] current -> %s - %d %d %d %f\n", e2s_order_exe_type[current_order_.type],
+            current_order_.pos.x, current_order_.pos.y, (int)RAD2DEG(current_order_.angle), current_order_.delay
         );
 
         for (i = 0; i < orders_->size(); ++i)
         {
             s_order_com *cur = orders_->elem(i);
 
-            debug->printf("[MC/orders] %d/%d -> ", i, orders_->size());
+            debug->printf("[MC/orders] %d/%d -> %s ", i, orders_->size(), e2s_order_com_type[cur->type]);
 
             switch (cur->type)
             {
                 case ORDER_COM_TYPE_NONE:
-                    debug->printf("NONE\n");
+                    // nothing to do
                     break;
 
                 case ORDER_COM_TYPE_ABS_POS:
-                    debug->printf("ABS_POS %d %d\n", cur->order_data.abs_pos.x, cur->order_data.abs_pos.y);
+                    debug->printf("%d %d", cur->order_data.abs_pos.x, cur->order_data.abs_pos.y);
                     break;
 
                 case ORDER_COM_TYPE_ABS_ANGLE:
-                    debug->printf("ABS_ANGLE %.0f\n", cur->order_data.abs_angle);
+                    debug->printf("%d", (int)RAD2DEG(cur->order_data.abs_angle));
                     break;
 
                 case ORDER_COM_TYPE_REL_DIST:
-                    debug->printf("REL_DIST %d\n", cur->order_data.rel_dist);
+                    debug->printf("%d", cur->order_data.rel_dist);
                     break;
 
                 case ORDER_COM_TYPE_REL_ANGLE:
-                    debug->printf("REL_ANGLE %0.f\n", cur->order_data.rel_angle);
+                    debug->printf("%d", (int)RAD2DEG(cur->order_data.rel_angle));
                     break;
 
                 case ORDER_COM_TYPE_DELAY:
-                    debug->printf("DELAY %f\n", cur->order_data.delay);
+                    debug->printf("%f", cur->order_data.delay);
                     break;
             }
+
+            debug->printf("\n");
         }
     }
 }
@@ -401,7 +404,7 @@ void MotionController::pidAngleSetGoal(float goal) {
     pid_angle_goal_ = goal;
 }
 
-void MotionController::setMotor(float l, float r, Debug *debug, char *reason) {
+void MotionController::setMotor(float l, float r) {
     this->orders_->reset();  // override orders and pid to make sure they don't interfere
 
     motor_l_.setSPwm(l);

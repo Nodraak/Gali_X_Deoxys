@@ -62,11 +62,15 @@ int main(void)
         Go!
     */
 
+    uint8_t debug_frame_counter = 0;
+
     match.reset();
     while (true)
     {
         loop.reset();
-        debug->printf("[timer/match] %.3f\n", match.read());
+        // todo debug level - enable/disable
+        if (debug_frame_counter == 0)
+            debug->printf("[timer/match] %.3f\n", match.read());
 
         /*
             inputs
@@ -96,8 +100,11 @@ int main(void)
         mc->updateMotors();
 
         // debug
-        mc->debug(debug);
-        mc->debug(messenger);
+        if (debug_frame_counter == 0)
+        {
+            mc->debug(debug);
+            mc->debug(messenger);
+        }
 
         // sleep
         to_sleep = 1000/MAIN_LOOP_FPS - loop.read_ms();
@@ -110,6 +117,10 @@ int main(void)
         {
             debug->printf("[timer/loop] Warn: to_sleep == %d < 0\n\n", to_sleep);
         }
+
+        debug_frame_counter ++;
+        if (debug_frame_counter >= (MAIN_LOOP_FPS/SEND_DEBUG_INFO_FPS))
+            debug_frame_counter = 0;
     }
 
     // do some cleanup ?
