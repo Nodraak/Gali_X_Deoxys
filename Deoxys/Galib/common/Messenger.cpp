@@ -36,7 +36,9 @@ CanMessenger::CanMessenger(void) : can_(CAN_RX, CAN_TX) {
 }
 
 int CanMessenger::send_msg(Message msg) {
-    return can_.write(
+    // Can::write               returns 1 if success 0 if error.
+    // CanMessenger.send_msg    returns 0 if success, 1 if error.
+    return !can_.write(
         CANMessage(msg.id, msg.payload.raw_data, msg.len)
     );
 }

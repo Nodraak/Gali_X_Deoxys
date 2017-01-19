@@ -51,17 +51,17 @@
     #define MOTOR_L_PWM     D7  // PF_0
     #define MOTOR_L_DIR     D11 // PB_5
     #define MOTOR_L_CUR     D6  // PB_1
-    #define MOTOR_L_TH      D5 //D8  // PF_1
-    #define MOTOR_L_BRK     D5 //D9  // PA_8
+    #define MOTOR_L_TH      NC
+    #define MOTOR_L_BRK     NC
 
     #define ENC_L_DATA1     D3  // PB_0
     #define ENC_L_DATA2     D12 // PB_4
 
     #define MOTOR_R_PWM     A5  // PA_6
-    #define MOTOR_R_DIR     D5 //D13 // PB_3
+    #define MOTOR_R_DIR     D13 // PB_3
     #define MOTOR_R_CUR     A4  // PA_5
-    #define MOTOR_R_TH      D5 //A3  //
-    #define MOTOR_R_BRK     D5 //A6  //
+    #define MOTOR_R_TH      NC
+    #define MOTOR_R_BRK     NC
 
     #define ENC_R_DATA1     A1  // PA_1
     #define ENC_R_DATA2     A2  // PA_3

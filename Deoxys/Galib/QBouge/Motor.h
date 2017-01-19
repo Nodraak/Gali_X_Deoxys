@@ -65,7 +65,7 @@ public:
         Compute and save the actual speed of the wheel. This value is computed
         from encoder ticks.
     */
-    void updateSpeed(int32_t ticks_since_last_loop);
+    void updateSpeed(float mm_since_last_loop);
 
     /*
         Return the computed speed.

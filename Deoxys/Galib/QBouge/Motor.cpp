@@ -63,8 +63,8 @@ float Motor::getSPwm(void) {
     return this->getDir() ? this->getUPwm() : -this->getUPwm();
 }
 
-void Motor::updateSpeed(int32_t ticks_since_last_loop) {
-    speed_ = TICKS_TO_MM(ticks_since_last_loop) / PID_UPDATE_INTERVAL;
+void Motor::updateSpeed(float mm_since_last_loop) {
+    speed_ = mm_since_last_loop / PID_UPDATE_INTERVAL;
 }
 
 float Motor::getSpeed(void) {

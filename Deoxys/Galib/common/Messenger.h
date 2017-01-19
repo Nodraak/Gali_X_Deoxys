@@ -17,38 +17,47 @@ public:
         The value is used as the priority for the CAN message send: lower means
         higher priority.
 
+        Priorities are sorted in three categories:
+            * high (critical: interrupt or event which must be reacted to the fastest)
+            * medium (info that can be resend later)
+            * low (debug infos that can be ignored without risk)
+
         Naming convention: example with MT_CQB_MC_pos
             MT: message type
             CQB: carte qui bouge
             MC: class (motion controller)
             pos: info (most likely attribute of the class)
+
     */
+    // todo priorities
     typedef enum    _e_message_type {
-        MT_empty,
-        MT_ping,
-
-        MT_order,
-
         /*
-            From CQBOUGE
+            High
         */
 
-        MT_CQB_pong,
 
-        // MC
+        /*
+            Medium
+        */
+
+        MT_ping,
+        MT_CQB_pong,
+        MT_CQR_pong,
+
+        MT_order,
+        MT_CQB_next_order_request,
+
+        /*
+            Low
+        */
+
         MT_CQB_MC_pos,
         MT_CQB_MC_angle_speed,
         MT_CQB_MC_encs,
         MT_CQB_MC_pids,
         MT_CQB_MC_motors,
 
-        MT_CQB_next_order_request,
-
-        /*
-            From CQREFLECHI
-        */
-        // info
-        MT_CQR_pong,
+        MT_empty,
     }               e_message_type;
 
     /*
@@ -162,6 +171,11 @@ public:
     int send_msg_CQB_next_order_request(uint8_t count);
 
 private:
+    /*
+        Returns:
+            0 Success
+            1 Error
+    */
     int send_msg(Message msg);
 
 private:

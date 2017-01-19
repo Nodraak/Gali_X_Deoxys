@@ -39,10 +39,13 @@ MotionController::MotionController(void) :
     this->pidAngleSetGoal(0);  // pid's error
 
     orders_ = new OrdersFIFO(ORDERS_COUNT);
+    memset(&current_order_, 0, sizeof(s_order_exe));
     current_order_.type = ORDER_EXE_TYPE_NONE;
 
     pos_.x = 0;
     pos_.y = 0;
+    angle_ = 0;
+    speed_ = 0;
 
     enc_l_val_ = 0;
     enc_r_val_ = 0;
@@ -143,7 +146,8 @@ void MotionController::updatePosition(void) {
 
     motor_l_.updateSpeed(diff_l);
     motor_r_.updateSpeed(diff_r);
-    speed_ = TICKS_TO_MM(diff_l + diff_r) / 2 / PID_UPDATE_INTERVAL;
+
+    speed_ = (motor_l_.getSpeed() + motor_r_.getSpeed()) / 2.0;
 }
 
 
@@ -227,10 +231,17 @@ int mc_updateCurOrder(
 void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messenger) {
     float dist = 0, theta = 0;  // units: mm, rad
 
-    if (orders_->size() != 0)
+    // if we dont have an order executing OR if we have achieved the current order
+    if (
+        (current_order_.type == ORDER_EXE_TYPE_NONE)
+        || mc_updateCurOrder(pos_, angle_, &current_order_, match_timestamp-last_order_timestamp_, &dist, &theta)
+    )
     {
-        if (mc_updateCurOrder(pos_, angle_, &current_order_, match_timestamp-last_order_timestamp_, &dist, &theta))
+        // if we have orders available in the queue
+        if (orders_->size() != 0)
         {
+            // then, consume the next order
+
             s_order_com *next = this->orders_->front();
 
             switch (next->type)
@@ -267,6 +278,7 @@ void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messe
         }
     }
 
+    // if room for storing another order is available, request the next one
     if (ORDERS_COUNT - orders_->size() != 0)
         messenger->send_msg_CQB_next_order_request(ORDERS_COUNT-orders_->size());
 
