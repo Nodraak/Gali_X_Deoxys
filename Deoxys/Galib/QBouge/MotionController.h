@@ -30,10 +30,20 @@
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
 // default pid tunning
+
 #define PID_DIST_KU 1.7
 #define PID_DIST_TU 0.7
-#define PID_ANGLE_KU 6.0
-#define PID_ANGLE_TU 0.2
+
+#define PID_ANGLE_KU 3.0
+#define PID_ANGLE_TU 0.1
+
+#define PID_DIST_P (0.3*PID_DIST_KU)  // 0.50
+#define PID_DIST_I (PID_DIST_TU/2.0)  // 0.35
+#define PID_DIST_D (PID_DIST_TU/8.0)  // 0.09
+
+#define PID_ANGLE_P (0.3*PID_ANGLE_KU)  // 0.90
+#define PID_ANGLE_I (PID_ANGLE_TU/2.0)  // 0.05
+#define PID_ANGLE_D (PID_ANGLE_TU/8.0)  // 0.01
 
 
 class MotionController {
@@ -92,6 +102,11 @@ public:
         it unless you know what you are doing.
     */
     void setMotor(float l, float r);
+
+    /*
+        Reset the OrdersFIFO orders_ and the s_order_exe current_order_.
+    */
+    void ordersReset(void);
 
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces

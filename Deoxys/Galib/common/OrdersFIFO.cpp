@@ -23,7 +23,7 @@ const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
 OrdersFIFO::OrdersFIFO(uint8_t fifo_size) {
     fifo_size_ = fifo_size;
     orders_ = new s_order_com[fifo_size];
-    order_count_ = 0;
+    this->reset();
 }
 
 OrdersFIFO::~OrdersFIFO(void) {
@@ -31,7 +31,7 @@ OrdersFIFO::~OrdersFIFO(void) {
 }
 
 void OrdersFIFO::reset(void) {
-    memset(orders_, 0, sizeof(s_order_com)*order_count_);
+    memset(orders_, 0, sizeof(s_order_com)*fifo_size_);
     order_count_ = 0;
 }
 

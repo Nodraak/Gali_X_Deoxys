@@ -21,8 +21,8 @@ MotionController::MotionController(void) :
     motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CUR, MOTOR_R_TH, MOTOR_R_BRK),
     enc_l_(ENC_L_DATA1, ENC_L_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
     enc_r_(ENC_R_DATA1, ENC_R_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
-    pid_dist_(0.3*PID_DIST_KU, PID_DIST_TU/2, PID_DIST_TU/8, PID_UPDATE_INTERVAL),
-    pid_angle_(0.3*PID_ANGLE_KU, PID_ANGLE_TU/2, PID_ANGLE_TU/8, PID_UPDATE_INTERVAL)
+    pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, PID_UPDATE_INTERVAL),
+    pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, PID_UPDATE_INTERVAL)
 {
     pid_dist_.setInputLimits(-5*1000, 5*1000);  // encoders value
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
@@ -237,8 +237,12 @@ void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messe
         || mc_updateCurOrder(pos_, angle_, &current_order_, match_timestamp-last_order_timestamp_, &dist, &theta)
     )
     {
+        if (orders_->size() == 0)
+        {
+            current_order_.type = ORDER_EXE_TYPE_NONE;
+        }
         // if we have orders available in the queue
-        if (orders_->size() != 0)
+        else
         {
             // then, consume the next order
 
@@ -335,16 +339,25 @@ void MotionController::debug(Debug *debug) {
     );
     debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %d %.0f\n", pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_);
 
-    if (orders_->size() == 0)
-        debug->printf("[MC/orders] empty\n");
+    if ((current_order_.type != ORDER_EXE_TYPE_NONE) || orders_->size())
+        debug->printf("[MC/orders] (type - pos angle delay)\n");
+
+    if (current_order_.type == ORDER_EXE_TYPE_NONE)
+    {
+        debug->printf("[MC/orders] current -> none\n");
+    }
     else
     {
-        debug->printf("[MC/orders] (type - pos angle delay)\n");
         debug->printf(
             "[MC/orders] current -> %s - %d %d %d %f\n", e2s_order_exe_type[current_order_.type],
             current_order_.pos.x, current_order_.pos.y, (int)RAD2DEG(current_order_.angle), current_order_.delay
         );
+    }
 
+    if (orders_->size() == 0)
+        debug->printf("[MC/orders] empty\n");
+    else
+    {
         for (i = 0; i < orders_->size(); ++i)
         {
             s_order_com *cur = orders_->elem(i);
@@ -409,6 +422,13 @@ void MotionController::setMotor(float l, float r) {
 
     motor_l_.setSPwm(l);
     motor_r_.setSPwm(r);
+}
+
+void MotionController::ordersReset(void) {
+    memset(&current_order_, 0, sizeof(s_order_exe));
+    current_order_.type = ORDER_EXE_TYPE_NONE;
+
+    orders_->reset();
 }
 
 #endif // #ifdef IAM_QBOUGE
