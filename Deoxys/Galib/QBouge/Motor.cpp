@@ -26,11 +26,23 @@ void Motor::setDir(bool dir) {
 }
 
 void Motor::setUPwm(float uPwm) {
-    if (uPwm < PWM_ERROR_TOLERANCE)
-        pwm_ = 0;
+    pwm_ = uPwm;
+}
+
+float motor_cap_pwm(float requested, float current) {
+    if (ABS(requested) < PWM_ERROR_TOLERANCE)
+        return 0;
     else
     {
-        float val = map(uPwm, 0, 1, PWM_MIN, 1);
+        bool reversed_dir = requested < 0;
+
+        if (reversed_dir)
+        {
+            requested = -requested;
+            current = -current;
+        }
+
+        float val = map(requested, 0, 1, PWM_MIN, 1);
 
         // cap based on absolute max (define). That way, changing PWM_MAX does not change the PIDs settings.
         if (val > PWM_MAX)
@@ -38,15 +50,17 @@ void Motor::setUPwm(float uPwm) {
 
         // cap based on current speed of the wheel
         // todo: improve this (by reading speed_ for ex)
-        float max_pwm = this->getUPwm() + 0.5;
+        float max_pwm = current + PWM_STEP;
         if (val > max_pwm)
             val = max_pwm;
 
-        pwm_ = val;
+        return reversed_dir ? -val : val;
     }
 }
 
 void Motor::setSPwm(float sPwm) {
+    sPwm = motor_cap_pwm(sPwm, this->getSPwm());
+
     this->setUPwm(ABS(sPwm));
     this->setDir(sPwm >= 0);
 }
