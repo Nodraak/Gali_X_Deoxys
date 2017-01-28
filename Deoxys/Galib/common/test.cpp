@@ -2,6 +2,7 @@
 #include "common/OrdersFIFO.h"
 #ifdef IAM_QBOUGE
 #include "QBouge/test_mc.h"
+#include "QBouge/test_motor.h"
 #endif
 #include "test.h"
 
@@ -16,6 +17,7 @@ void test_run_all(Debug *debug)
     test_mc_calcNewPos(debug);
     test_mc_calcDistThetaOrderPos(debug);
     test_mc_updateCurOrder(debug);
+    test_motor_cap_pwm(debug);
 #endif
     debug->printf("[Tests] Done.\n");
 

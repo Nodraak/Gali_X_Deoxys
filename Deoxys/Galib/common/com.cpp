@@ -35,19 +35,26 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
         if (messenger->send_msg_ping(NULL))
             debug->printf("[CAN] send_msg_ping() failed\n");
     }
+#ifdef IAM_QBOUGE
     else if (strcmp(ptr, "debug") == 0)
     {
         mc->debug(debug);
     }
+    // todo else, send can DEBUG msg
+#endif
     else if (strncmp(ptr, "order", 5) == 0)
     {
         ptr = &buffer[5+1];
 
+#ifdef IAM_QBOUGE
         if (strncmp(ptr, "reset", 5) == 0)
         {
             mc->ordersReset();
         }
-        else if (strncmp(ptr, "pos", 3) == 0)
+        else
+        // todo else, send can RESET msg
+#endif
+        if (strncmp(ptr, "pos", 3) == 0)
         {
             ptr = &ptr[3+1];
             int x = atoi(ptr);
@@ -100,6 +107,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #endif
         }
     }
+#ifdef IAM_QBOUGE
     else if (strncmp(ptr, "pid", 3) == 0)
     {
         ptr = &ptr[3+1];
@@ -177,6 +185,8 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
         debug->printf("[PID] dist  %.2f %.2f %.2f\n", s_dist_p, s_dist_i, s_dist_d);
         debug->printf("[PID] angle %.2f %.2f %.2f\n", s_angle_p, s_angle_i, s_angle_d);
     }
+    // todo send can msg
+#endif
     else
         debug->printf("[UART] Please say again (\"%s\" is not a valid command)\n", buffer);
 }

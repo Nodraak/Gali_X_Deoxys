@@ -176,7 +176,8 @@ void test_mc_updateCurOrder(Debug *debug) {
     float dist = 0, theta = 0;
 
     ret = mc_updateCurOrder(
-        cur_pos, cur_angle, &cur_order, time_since_last_order_finished,
+        cur_pos, cur_angle, 0, 0,
+        &cur_order, time_since_last_order_finished,
         &dist, &theta
     );
     ft_assert(ret == 0);

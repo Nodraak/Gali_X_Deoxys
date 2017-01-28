@@ -245,9 +245,7 @@ void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messe
     );
 
     // if we dont have an order executing OR if we have achieved the current order
-    if (
-        && ((current_order_.type == ORDER_EXE_TYPE_NONE) || have_reached_cur_order)
-    )
+    if ((current_order_.type == ORDER_EXE_TYPE_NONE) || have_reached_cur_order)
     {
         if (orders_->size() == 0)
         {
