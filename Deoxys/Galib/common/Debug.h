@@ -16,7 +16,6 @@ public:
     typedef enum _Interface {
         DEBUG_PC,
         DEBUG_XBEE,
-        DEBUG_SCREEN,
         DEBUG_LAST,
         DEBUG_ALL
     } Interface;

@@ -12,12 +12,10 @@ Debug::Debug(void) :
 interfaces_{
     BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE),
     BufferedSerial(XBEE_TX, XBEE_RX, INTERFACE_BUFFER_SIZE),
-    BufferedSerial(SCREEN_TX, SCREEN_RX, INTERFACE_BUFFER_SIZE)
 },
 interfaces_str_{
     "pc",
     "xbee",
-    "screen"
 }
 {
     int i = 0;

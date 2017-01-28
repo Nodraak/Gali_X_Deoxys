@@ -64,4 +64,10 @@ void mem_stats(Debug *debug)
     debug->printf("Stack used %d of %d bytes\n", max_stack, stack_size);
 
     debug->printf("-----\n");
+
+    debug->printf("[Default settings]\n");
+    debug->printf("\t[PID] dist  %.2f %.2f %.2f\n", PID_DIST_P, PID_DIST_I, PID_DIST_D);
+    debug->printf("\t[PID] angle %.2f %.2f %.2f\n", PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D);
+
+    debug->printf("-----\n");
 }
