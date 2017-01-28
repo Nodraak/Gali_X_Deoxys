@@ -38,7 +38,7 @@ int main(void)
     CanMessenger *messenger = new CanMessenger;
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
-    int ret = demo_2(orders);
+    int ret = demo_jpo(orders);
     if (ret != 0)
     {
         debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
