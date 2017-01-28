@@ -29,21 +29,26 @@
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
+#define MC_TARGET_TOLERANCE_DIST        30.0
+#define MC_TARGET_TOLERANCE_SPEED       (MC_TARGET_TOLERANCE_DIST*PID_UPDATE_INTERVAL)
+#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10)
+#define MC_TARGET_TOLERANCE_ANG_SPEED   (MC_TARGET_TOLERANCE_ANGLE*PID_UPDATE_INTERVAL)
+
 // default pid tunning
 
-#define PID_DIST_KU 1.7
-#define PID_DIST_TU 0.7
+#define PID_DIST_KU         1.7
+#define PID_DIST_TU         0.7
 
-#define PID_ANGLE_KU 3.0
-#define PID_ANGLE_TU 0.1
+#define PID_ANGLE_KU        3.0
+#define PID_ANGLE_TU        0.1
 
-#define PID_DIST_P (0.3*PID_DIST_KU)  // 0.50
-#define PID_DIST_I (PID_DIST_TU/2.0)  // 0.35
-#define PID_DIST_D (PID_DIST_TU/8.0)  // 0.09
+#define PID_DIST_P          4
+#define PID_DIST_I          0
+#define PID_DIST_D          0
 
-#define PID_ANGLE_P (0.3*PID_ANGLE_KU)  // 0.90
-#define PID_ANGLE_I (PID_ANGLE_TU/2.0)  // 0.05
-#define PID_ANGLE_D (PID_ANGLE_TU/8.0)  // 0.01
+#define PID_ANGLE_P         3
+#define PID_ANGLE_I         0
+#define PID_ANGLE_D         0
 
 
 class MotionController {
@@ -111,7 +116,9 @@ public:
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
     QEI enc_l_, enc_r_;  // io interfaces
+public:  // todo fix this security issue
     PID pid_dist_, pid_angle_;
+private:
 
     int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
     float last_order_timestamp_;  // s from match start
@@ -126,6 +133,7 @@ public:
     s_vector_float pos_;  // unit: mm
     float angle_;  // unit: radians
     float speed_;  // unit: mm/sec
+    float speed_ang_;  // unit: rad/sec
 
     // planned orders
     OrdersFIFO *orders_;
@@ -142,7 +150,8 @@ int mc_calcNewPos(
 void mc_calcDistThetaOrderPos(float *dist_, float *theta_);
 
 int mc_updateCurOrder(
-    s_vector_float cur_pos,  float cur_angle, s_order_exe *cur_order, float time_since_last_order_finished,
+    s_vector_float cur_pos,  float cur_angle, float cur_speed, float cur_speed_ang,
+    s_order_exe *cur_order, float time_since_last_order_finished,
     float *dist_, float *theta_
 );
 

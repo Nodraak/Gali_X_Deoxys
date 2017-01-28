@@ -5,10 +5,10 @@
 
 #include "mbed.h"
 
-#define PWM_MIN 0.08  // pwm value at which the robot start moving
-#define PWM_MAX 1.00  // should be 1.00 during matchs
-#define PWM_STEP                1.0                             // from 0% to 100% over a 1.000 sec timespan
-#define PWM_ERROR_TOLERANCE     0.01
+#define PWM_MIN                 0.08                            // pwm value at which the robot start moving
+#define PWM_MAX                 1.00                            // should be 1.00 during matchs
+#define PWM_STEP                (2.0*PID_UPDATE_INTERVAL)       // pwm goes from 0 to X over a 1 sec timespan
+#define PWM_ERROR_TOLERANCE     0.01                            // value under which a pwm value is considered zero
 
 #define MOTOR_DIR_LEFT_FORWARD 0
 #define MOTOR_DIR_LEFT_BACKWARD 1

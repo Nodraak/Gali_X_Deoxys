@@ -24,14 +24,14 @@ MotionController::MotionController(void) :
     pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, PID_UPDATE_INTERVAL),
     pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, PID_UPDATE_INTERVAL)
 {
-    pid_dist_.setInputLimits(-5*1000, 5*1000);  // encoders value
+    pid_dist_.setInputLimits(-5*1000, 5*1000);  // dist (mm)
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
     pid_dist_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_dist_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
     pid_dist_.setSetPoint(0);
     this->pidDistSetGoal(0);  // pid's error
 
-    pid_angle_.setInputLimits(-M_PI, M_PI);  // angle. 0 toward, -pi on right, +pi on left
+    pid_angle_.setInputLimits(-M_PI, M_PI);  // angle (rad). 0 toward, -pi on right, +pi on left
     pid_angle_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm). -1 right, +1 left, 0 nothing
     pid_angle_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_angle_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
@@ -46,6 +46,7 @@ MotionController::MotionController(void) :
     pos_.y = 0;
     angle_ = 0;
     speed_ = 0;
+    speed_ang_ = 0;
 
     enc_l_val_ = 0;
     enc_r_val_ = 0;
@@ -134,9 +135,17 @@ int mc_calcNewPos(
 
 void MotionController::updatePosition(void) {
     float diff_l = 0, diff_r = 0;  // unit: mm
+    float last_angle = 0;
 
     diff_l = TICKS_TO_MM(enc_l_val_-enc_l_last_);
     diff_r = TICKS_TO_MM(enc_r_val_-enc_r_last_);
+
+    motor_l_.updateSpeed(diff_l);
+    motor_r_.updateSpeed(diff_r);
+
+    speed_ = (motor_l_.getSpeed() + motor_r_.getSpeed()) / 2.0;
+
+    last_angle = angle_;
 
     mc_calcNewPos(
         diff_l, diff_r,
@@ -144,10 +153,7 @@ void MotionController::updatePosition(void) {
         &angle_, &pos_.x, &pos_.y
     );
 
-    motor_l_.updateSpeed(diff_l);
-    motor_r_.updateSpeed(diff_r);
-
-    speed_ = (motor_l_.getSpeed() + motor_r_.getSpeed()) / 2.0;
+    speed_ang_ = (angle_ - last_angle) / PID_UPDATE_INTERVAL;
 }
 
 
@@ -169,7 +175,8 @@ void mc_calcDistThetaOrderPos(float *dist_, float *theta_) {
 
 
 int mc_updateCurOrder(
-    s_vector_float cur_pos,  float cur_angle, s_order_exe *cur_order, float time_since_last_order_finished,
+    s_vector_float cur_pos,  float cur_angle, float cur_speed, float cur_speed_ang,
+    s_order_exe *cur_order, float time_since_last_order_finished,
     float *dist_, float *theta_
 ) {
     float dx = 0, dy = 0;
@@ -183,6 +190,11 @@ int mc_updateCurOrder(
 
     switch (cur_order->type)
     {
+        case ORDER_EXE_TYPE_NONE:
+            dist = 0;
+            theta = 0;
+            break;
+
         case ORDER_EXE_TYPE_POS:
             dx = cur_order->pos.x - cur_pos.x;
             dy = cur_order->pos.y - cur_pos.y;
@@ -191,7 +203,7 @@ int mc_updateCurOrder(
             theta = std_rad_angle(atan2(dy, dx) - cur_angle);
             mc_calcDistThetaOrderPos(&dist, &theta);
 
-            if (ABS(dist) < 30)
+            if ((ABS(dist) < MC_TARGET_TOLERANCE_DIST) && (ABS(cur_speed) < MC_TARGET_TOLERANCE_SPEED))
                 ret = 1;
 
             break;
@@ -200,7 +212,7 @@ int mc_updateCurOrder(
             dist = 0;
             theta = std_rad_angle(cur_order->angle - cur_angle);
 
-            if (ABS(theta) < DEG2RAD(10))
+            if ((ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (cur_speed_ang < MC_TARGET_TOLERANCE_ANG_SPEED))
                 ret = 1;
 
             break;
@@ -213,12 +225,6 @@ int mc_updateCurOrder(
                 ret = 1;
 
             break;
-
-        case ORDER_EXE_TYPE_NONE:
-            // todo
-            dist = 0;
-            theta = 0;
-            break;
     }
 
     *dist_ = dist;
@@ -230,11 +236,17 @@ int mc_updateCurOrder(
 
 void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messenger) {
     float dist = 0, theta = 0;  // units: mm, rad
+    bool have_reached_cur_order = 0;
+
+    have_reached_cur_order = mc_updateCurOrder(
+        pos_, angle_, speed_, speed_ang_,
+        &current_order_, match_timestamp-last_order_timestamp_,
+        &dist, &theta
+    );
 
     // if we dont have an order executing OR if we have achieved the current order
     if (
-        (current_order_.type == ORDER_EXE_TYPE_NONE)
-        || mc_updateCurOrder(pos_, angle_, &current_order_, match_timestamp-last_order_timestamp_, &dist, &theta)
+        && ((current_order_.type == ORDER_EXE_TYPE_NONE) || have_reached_cur_order)
     )
     {
         if (orders_->size() == 0)
@@ -303,12 +315,7 @@ void MotionController::computePid(void) {
 void MotionController::updateMotors(void) {
     float mot_l_val = 0, mot_r_val = 0, m = 0;
 
-    if (orders_->size() == 0)
-    {
-        mot_l_val = 0;
-        mot_r_val = 0;
-    }
-    else
+    if (current_order_.type != ORDER_EXE_TYPE_NONE)
     {
         mot_l_val = pid_dist_out_ - pid_angle_out_;
         mot_r_val = pid_dist_out_ + pid_angle_out_;
@@ -333,11 +340,14 @@ void MotionController::debug(Debug *debug) {
 
     debug->printf("[MC/i] (ticks l r) %d %d \n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %f %f\n", pid_dist_out_, pid_angle_out_);
-    debug->printf("[MC/o_mot] (pwm current) %.3f (%.3f A) | %.3f (%.3f A)\n",
+    debug->printf("[MC/o_mot] (pwm current) %.3f %.3f %.3f %.3f\n",
         motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
         motor_r_.getSPwm(), motor_r_.current_sense_.read()*4
     );
-    debug->printf("[MC/o_robot] (pos angle speed) %.0f %.0f %d %.0f\n", pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_);
+    debug->printf(
+        "[MC/o_robot] (pos angle speed ang_speed) %.0f %.0f %d %.0f %d\n",
+        pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_, (int)RAD2DEG(speed_ang_)
+    );
 
     if ((current_order_.type != ORDER_EXE_TYPE_NONE) || orders_->size())
         debug->printf("[MC/orders] (type - pos angle delay)\n");
