@@ -31,9 +31,9 @@ re:
 	echo " Yeah! \o/"
 
 upload:
-	st-flash --reset write .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin 0x8000000
+	# st-flash --reset write .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin 0x8000000
 	# cf. https://github.com/texane/stlink
-	# cp .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin /media/nodraak/NODE_$(BOARD)/
+	cp .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin /media/nodraak/NODE_$(BOARD)/
 
 debug_openocd:
 	# openocd -f board/st_nucleo_f401re.cfg -c "gdb_memory_map enable" -c "gdb_flash_program enable"

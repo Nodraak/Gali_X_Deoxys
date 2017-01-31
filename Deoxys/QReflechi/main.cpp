@@ -56,8 +56,6 @@ int main(void)
 
     // init ia ?
 
-    // init tirette interrupt -> polling
-
     mem_stats_dynamic(debug);
 
     debug->printf("Initialisation done.\n\n");
@@ -66,6 +64,7 @@ int main(void)
         Ready, wait for tirette
     */
 
+    // todo wait for other boards -> ping msg over can -> or wait to be in while to find out | + setup isr to ping ?
     // todo wait for tirette
 
     /*
@@ -73,12 +72,12 @@ int main(void)
     */
 
     match->reset();
-    while (true)
+    while (true)  // todo match.read() < 90
     {
         loop->reset();
         // debug->printf("[timer/match] %.3f\n", match.read());
 
-        // todo if match.read() > 90 then XXX -> in the while ?
+        // todo ping/pong each board -> if no response since XX, then do something
 
         // update sharp + other sensors
 
@@ -87,6 +86,9 @@ int main(void)
 
         main_sleep(debug, loop);
     }
+
+    // todo stop motors over can
+    // todo funny action
 
     /*
         Cleanup
