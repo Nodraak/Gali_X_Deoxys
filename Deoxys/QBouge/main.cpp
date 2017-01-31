@@ -18,97 +18,107 @@
 #include "pinout.h"
 
 
+MotionController *mc = NULL;
+CanMessenger *messenger = NULL;
+
+void asserv_main(void);
+
+
 int main(void)
 {
-    Debug *debug = new Debug;
+    Debug *debug = NULL;
+    Timer *loop = NULL;
+    Ticker *asserv_ticker = NULL;
+
+    /*
+        Initializing
+    */
+
+    debug = new Debug;
+
+    debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
 
-    /*
-        Initializing
-    */
+    messenger = new CanMessenger;
+    loop = new Timer;
+    loop->start();
 
-    debug->printf("Initializing\n");
-
-    MotionController *mc = new MotionController;
-    Timer match, loop;  // todo dynamic alloc ?
-    match.start();
-    loop.start();
-    CanMessenger *messenger = new CanMessenger;
-
-    // init sharp + other sensors
-    // init servos + other actuators
-
-
-    // init ia ?
-
-    // init tirette interrupt -> polling
-
-    debug->printf("Initialisation done.\n\n");
+    mc = new MotionController;
+    asserv_ticker = new Ticker;
+    asserv_ticker->attach(asserv_main, ASSERV_DELAY);
 
     mem_stats_dynamic(debug);
 
-    /*
-        Ready, wait for tirette
-    */
+    debug->printf("Initialisation done.\n\n");
 
-    // todo wait for tirette
+    // todo wait for tirette (can msg)
 
     /*
         Go!
     */
 
-    uint8_t debug_frame_counter = 0;
-
-    match.reset();
     while (true)
     {
-        loop.reset();
-        // todo debug level - enable/disable
-        if (debug_frame_counter == 0)
-            debug->printf("[timer/match] %.3f\n", match.read());
-
-        /*
-            inputs
-        */
-
-        // update qei
-        mc->fetchEncodersValue();
-
-        // update sharp + other sensors
+        loop->reset();
 
         com_handle_serial(debug, messenger, mc);
         com_handle_can(debug, messenger, mc);
 
-        /*
-            Computations
-        */
+        mc->debug(debug);
 
-        mc->updatePosition();
-        mc->updateCurOrder(match.read(), messenger);
-        mc->computePid();
-
-        /*
-            outputs
-        */
-
-        // move
-        mc->updateMotors();
-
-        // debug
-        if (debug_frame_counter == 0)
-        {
-            mc->debug(debug);
-            mc->debug(messenger);
-        }
-
-        main_sleep(debug, &loop);
+        main_sleep(debug, loop);
     }
 
-    // do some cleanup ?
+    /*
+        Cleanup
+    */
+
+    debug->printf("Cleaning...\n");
+    Thread::wait(100);
+
+    asserv_ticker->detach();
+    delete asserv_ticker;
+    delete loop;
+    delete messenger;
+    delete mc;
+    delete debug;
 
     return 0;
+}
+
+
+void asserv_main(void)
+{
+    Timer timer;
+
+    timer.start();
+
+    // Input
+
+    mc->fetchEncodersValue();
+
+    // Compute
+
+    mc->updatePosition();
+    mc->updateCurOrder();
+    // if room for storing another order is available, request the next one
+    if (ORDERS_COUNT - mc->orders_->size() > 0)
+        messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
+    mc->computePid();
+
+    // Iutput
+
+    mc->updateMotors();
+
+    // Timer stuff
+
+    timer.stop();
+    if (timer.read() > ASSERV_DELAY)
+    {
+        // todo: we are in the shit :/
+    }
 }

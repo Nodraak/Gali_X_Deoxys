@@ -38,9 +38,17 @@ MotionController::MotionController(void) :
     pid_angle_.setSetPoint(0);
     this->pidAngleSetGoal(0);  // pid's error
 
-    orders_ = new OrdersFIFO(ORDERS_COUNT);
-    memset(&current_order_, 0, sizeof(s_order_exe));
-    current_order_.type = ORDER_EXE_TYPE_NONE;
+    timer_.start();
+    enc_l_last_ = 0;
+    enc_r_last_ = 0;
+    last_order_timestamp_ = 0;
+
+    enc_l_val_ = 0;
+    enc_r_val_ = 0;
+    pid_dist_goal_ = 0;
+    pid_angle_goal_ = 0;
+    pid_dist_out_ = 0;
+    pid_angle_out_ = 0;
 
     pos_.x = 0;
     pos_.y = 0;
@@ -48,11 +56,9 @@ MotionController::MotionController(void) :
     speed_ = 0;
     speed_ang_ = 0;
 
-    enc_l_val_ = 0;
-    enc_r_val_ = 0;
-
-    enc_l_last_ = 0;
-    enc_r_last_ = 0;
+    orders_ = new OrdersFIFO(ORDERS_COUNT);
+    memset(&current_order_, 0, sizeof(s_order_exe));
+    current_order_.type = ORDER_EXE_TYPE_NONE;
 }
 
 
@@ -234,9 +240,10 @@ int mc_updateCurOrder(
 }
 
 
-void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messenger) {
+void MotionController::updateCurOrder(void) {
     float dist = 0, theta = 0;  // units: mm, rad
     bool have_reached_cur_order = 0;
+    float match_timestamp = timer_.read();
 
     have_reached_cur_order = mc_updateCurOrder(
         pos_, angle_, speed_, speed_ang_,
@@ -291,10 +298,6 @@ void MotionController::updateCurOrder(float match_timestamp, CanMessenger *messe
             last_order_timestamp_ = match_timestamp;
         }
     }
-
-    // if room for storing another order is available, request the next one
-    if (ORDERS_COUNT - orders_->size() != 0)
-        messenger->send_msg_CQB_next_order_request(ORDERS_COUNT-orders_->size());
 
     this->pidDistSetGoal(dist);
     this->pidAngleSetGoal(theta);

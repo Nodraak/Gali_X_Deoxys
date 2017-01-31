@@ -74,7 +74,7 @@ public:
         If the current order has been reached, it loads the next one by calling
         updateGoalToNextOrder().
     */
-    void updateCurOrder(float match_timestamp, CanMessenger *messenger);
+    void updateCurOrder(void);
 
     /*
         Compute the PIDs output based on the internal state of the
@@ -120,6 +120,7 @@ public:  // todo fix this security issue
     PID pid_dist_, pid_angle_;
 private:
 
+    Timer timer_;
     int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
     float last_order_timestamp_;  // s from match start
 

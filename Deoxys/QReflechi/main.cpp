@@ -19,24 +19,29 @@
 
 int main(void)
 {
-    Debug *debug = new Debug;
+    Debug *debug = NULL;
+    Timer *loop = NULL, *match = NULL;
+
+    /*
+        Initializing
+    */
+
+    debug = new Debug;
+
+    debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
 
-    /*
-        Initializing
-    */
-
-    debug->printf("Initializing\n");
-
-    Timer match, loop;  // todo dynamic alloc ?
-    match.start();
-    loop.start();
     CanMessenger *messenger = new CanMessenger;
+    loop = new Timer;
+    loop->start();
+
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
+    match = new Timer;
+    match->start();
 
     int ret = demo_jpo(orders);
     if (ret != 0)
@@ -49,14 +54,13 @@ int main(void)
     // init sharp + other sensors
     // init servos + other actuators
 
-
     // init ia ?
 
     // init tirette interrupt -> polling
 
-    debug->printf("Initialisation done.\n\n");
-
     mem_stats_dynamic(debug);
+
+    debug->printf("Initialisation done.\n\n");
 
     /*
         Ready, wait for tirette
@@ -68,36 +72,34 @@ int main(void)
         Go!
     */
 
-    match.reset();
+    match->reset();
     while (true)
     {
-        loop.reset();
-        debug->printf("[timer/match] %.3f\n", match.read());
+        loop->reset();
+        // debug->printf("[timer/match] %.3f\n", match.read());
 
-        /*
-            inputs
-        */
+        // todo if match.read() > 90 then XXX -> in the while ?
 
         // update sharp + other sensors
 
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
 
-        /*
-            Computations
-        */
-
-
-        /*
-            outputs
-        */
-
-        // debug
-
-        main_sleep(debug, &loop);
+        main_sleep(debug, loop);
     }
 
-    // do some cleanup ?
+    /*
+        Cleanup
+    */
+
+    debug->printf("Cleaning...\n");
+    Thread::wait(100);
+
+    delete match;
+    delete orders;
+    delete loop;
+    delete messenger;
+    delete debug;
 
     return 0;
 }
