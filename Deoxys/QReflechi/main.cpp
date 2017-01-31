@@ -6,6 +6,7 @@
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #include "common/com.h"
+#include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
 
@@ -18,13 +19,12 @@
 
 int main(void)
 {
-    int to_sleep = 0;
-
     Debug *debug = new Debug;
 
-    mem_stats(debug);
+    mem_stats_dynamic(debug);
+    mem_stats_objects(debug);
+    mem_stats_settings(debug);
     test_run_all(debug);
-    Thread::wait(500);
 
     /*
         Initializing
@@ -56,7 +56,7 @@ int main(void)
 
     debug->printf("Initialisation done.\n\n");
 
-    mem_stats(debug);
+    mem_stats_dynamic(debug);
 
     /*
         Ready, wait for tirette
@@ -94,17 +94,7 @@ int main(void)
 
         // debug
 
-        // sleep
-        to_sleep = 1000/MAIN_LOOP_FPS - loop.read_ms();
-        if (to_sleep > 0)
-        {
-            debug->printf("[timer/loop] %d\n\n", loop.read_ms());
-            Thread::wait(to_sleep);
-        }
-        else
-        {
-            debug->printf("[timer/loop] Warn: to_sleep == %d < 0\n\n", to_sleep);
-        }
+        main_sleep(debug, &loop);
     }
 
     // do some cleanup ?

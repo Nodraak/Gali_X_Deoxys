@@ -16,7 +16,8 @@
 
 #include "mem_stats.h"
 
-void mem_stats(Debug *debug)
+
+void mem_stats_objects(Debug *debug)
 {
     debug->printf("----- sizeof\n");
 
@@ -39,6 +40,12 @@ void mem_stats(Debug *debug)
     debug->printf("Timer            %d\n", sizeof(Timer));
     debug->printf("CanMessenger     %d\n", sizeof(CanMessenger));
 
+    debug->printf("-----\n");
+}
+
+
+void mem_stats_dynamic(Debug *debug)
+{
     mbed_stats_heap_t heap_stats;
     osEvent info;
     osThreadId main_id = osThreadGetId();
@@ -64,7 +71,11 @@ void mem_stats(Debug *debug)
     debug->printf("Stack used %d of %d bytes\n", max_stack, stack_size);
 
     debug->printf("-----\n");
+}
 
+
+void mem_stats_settings(Debug *debug)
+{
 #ifdef IAM_QBOUGE
     debug->printf("[Default settings]\n");
     debug->printf("\t[PID] dist  %.2f %.2f %.2f\n", PID_DIST_P, PID_DIST_I, PID_DIST_D);

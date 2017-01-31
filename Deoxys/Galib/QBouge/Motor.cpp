@@ -78,7 +78,7 @@ float Motor::getSPwm(void) {
 }
 
 void Motor::updateSpeed(float mm_since_last_loop) {
-    speed_ = mm_since_last_loop / PID_UPDATE_INTERVAL;
+    speed_ = mm_since_last_loop / ASSERV_DELAY;
 }
 
 float Motor::getSpeed(void) {

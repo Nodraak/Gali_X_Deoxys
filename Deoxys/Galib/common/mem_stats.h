@@ -3,6 +3,8 @@
 
 #include "common/Debug.h"
 
-void mem_stats(Debug *debug);
+void mem_stats_objects(Debug *debug);
+void mem_stats_dynamic(Debug *debug);
+void mem_stats_settings(Debug *debug);
 
 #endif

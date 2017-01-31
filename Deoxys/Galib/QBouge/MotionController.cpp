@@ -21,8 +21,8 @@ MotionController::MotionController(void) :
     motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CUR, MOTOR_R_TH, MOTOR_R_BRK),
     enc_l_(ENC_L_DATA1, ENC_L_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
     enc_r_(ENC_R_DATA1, ENC_R_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
-    pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, PID_UPDATE_INTERVAL),
-    pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, PID_UPDATE_INTERVAL)
+    pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, ASSERV_DELAY),
+    pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, ASSERV_DELAY)
 {
     pid_dist_.setInputLimits(-5*1000, 5*1000);  // dist (mm)
     pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
@@ -153,7 +153,7 @@ void MotionController::updatePosition(void) {
         &angle_, &pos_.x, &pos_.y
     );
 
-    speed_ang_ = (angle_ - last_angle) / PID_UPDATE_INTERVAL;
+    speed_ang_ = (angle_ - last_angle) / ASSERV_DELAY;
 }
 
 
