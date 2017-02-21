@@ -75,8 +75,8 @@ int demo_2(OrdersFIFO *oc)
 
 int demo_jpo(OrdersFIFO *oc)
 {
-    int EX_DIST = 1000;
-    float DEFAULT_DELAY = 0.5;
+    int EX_DIST = 700;
+    float DEFAULT_DELAY = 1.0;
 
     int e = 0;
 
@@ -88,6 +88,16 @@ int demo_jpo(OrdersFIFO *oc)
     e += oc->push(OrderCom_makeDelay(DEFAULT_DELAY));
     e += oc->push(OrderCom_makeRelAngle(DEG2RAD(180)));
     e += oc->push(OrderCom_makeDelay(DEFAULT_DELAY));
+
+    return e;
+}
+
+int demo_360(OrdersFIFO *oc)
+{
+    int e = 0;
+
+    e += oc->push(OrderCom_makeRelAngle(DEG2RAD(180)));
+    e += oc->push(OrderCom_makeRelAngle(DEG2RAD(180)));
 
     return e;
 }
