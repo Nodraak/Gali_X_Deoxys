@@ -46,6 +46,9 @@ int OrdersFIFO::push(s_order_com item) {
 }
 
 void OrdersFIFO::pop(void) {
+    if (this->size() == 0)
+        return;
+
     order_count_ --;
 
     memmove(&orders_[0], &orders_[1], sizeof(s_order_com)*order_count_);
@@ -58,11 +61,17 @@ void OrdersFIFO::pop(void) {
 }
 
 s_order_com *OrdersFIFO::front(void) {
-    return this->elem(0);
+    if (this->size() == 0)
+        return NULL;
+    else
+        return this->elem(0);
 }
 
 s_order_com *OrdersFIFO::back(void) {
-    return this->elem(order_count_-1);
+    if (this->size() == 0)
+        return NULL;
+    else
+        return this->elem(order_count_-1);
 }
 
 s_order_com *OrdersFIFO::elem(uint8_t id) {
