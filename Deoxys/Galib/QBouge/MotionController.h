@@ -19,20 +19,20 @@
 #include "QBouge/Motor.h"
 
 
-#define ENC_RADIUS          28                      // one enc radius
+#define ENC_RADIUS          28.2                    // one enc radius
 #define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter
 #define TICKS_PER_MM        16.5
 #define PULSES_PER_REV      (ENC_PERIMETER*TICKS_PER_MM)
 
 #define ENC_POS_RADIUS      87                      // distance from one enc to the center of the robot
-#define TICKS_2PI           (2*M_PI*ENC_POS_RADIUS * TICKS_PER_MM * 2)  // how many enc ticks after a 2*M_PI turn
+
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
-#define MC_TARGET_TOLERANCE_DIST        30.0
-#define MC_TARGET_TOLERANCE_SPEED       (MC_TARGET_TOLERANCE_DIST*ASSERV_DELAY)
-#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10)
-#define MC_TARGET_TOLERANCE_ANG_SPEED   (MC_TARGET_TOLERANCE_ANGLE*ASSERV_DELAY)
+#define MC_TARGET_TOLERANCE_DIST        10.0        // galiIX 12 mm
+#define MC_TARGET_TOLERANCE_SPEED       5.0
+#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10) // galiIX 7.2 deg - voir 5 ou meme 3.5 deg
+#define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec
 
 // default pid tunning
 
