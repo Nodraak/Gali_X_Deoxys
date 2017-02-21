@@ -1,6 +1,5 @@
 
 #include "mbed.h"
-#include "rtos.h"
 
 #include "common/Debug.h"
 #include "common/Messenger.h"

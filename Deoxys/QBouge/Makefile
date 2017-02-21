@@ -3,6 +3,8 @@
 BOARD=F303K8
 # BOARD=F401RE
 # BOARD=L476RG
+BOARD_FLASH=65536  # 64 KB
+BOARD_RAM=16384  # 16 KB
 
 MBED_DEFINES = -DMBED_HEAP_STATS_ENABLED=1 -DMBED_STACK_STATS_ENABLED=1
 
@@ -18,17 +20,20 @@ all: build upload
 
 build:
 	mbed compile $(MBED_COMPILE_OPTIONS)
-	echo " Yeah! \o/"
+	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
+
+stats:
+	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 soft_re:
 	rm -rf .build/NUCLEO_$(BOARD)/GCC_ARM/libs/Galib
 	rm -f .build/NUCLEO_$(BOARD)/GCC_ARM/main*
 	mbed compile $(MBED_COMPILE_OPTIONS)
-	echo " Yeah! \o/"
+	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 re:
 	mbed compile -c $(MBED_COMPILE_OPTIONS)
-	echo " Yeah! \o/"
+	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 upload:
 	st-flash --reset write .build/NUCLEO_$(BOARD)/GCC_ARM/out.bin 0x8000000

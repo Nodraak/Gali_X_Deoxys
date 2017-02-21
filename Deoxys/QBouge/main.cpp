@@ -1,6 +1,5 @@
 
 #include "mbed.h"
-#include "rtos.h"
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
@@ -19,14 +18,14 @@
 
 
 MotionController *mc = NULL;
-CanMessenger *messenger = NULL;
-
+bool request_next_order = false;
 void asserv_main(void);
 
 
 int main(void)
 {
     Debug *debug = NULL;
+    CanMessenger *messenger = NULL;
     Timer *loop = NULL;
     Ticker *asserv_ticker = NULL;
 
@@ -68,6 +67,12 @@ int main(void)
         com_handle_serial(debug, messenger, mc);
         com_handle_can(debug, messenger, mc);
 
+        if (request_next_order)
+        {
+            messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
+            request_next_order = false;
+        }
+
         mc->debug(debug);
 
         main_sleep(debug, loop);
@@ -107,10 +112,10 @@ void asserv_main(void)
     mc->updateCurOrder();
     // if room for storing another order is available, request the next one
     if (ORDERS_COUNT - mc->orders_->size() > 0)
-        messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
+        request_next_order = true;
     mc->computePid();
 
-    // Iutput
+    // Output
 
     mc->updateMotors();
 
