@@ -103,23 +103,22 @@ int mc_calcNewPos(
         dx = distance * cos(cur_angle);
         dy = distance * sin(cur_angle);
     }
-    else if (diff_l == - diff_r)
+    else if (diff_l == -diff_r)
     {
         distance = 0;
 
-        dangle = 0;
-        new_angle = cur_angle;
+        dangle = 1.0 * diff_r / ENC_POS_RADIUS;
+        new_angle = std_rad_angle(cur_angle + dangle);
 
         dx = 0;
         dy = 0;
     }
     else
     {
-        distance = (diff_l + diff_r) / 2;
         radius = 1.0 * ENC_POS_RADIUS * (diff_r + diff_l) / (diff_r - diff_l);
 
         // angle
-        dangle = distance / radius;
+        dangle = (diff_r - diff_l) / (2 * ENC_POS_RADIUS);
         new_angle = std_rad_angle(cur_angle + dangle);
 
         // pos
@@ -159,7 +158,7 @@ void MotionController::updatePosition(void) {
         &angle_, &pos_.x, &pos_.y
     );
 
-    speed_ang_ = (angle_ - last_angle) / ASSERV_DELAY;
+    speed_ang_ = (angle_ - last_angle) / ASSERV_DELAY;  // this is not an angle, therefore no std_rad_angle()
 }
 
 
@@ -218,7 +217,7 @@ int mc_updateCurOrder(
             dist = 0;
             theta = std_rad_angle(cur_order->angle - cur_angle);
 
-            if ((ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (cur_speed_ang < MC_TARGET_TOLERANCE_ANG_SPEED))
+            if ((ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (ABS(cur_speed_ang) < MC_TARGET_TOLERANCE_ANG_SPEED))
                 ret = 1;
 
             break;
@@ -340,7 +339,7 @@ void MotionController::debug(Debug *debug) {
     int i = 0;
 
     debug->printf("[MC/i] (ticks l r) %d %d \n", enc_l_val_, enc_r_val_);
-    debug->printf("[MC/t_pid] (dist angle) %f %f\n", pid_dist_out_, pid_angle_out_);
+    debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
     debug->printf("[MC/o_mot] (pwm current) %.3f %.3f %.3f %.3f\n",
         motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
         motor_r_.getSPwm(), motor_r_.current_sense_.read()*4
@@ -360,7 +359,7 @@ void MotionController::debug(Debug *debug) {
     else
     {
         debug->printf(
-            "[MC/orders] current -> %s - %d %d %d %f\n", e2s_order_exe_type[current_order_.type],
+            "[MC/orders] current -> %s - %d %d %d %.3f\n", e2s_order_exe_type[current_order_.type],
             current_order_.pos.x, current_order_.pos.y, (int)RAD2DEG(current_order_.angle), current_order_.delay
         );
     }
@@ -398,7 +397,7 @@ void MotionController::debug(Debug *debug) {
                     break;
 
                 case ORDER_COM_TYPE_DELAY:
-                    debug->printf("%f", cur->order_data.delay);
+                    debug->printf("%.3f", cur->order_data.delay);
                     break;
             }
 

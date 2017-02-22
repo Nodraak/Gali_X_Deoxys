@@ -41,13 +41,13 @@
 #define PID_ANGLE_KU        3.0
 #define PID_ANGLE_TU        0.1
 
-#define PID_DIST_P          4
 #define PID_DIST_I          0
 #define PID_DIST_D          0
+#define PID_DIST_P          5.0
 
-#define PID_ANGLE_P         3
 #define PID_ANGLE_I         0
 #define PID_ANGLE_D         0
+#define PID_ANGLE_P         2.0
 
 
 class MotionController {
