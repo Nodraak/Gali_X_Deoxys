@@ -10,7 +10,7 @@
 */
 
 #include "PID.h"
-#include "QEI.h"
+#include "Qei.h"
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
@@ -22,7 +22,6 @@
 #define ENC_RADIUS          28.2                    // one enc radius
 #define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter
 #define TICKS_PER_MM        16.5
-#define PULSES_PER_REV      (ENC_PERIMETER*TICKS_PER_MM)
 
 #define ENC_POS_RADIUS      87                      // distance from one enc to the center of the robot
 
@@ -115,7 +114,7 @@ public:
 
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
-    QEI enc_l_, enc_r_;  // io interfaces
+    Qei enc_l_, enc_r_;  // io interfaces
 public:  // todo fix this security issue
     PID pid_dist_, pid_angle_;
 private:

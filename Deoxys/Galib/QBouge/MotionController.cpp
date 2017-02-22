@@ -4,7 +4,7 @@
 #include <cstring>  // memcpy
 
 #include "PID.h"
-#include "QEI.h"
+#include "Qei.h"
 
 #include "common/utils.h"
 #include "common/Messenger.h"
@@ -19,8 +19,8 @@
 MotionController::MotionController(void) :
     motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CUR, MOTOR_L_TH, MOTOR_L_BRK),
     motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CUR, MOTOR_R_TH, MOTOR_R_BRK),
-    enc_l_(ENC_L_DATA1, ENC_L_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
-    enc_r_(ENC_R_DATA1, ENC_R_DATA2, /*NC,*/ PULSES_PER_REV, QEI::X4_ENCODING),
+    enc_l_(ENC_L_DATA1, ENC_L_DATA2),
+    enc_r_(ENC_R_DATA1, ENC_R_DATA2),
     pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, ASSERV_DELAY),
     pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, ASSERV_DELAY)
 {
