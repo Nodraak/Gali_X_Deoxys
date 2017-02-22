@@ -4,12 +4,12 @@
 #include <cstring>  // memcpy
 
 #include "PID.h"
-#include "Qei.h"
 
 #include "common/utils.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #include "QBouge/Motor.h"
+#include "QBouge/Qei.h"
 #include "config.h"
 #include "pinout.h"
 

@@ -10,13 +10,13 @@
 */
 
 #include "PID.h"
-#include "Qei.h"
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/Motor.h"
+#include "QBouge/Qei.h"
 
 
 #define ENC_RADIUS          28.2                    // one enc radius

@@ -7,4 +7,7 @@ void mem_stats_objects(Debug *debug);
 void mem_stats_dynamic(Debug *debug);
 void mem_stats_settings(Debug *debug);
 
+extern uint32_t __HeapLimit;
+extern uint32_t __StackLimit;
+
 #endif

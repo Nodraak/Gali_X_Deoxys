@@ -21,6 +21,38 @@ MotionController *mc = NULL;
 bool request_next_order = false;
 void asserv_main(void);
 
+void pre_init(Debug *debug)
+{
+#ifdef IAM_QBOUGE
+    debug->printf("IAM_QBOUGE\n");
+#endif
+#ifdef IAM_QREFLECHI
+    debug->printf("IAM_QREFLECHI\n");
+#endif
+
+    debug->printf("Reset source:\n");
+
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_OBLRST))
+        debug->printf("\tRCC_FLAG_OBLRST    Option Byte Load reset\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
+        debug->printf("\tRCC_FLAG_PINRST    Pin reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
+        debug->printf("\tRCC_FLAG_PORRST    POR/PDR reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST))
+        debug->printf("\tRCC_FLAG_SFTRST    Software reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))
+        debug->printf("\tRCC_FLAG_IWDGRST   Independent Watchdog reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST))
+        debug->printf("\tRCC_FLAG_WWDGRST   Window Watchdog reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
+        debug->printf("\tRCC_FLAG_LPWRRST   Low Power reset.\n");
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_V18PWRRST))
+        debug->printf("\tRCC_FLAG_V18PWRRST Reset flag of the 1.8 V domain\n");  // specifiic to F303x8
+    debug->printf("\t-\n");
+
+    debug->printf("\n");
+}
+
 
 void interrupt_priorities_init(void)
 {
@@ -56,25 +88,36 @@ int main(void)
     */
 
     debug = new Debug;
+    pre_init(debug);
 
     debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
+    wait_ms(100);
     mem_stats_objects(debug);
+    wait_ms(100);
     mem_stats_settings(debug);
+    wait_ms(100);
     test_run_all(debug);
 
+    debug->printf("CanMessenger...\n");
     messenger = new CanMessenger;
+    debug->printf("Timer...\n");
     loop = new Timer;
     loop->start();
 
+    debug->printf("MotionController...\n");
     mc = new MotionController;
+
+    debug->printf("Ticker...\n");
     asserv_ticker = new Ticker;
     asserv_ticker->attach(asserv_main, ASSERV_DELAY);
 
+    debug->printf("interrupt_priorities...\n");
     interrupt_priorities_init();
 
     mem_stats_dynamic(debug);
+    wait_ms(100);
 
     debug->printf("Initialisation done.\n\n");
 
