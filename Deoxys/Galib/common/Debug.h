@@ -1,5 +1,5 @@
-#ifndef DEBUG_H_INLCUDED
-#define DEBUG_H_INLCUDED
+#ifndef DEBUG_H_INCLUDED
+#define DEBUG_H_INCLUDED
 
 #include "mbed.h"
 #include "BufferedSerial.h"

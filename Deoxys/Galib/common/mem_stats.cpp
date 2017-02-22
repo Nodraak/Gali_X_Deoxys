@@ -8,10 +8,10 @@
 #include "config.h"
 
 #ifdef IAM_QBOUGE
-#include "PID.h"
-#include "QEI.h"
-#include "QBouge/Motor.h"
-#include "QBouge/MotionController.h"
+    #include "PID.h"
+    #include "QEI.h"
+    #include "QBouge/Motor.h"
+    #include "QBouge/MotionController.h"
 #endif
 
 #include "mem_stats.h"
