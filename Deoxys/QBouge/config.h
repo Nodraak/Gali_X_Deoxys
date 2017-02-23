@@ -15,4 +15,8 @@
 
 #define ORDERS_COUNT        5
 
+#define MC_START_X          130
+#define MC_START_Y          (1080-150)
+#define MC_START_ANGLE      0
+
 #endif // CONFIG_H_INCLUDED

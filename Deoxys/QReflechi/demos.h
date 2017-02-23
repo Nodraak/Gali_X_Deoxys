@@ -7,5 +7,6 @@ int demo_1(OrdersFIFO *oc);
 int demo_2(OrdersFIFO *oc);
 int demo_jpo(OrdersFIFO *oc);
 int demo_360(OrdersFIFO *oc);
+int demo_table(OrdersFIFO *oc);
 
 #endif // DEMOS_H_INCLUDED

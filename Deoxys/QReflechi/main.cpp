@@ -42,7 +42,7 @@ int main(void)
     match = new Timer;
     match->start();
 
-    int ret = demo_jpo(orders);
+    int ret = demo_table(orders);
     if (ret != 0)
     {
         debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
@@ -74,7 +74,7 @@ int main(void)
     while (true)  // todo match.read() < 90
     {
         loop->reset();
-        // debug->printf("[timer/match] %.3f\n", match.read());
+        debug->printf("[timer/match] %.3f\n", match->read());
 
         // todo ping/pong each board -> if no response since XX, then do something
 

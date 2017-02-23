@@ -101,3 +101,41 @@ int demo_360(OrdersFIFO *oc)
 
     return e;
 }
+
+int demo_table(OrdersFIFO *oc)
+{
+    int e = 0;
+
+    e += oc->push(OrderCom_makeAbsPos(570-130, 1020));
+    e += oc->push(OrderCom_makeAbsAngle(DEG2RAD(0)));
+    e += oc->push(OrderCom_makeDelay(2.0));                     // devant la starting zone
+
+    e += oc->push(OrderCom_makeRelDist(250));
+    e += oc->push(OrderCom_makeAbsPos(1000, 650));
+    e += oc->push(OrderCom_makeDelay(2.0));
+
+    e += oc->push(OrderCom_makeAbsPos(1000+300, 240));
+    e += oc->push(OrderCom_makeAbsAngle(DEG2RAD(-70)));
+    e += oc->push(OrderCom_makeDelay(2.0));                     // fusee
+
+    e += oc->push(OrderCom_makeRelDist(-100));
+    e += oc->push(OrderCom_makeAbsAngle(DEG2RAD(-90)));
+    e += oc->push(OrderCom_makeRelDist(-300));
+    e += oc->push(OrderCom_makeAbsAngle(DEG2RAD(20)));
+    e += oc->push(OrderCom_makeAbsPos(2000-300, 750));
+    e += oc->push(OrderCom_makeDelay(2.0));                     // cylindre du fond
+
+// ok
+
+    e += oc->push(OrderCom_makeRelDist(-600));
+    e += oc->push(OrderCom_makeAbsPos(1000+320, 770));
+    e += oc->push(OrderCom_makeDelay(2.0));                     // devant le palmier
+
+    e += oc->push(OrderCom_makeRelDist(-150));
+    e += oc->push(OrderCom_makeAbsPos(500, 1000));
+    e += oc->push(OrderCom_makeAbsAngle(DEG2RAD(0)));
+    e += oc->push(OrderCom_makeAbsPos(580-130, 1000));
+    e += oc->push(OrderCom_makeDelay(2.0));                     // back home
+
+    return e;
+}

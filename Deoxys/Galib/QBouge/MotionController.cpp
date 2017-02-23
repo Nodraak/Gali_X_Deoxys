@@ -50,9 +50,9 @@ MotionController::MotionController(void) :
     pid_dist_out_ = 0;
     pid_angle_out_ = 0;
 
-    pos_.x = 0;
-    pos_.y = 0;
-    angle_ = 0;
+    pos_.x = MC_START_X;
+    pos_.y = MC_START_Y;
+    angle_ = MC_START_ANGLE;
     speed_ = 0;
     speed_ang_ = 0;
 
