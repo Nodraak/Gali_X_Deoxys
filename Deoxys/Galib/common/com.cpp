@@ -231,8 +231,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 
 #ifdef IAM_QBOUGE
             case Message::MT_order:
-                debug->printf("[CAN] MT_order\n");
-                mc->orders_->push(rec_msg.payload.order);
+                debug->printf("[CAN] rec MT_order (%d)\n", mc->orders_->push(rec_msg.payload.order));
                 // todo ack if ok, else send error
                 break;
 #endif
@@ -240,9 +239,15 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #ifdef IAM_QREFLECHI
             case Message::MT_CQB_next_order_request:
                 debug->printf("[CAN] MT_CQB_next_order_request\n");
-                if (messenger->send_msg_order(*orders->front()))
-                    debug->printf("[CAN] send_msg_order() failed\n");
-                orders->pop(); // todo wait for ack before poping
+                if (orders->size() == 0)
+                    debug->printf("-> orders->size() == 0\n");
+                // todo send a shut up order
+                else
+                {
+                    if (messenger->send_msg_order(*orders->front()))
+                        debug->printf("[CAN] send_msg_order() failed\n");
+                    orders->pop(); // todo wait for ack before poping
+                }
                 break;
 #endif
 

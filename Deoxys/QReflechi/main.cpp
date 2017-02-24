@@ -25,24 +25,54 @@ int main(void)
         Initializing
     */
 
+    PwmOut buzzer_(PC_8);
+
+    buzzer_.period(1./4000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+    buzzer_.period(1./3000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+    buzzer_.period(1./2000);
+    buzzer_.write(0.50);
+    wait_ms(400);
+    buzzer_.period_us(1);
+
+    wait_ms(100);  // wait for the UART to clean up
+
     debug = new Debug;
 
     debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
+    wait_ms(100);
     mem_stats_objects(debug);
+    wait_ms(100);
     mem_stats_settings(debug);
+    wait_ms(100);
     test_run_all(debug);
 
+    debug->printf("CanMessenger...\n");
+    wait_ms(100);
     CanMessenger *messenger = new CanMessenger;
+
+    debug->printf("Timer (loop)...\n");
+    wait_ms(100);
     loop = new Timer;
     loop->start();
 
+    debug->printf("OrdersFIFO...\n");
+    wait_ms(100);
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
+
+    debug->printf("Timer (match)...\n");
+    wait_ms(100);
     match = new Timer;
     match->start();
 
-    int ret = demo_table(orders);
+    debug->printf("demo_load()...\n");
+    wait_ms(100);
+    int ret = demo_load(orders, demo_table, DEMO_TABLE_SIZE);
     if (ret != 0)
     {
         debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
@@ -56,6 +86,7 @@ int main(void)
     // init ia ?
 
     mem_stats_dynamic(debug);
+    wait_ms(100);
 
     debug->printf("Initialisation done.\n\n");
 

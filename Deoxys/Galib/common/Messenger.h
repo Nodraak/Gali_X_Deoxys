@@ -6,7 +6,9 @@
 
 /*
     Can bus baud rate, in Hz.
-    One limit is the MCP2551 module: 1 M Hz
+    Limits:
+        - STMF3: 1 M Hz
+        - MCP2551 module: 1 M Hz
 */
 #define CAN_BUS_FREQUENCY (500*1000)
 

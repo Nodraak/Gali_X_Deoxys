@@ -43,7 +43,7 @@
 
 #define PID_DIST_I          0
 #define PID_DIST_D          0
-#define PID_DIST_P          5.0
+#define PID_DIST_P          6.0
 
 #define PID_ANGLE_I         0
 #define PID_ANGLE_D         0
@@ -55,12 +55,16 @@ public:
     MotionController(void);
     ~MotionController(void);
 
+    void asserv(void);
+
     /*
         Save the encoders value to a working variable so that the various
         computations and the debug are based on the same values within this
         loop.
     */
     void fetchEncodersValue(void);
+
+    bool should_request_next_order(Debug *debug);
 
     /*
         Update the internal state of the MotionController (position, speed, ...)
@@ -138,6 +142,8 @@ public:
     // planned orders
     OrdersFIFO *orders_;
     s_order_exe current_order_;
+
+    float last_order_request_timestamp_;  // s from match start
 };
 
 

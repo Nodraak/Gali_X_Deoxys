@@ -59,9 +59,6 @@ typedef struct  _s_order_exe {
     s_vector_int16 pos;  // mm
     float angle;  // rad
     float delay;  // sec
-
-    // TODO precision ? later -> osef. or at least, automatic in function of max speed
-    // TODO max speed + max acc -> osef, bon vieux #define et roule ma poule
 }               s_order_exe;
 
 

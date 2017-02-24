@@ -59,11 +59,46 @@ MotionController::MotionController(void) :
     orders_ = new OrdersFIFO(ORDERS_COUNT);
     memset(&current_order_, 0, sizeof(s_order_exe));
     current_order_.type = ORDER_EXE_TYPE_NONE;
+
+    last_order_request_timestamp_ = 0;
 }
 
 
 MotionController::~MotionController(void) {
     delete orders_;
+}
+
+
+void MotionController::asserv(void) {
+    Timer t;
+
+    t.start();
+
+    // Input
+
+    this->fetchEncodersValue();
+
+    // Compute
+
+    this->updatePosition();
+    this->updateCurOrder();
+    this->computePid();
+
+    // Output
+
+    this->updateMotors();
+
+    // Timer stuff
+
+    t.stop();
+
+#define ASSERV_DURATION_LIMIT   2000    // us - should be smaller than ASSERV_DELAY
+    if (t.read_us() > ASSERV_DURATION_LIMIT)
+    {
+        // todo: we are in the shit :/
+        // motors /= 1.01; // minus 1%
+        // applyMotors
+    }
 }
 
 
@@ -73,6 +108,17 @@ void MotionController::fetchEncodersValue(void) {
 
     enc_l_val_ = enc_l_.getPulses();
     enc_r_val_ = enc_r_.getPulses();
+}
+
+
+bool MotionController::should_request_next_order(Debug *debug) {
+    // if room for storing another order is available, request the next one
+    if ((ORDERS_COUNT - this->orders_->size() > 0) && (timer_.read() - last_order_request_timestamp_ > 0.300))
+    {
+        last_order_request_timestamp_ = timer_.read();
+        return true;
+    }
+    return false;
 }
 
 

@@ -83,6 +83,28 @@ int main(void)
     Timer *loop = NULL;
     Ticker *asserv_ticker = NULL;
 
+    PwmOut ml(MOTOR_L_PWM);
+    ml.period(0.001 * 0.05);
+    ml.write(0);
+    PwmOut mr(MOTOR_R_PWM);
+    mr.period(0.001 * 0.05);
+    mr.write(0);
+
+    PwmOut buzzer_(A7);
+
+    buzzer_.period(1./2000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+    buzzer_.period(1./3000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+    buzzer_.period(1./4000);
+    buzzer_.write(0.50);
+    wait_ms(400);
+    buzzer_.period_us(1);
+
+    wait_ms(100);  // wait for the UART to clean up
+
     /*
         Initializing
     */
@@ -99,19 +121,24 @@ int main(void)
     mem_stats_settings(debug);
     wait_ms(100);
     test_run_all(debug);
+    wait_ms(100);
 
     debug->printf("CanMessenger...\n");
+    wait_ms(100);
     messenger = new CanMessenger;
     debug->printf("Timer...\n");
+    wait_ms(100);
     loop = new Timer;
     loop->start();
 
     debug->printf("MotionController...\n");
+    wait_ms(100);
     mc = new MotionController;
 
     debug->printf("Ticker...\n");
+    wait_ms(100);
     asserv_ticker = new Ticker;
-    asserv_ticker->attach(asserv_main, ASSERV_DELAY);
+    asserv_ticker->attach(mc, &MotionController::asserv, ASSERV_DELAY);
 
     debug->printf("interrupt_priorities...\n");
     interrupt_priorities_init();
@@ -127,17 +154,22 @@ int main(void)
         Go!
     */
 
+    Timer match;
+    match.start();
+
     while (true)
     {
+        debug->printf("[timer/match] %.3f\n", match.read());
+
         loop->reset();
 
         com_handle_serial(debug, messenger, mc);
         com_handle_can(debug, messenger, mc);
 
-        if (request_next_order)
+        if (mc->should_request_next_order(debug))
         {
+            debug->printf("[CAN] send next_order_request\n");
             messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
-            request_next_order = false;
         }
 
         mc->debug(debug);
@@ -160,37 +192,4 @@ int main(void)
     delete debug;
 
     return 0;
-}
-
-
-void asserv_main(void)
-{
-    Timer timer;
-
-    timer.start();
-
-    // Input
-
-    mc->fetchEncodersValue();
-
-    // Compute
-
-    mc->updatePosition();
-    mc->updateCurOrder();
-    // if room for storing another order is available, request the next one
-    if (ORDERS_COUNT - mc->orders_->size() > 0)
-        request_next_order = true;
-    mc->computePid();
-
-    // Output
-
-    mc->updateMotors();
-
-    // Timer stuff
-
-    timer.stop();
-    if (timer.read() > ASSERV_DELAY)
-    {
-        // todo: we are in the shit :/
-    }
 }
