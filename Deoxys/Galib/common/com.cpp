@@ -108,6 +108,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
         }
     }
 #ifdef IAM_QBOUGE
+/*
     else if (strncmp(ptr, "pid", 3) == 0)
     {
         ptr = &ptr[3+1];
@@ -185,6 +186,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
         debug->printf("[PID] dist  %.2f %.2f %.2f\n", s_dist_p, s_dist_i, s_dist_d);
         debug->printf("[PID] angle %.2f %.2f %.2f\n", s_angle_p, s_angle_i, s_angle_d);
     }
+*/
     // todo send can msg
 #endif
     else
