@@ -37,7 +37,7 @@ void mem_stats_objects(Debug *debug)
 #endif
 
 #ifdef IAM_QREFLECHI
-    debug->printf("\ts_order_exe      %d*%d=%d\n", sizeof(s_order_exe), ORDERS_COUNT, sizeof(s_order_exe)*ORDERS_COUNT);
+    debug->printf("\ts_order_com      %d*%d=%d\n", sizeof(s_order_com), ORDERS_COUNT, sizeof(s_order_com)*ORDERS_COUNT);
 #endif
 
     debug->printf("\n");

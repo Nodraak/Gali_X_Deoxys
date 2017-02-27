@@ -4,6 +4,7 @@
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
+
 /*
     Can bus baud rate, in Hz.
     Limits:
@@ -12,6 +13,12 @@
 */
 #define CAN_BUS_FREQUENCY (500*1000)
 
+
+/*
+    The Message is mostly used internally by the CanMessenger class, you most
+    probably don't need to create instances, as CanMessenger methods returns
+    Message instances.
+*/
 class Message {
 
 public:
@@ -156,6 +163,12 @@ public:
     u_payload payload;
 };
 
+
+/*
+    The CanMessenger class is used to send messages over the CAN bus. The
+    methods are wrappers that create the proper Message instance and send it
+    using the CanMessenger::send_msg() private method.
+*/
 class CanMessenger {
 public:
     CanMessenger(void);

@@ -28,12 +28,14 @@
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
+// Execute next order conditions
+
 #define MC_TARGET_TOLERANCE_DIST        10.0        // galiIX 12 mm
 #define MC_TARGET_TOLERANCE_SPEED       5.0
 #define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10) // galiIX 7.2 deg - voir 5 ou meme 3.5 deg
 #define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec
 
-// default pid tunning
+// Default PID settings
 
 #define PID_DIST_KU         1.7
 #define PID_DIST_TU         0.7
@@ -55,6 +57,13 @@ public:
     MotionController(void);
     ~MotionController(void);
 
+    /*
+        Control function (asservissement in french).
+        This is called via an interrupt every `ASSERV_DELAY` seconds.
+
+        Warning:
+            This is executed in an interrupt, it should be fast to execute.
+    */
     void asserv(void);
 
     /*

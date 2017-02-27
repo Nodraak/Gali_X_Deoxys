@@ -69,6 +69,12 @@ MotionController::~MotionController(void) {
 }
 
 
+/*
+Warning:
+    This is executed in an interrupt, it should be fast to execute (it must be
+    shorter than ASSERV_DELAY, otherwise overlapping will append). Avoid any
+    printf, malloc, while loop, etc.
+*/
 void MotionController::asserv(void) {
     Timer t;
 

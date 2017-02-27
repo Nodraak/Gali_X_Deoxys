@@ -1,3 +1,11 @@
+/*
+    Code forked from https://developer.mbed.org/users/aberk/code/QEI/
+    Changes:
+        Removed unused options (X2 vs X4 encoding and the index channel).
+        This save 3 us (10%) per interrupt (QEI::encode()) call as well as some
+        .text space.
+*/
+
 #ifndef QEI_H_INCLUDED
 #define QEI_H_INCLUDED
 

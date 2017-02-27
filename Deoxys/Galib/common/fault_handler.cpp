@@ -1,6 +1,20 @@
 
 #include "mbed.h"
 
+/*
+    This is some Cortex F3 low level magic.
+
+    If you don't known what you are looking for, just close this file and look
+    somewhere else.
+    If you known that you are looking for this, keep reading.
+
+    When a fault occur (division by zero, segfault, ...), the processor calls an
+    interrupt: HardFault, NMI, MemManage, MemMang, BusFault, UsageFault, etc.
+
+    When one of theses fault occur, fault_handler() is called (see all the
+    *Handler() below) and prints as much informaation as it can to help you
+    locate the problem.
+*/
 
 void fault_handler(uint32_t *top_of_stack, const char *msg)
 {
@@ -40,7 +54,7 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
 
     sprintf(buf,
         "\n\n********************\n\n=> %s\n\n"
-
+// cpu registers
         "r0   %04x %04x\n"
         "r1   %04x %04x\n"
         "r2   %04x %04x\n"
@@ -49,7 +63,7 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
         "lr   %04x %04x\n"
         "pc   %04x %04x\n"
         "xpsr %04x %04x\n\n"
-
+// memory specialy mapped registers
         "(CFSR  %04x %04x)\n"
         "UFSR %04x\n"
         "BFSR %02x\n"
@@ -57,11 +71,11 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
         "HFSR  %04x %04x\n"
         "MMFAR %04x %04x\n"
         "BFAR  %04x %04x\n\n"
-
+// flags
         "DIVBYZERO %d\n"
-        "BFARVALID %d\n"
-        "PRECISERR %d\n"
-        "forced_hard_fault %d\n"
+        "BFARVALID %d\n"            // BFAR holds the fault address
+        "PRECISERR %d\n"            // The PC value stacked for the exception return points to the instruction that caused the fault
+        "forced_hard_fault %d\n"    // The fault escalated to a hard fault
 
         "\n***\n",
 
@@ -92,7 +106,6 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
 
     while (1)
         ;
-    NVIC_SystemReset();
 }
 
 extern "C" void HardFault_Handler(uint32_t *top_of_stack) {
