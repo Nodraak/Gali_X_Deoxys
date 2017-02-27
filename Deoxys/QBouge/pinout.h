@@ -28,6 +28,10 @@
     #define CAN_TX          D2  // PA_12
     #define CAN_RX          D10 // PA_11
 
+#else
+
+    #error "Board's pinout not configured"
+
 #endif
 
 #else  // #ifndef SIMULATION
