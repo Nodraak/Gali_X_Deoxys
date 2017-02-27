@@ -38,40 +38,30 @@ int main(void)
     wait_ms(400);
     buzzer_.period_us(1);
 
-    wait_ms(100);  // wait for the UART to clean up
-
     debug = new Debug;
 
     debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
-    wait_ms(100);
     mem_stats_objects(debug);
-    wait_ms(100);
     mem_stats_settings(debug);
-    wait_ms(100);
     test_run_all(debug);
 
     debug->printf("CanMessenger...\n");
-    wait_ms(100);
     CanMessenger *messenger = new CanMessenger;
 
     debug->printf("Timer (loop)...\n");
-    wait_ms(100);
     loop = new Timer;
     loop->start();
 
     debug->printf("OrdersFIFO...\n");
-    wait_ms(100);
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
     debug->printf("Timer (match)...\n");
-    wait_ms(100);
     match = new Timer;
     match->start();
 
     debug->printf("demo_load()...\n");
-    wait_ms(100);
     int ret = demo_load(orders, demo_table, DEMO_TABLE_SIZE);
     if (ret != 0)
     {
@@ -86,9 +76,9 @@ int main(void)
     // init ia ?
 
     mem_stats_dynamic(debug);
-    wait_ms(100);
 
     debug->printf("Initialisation done.\n\n");
+    debug->set_current_level(Debug::DEBUG_DEBUG);
 
     /*
         Ready, wait for tirette
@@ -124,8 +114,8 @@ int main(void)
         Cleanup
     */
 
+    debug->set_current_level(Debug::DEBUG_INITIALISATION);
     debug->printf("Cleaning...\n");
-    Thread::wait(100);
 
     delete match;
     delete orders;

@@ -103,8 +103,6 @@ int main(void)
     wait_ms(400);
     buzzer_.period_us(1);
 
-    wait_ms(100);  // wait for the UART to clean up
-
     /*
         Initializing
     */
@@ -115,28 +113,20 @@ int main(void)
     debug->printf("Initializing\n");
 
     mem_stats_dynamic(debug);
-    wait_ms(100);
     mem_stats_objects(debug);
-    wait_ms(100);
     mem_stats_settings(debug);
-    wait_ms(100);
     test_run_all(debug);
-    wait_ms(100);
 
     debug->printf("CanMessenger...\n");
-    wait_ms(100);
     messenger = new CanMessenger;
     debug->printf("Timer...\n");
-    wait_ms(100);
     loop = new Timer;
     loop->start();
 
     debug->printf("MotionController...\n");
-    wait_ms(100);
     mc = new MotionController;
 
     debug->printf("Ticker...\n");
-    wait_ms(100);
     asserv_ticker = new Ticker;
     asserv_ticker->attach(mc, &MotionController::asserv, ASSERV_DELAY);
 
@@ -144,9 +134,9 @@ int main(void)
     interrupt_priorities_init();
 
     mem_stats_dynamic(debug);
-    wait_ms(100);
 
     debug->printf("Initialisation done.\n\n");
+    debug->set_current_level(Debug::DEBUG_DEBUG);
 
     // todo wait for tirette (can msg)
 
@@ -181,8 +171,8 @@ int main(void)
         Cleanup
     */
 
+    debug->set_current_level(Debug::DEBUG_INITIALISATION);
     debug->printf("Cleaning...\n");
-    Thread::wait(100);
 
     asserv_ticker->detach();
     delete asserv_ticker;

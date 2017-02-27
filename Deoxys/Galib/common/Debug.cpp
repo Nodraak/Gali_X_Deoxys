@@ -20,7 +20,10 @@ interfaces_str_{
 {
     int i = 0;
 
-    level_ = DEBUG_DEBUG;
+    print_level_ = DEBUG_INITIALISATION;
+    current_level_ = DEBUG_INITIALISATION;
+
+    wait_ms(100);  // wait for the various UART buffers to clean up (xbee)
 
     for (i = 0; i < DEBUG_LAST; ++i)
         interfaces_[i].baud(DEBUG_SPEED);
@@ -40,7 +43,7 @@ void Debug::printf(const char* format, ...) {
 
     va_start(args, format);
     vsnprintf(buffer, BUFFER_SIZE, format, args);
-    this->printf(DEBUG_DEBUG, "%s", buffer);
+    this->printf(current_level_, "%s", buffer);
     va_end(args);
 }
 
@@ -49,7 +52,7 @@ void Debug::printf(Level level, const char* format, ...) {
     char buffer[BUFFER_SIZE] = "";
     va_list args;
 
-    if (level < level_)
+    if (level < print_level_)
         return;
 
     va_start(args, format);
@@ -58,6 +61,9 @@ void Debug::printf(Level level, const char* format, ...) {
 
     for (i = 0; i < DEBUG_LAST; ++i)
         interfaces_[i].printf("%s", buffer);
+
+    if (level == DEBUG_INITIALISATION)
+        wait_ms(5);
 }
 
 int _get_line(BufferedSerial *interface, char *buffer, int buffer_length) {
@@ -90,6 +96,10 @@ int Debug::get_line(char *buffer, int buffer_length, Interface interface) {
     return -1;  // nothing to read
 }
 
-void Debug::set_level(Level level) {
-    level_ = level;
+void Debug::set_print_level(Level level) {
+    print_level_ = level;
+}
+
+void Debug::set_current_level(Level level) {
+    current_level_ = level;
 }

@@ -21,6 +21,7 @@ public:
     } Interface;
 
     typedef enum _Level {
+        DEBUG_INITIALISATION, // this adds a 5 ms delay after the print to ensure it is transmitted
         DEBUG_DEBUG,    // all (io + internals) -> gui          -> on
         DEBUG_INFO,     // basic info (inputs and outputs)      -> info
         DEBUG_ERROR     // minimum                              -> off
@@ -30,12 +31,14 @@ public:
     void printf(const char* format, ...);
     void printf(Level level, const char* format, ...);
     int get_line(char *buffer, int buffer_length, Interface interface = DEBUG_ALL);
-    void set_level(Level level);
+    void set_print_level(Level level);
+    void set_current_level(Level level);
 
 protected:
     BufferedSerial interfaces_[DEBUG_LAST];
     const char *interfaces_str_[DEBUG_LAST];
-    Level level_;
+    Level print_level_;
+    Level current_level_;
 };
 
 #endif
