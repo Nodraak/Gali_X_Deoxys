@@ -24,15 +24,15 @@ MotionController::MotionController(void) :
     pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, ASSERV_DELAY),
     pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, ASSERV_DELAY)
 {
-    pid_dist_.setInputLimits(-5*1000, 5*1000);  // dist (mm)
-    pid_dist_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm)
+    pid_dist_.setInputLimits(-3*1000, 3*1000);  // dist (mm)
+    pid_dist_.setOutputLimits(-PID_DIST_MAX_OUPUT, PID_ANGLE_MAX_OUPUT);  // motor speed (~pwm)
     pid_dist_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_dist_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
     pid_dist_.setSetPoint(0);
     this->pidDistSetGoal(0);  // pid's error
 
     pid_angle_.setInputLimits(-M_PI, M_PI);  // angle (rad). 0 toward, -pi on right, +pi on left
-    pid_angle_.setOutputLimits(-1.0, 1.0);  // motor speed (~pwm). -1 right, +1 left, 0 nothing
+    pid_angle_.setOutputLimits(-PID_ANGLE_MAX_OUPUT, PID_ANGLE_MAX_OUPUT);  // motor speed (~pwm). -1 right, +1 left, 0 nothing
     pid_angle_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_angle_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
     pid_angle_.setSetPoint(0);
@@ -114,17 +114,6 @@ void MotionController::fetchEncodersValue(void) {
 
     enc_l_val_ = enc_l_.getPulses();
     enc_r_val_ = enc_r_.getPulses();
-}
-
-
-bool MotionController::should_request_next_order(Debug *debug) {
-    // if room for storing another order is available, request the next one
-    if ((ORDERS_COUNT - this->orders_->size() > 0) && (timer_.read() - last_order_request_timestamp_ > 0.300))
-    {
-        last_order_request_timestamp_ = timer_.read();
-        return true;
-    }
-    return false;
 }
 
 
@@ -288,6 +277,17 @@ int mc_updateCurOrder(
     *theta_ = theta;
 
     return ret;
+}
+
+
+bool MotionController::should_request_next_order(Debug *debug) {
+    // if room for storing another order is available, request the next one
+    if ((ORDERS_COUNT - this->orders_->size() > 0) && (timer_.read() - last_order_request_timestamp_ > 0.300))
+    {
+        last_order_request_timestamp_ = timer_.read();
+        return true;
+    }
+    return false;
 }
 
 

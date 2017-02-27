@@ -37,6 +37,9 @@
 
 // Default PID settings
 
+#define PID_DIST_MAX_OUPUT  0.9
+#define PID_ANGLE_MAX_OUPUT 0.7
+
 #define PID_DIST_KU         1.7
 #define PID_DIST_TU         0.7
 
@@ -49,7 +52,7 @@
 
 #define PID_ANGLE_I         0
 #define PID_ANGLE_D         0
-#define PID_ANGLE_P         2.0
+#define PID_ANGLE_P         3.0
 
 
 class MotionController {
@@ -73,8 +76,6 @@ public:
     */
     void fetchEncodersValue(void);
 
-    bool should_request_next_order(Debug *debug);
-
     /*
         Update the internal state of the MotionController (position, speed, ...)
         given the value of the encoders ticks fetched by fetchEncodersValue().
@@ -87,6 +88,12 @@ public:
         updateGoalToNextOrder().
     */
     void updateCurOrder(void);
+
+    /*
+        Returns True if there is some place in the `OrdersFIFO *orders_` list
+        for a new order, else False.
+    */
+    bool should_request_next_order(Debug *debug);
 
     /*
         Compute the PIDs output based on the internal state of the
