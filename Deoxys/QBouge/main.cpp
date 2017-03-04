@@ -153,7 +153,6 @@ int main(void)
 
         loop->reset();
 
-        com_handle_serial(debug, messenger, mc);
         com_handle_can(debug, messenger, mc);
 
         if (mc->should_request_next_order(debug))

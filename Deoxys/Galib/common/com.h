@@ -8,7 +8,6 @@
 
 #include "QBouge/MotionController.h"
 
-void com_handle_serial(Debug *debug, CanMessenger *messenger, MotionController *mc);
 void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc);
 
 #endif
