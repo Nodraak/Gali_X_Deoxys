@@ -89,8 +89,31 @@ int CanMessenger::send_msg_pong(char data[8]) {
     return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
 }
 
+int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
+    Message::CP_CQR_we_are_at payload;
+    payload.pos.x = x;
+    payload.pos.y = y;
+    payload.angle = angle;
+
+    return this->send_msg(Message(Message::MT_CQR_we_are_at, sizeof(payload), (Message::u_payload){.CQR_we_are_at = payload}));
+}
+
+int CanMessenger::send_msg_CQR_reset(void) {
+    Message::CP_CQR_reset payload;
+
+    return this->send_msg(Message(Message::MT_CQR_reset, sizeof(payload), (Message::u_payload){.CQR_reset = payload}));
+}
+
 int CanMessenger::send_msg_order(s_order_com order) {
     return this->send_msg(Message(Message::MT_order, sizeof(order), (Message::u_payload){.order = order}));
+}
+
+int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
+    Message::CP_CQB_next_order_request payload;
+    payload.count = count;
+    return this->send_msg(Message(
+        Message::MT_CQB_next_order_request, sizeof(payload), (Message::u_payload){.CQB_next_order_request = payload}
+    ));
 }
 
 int CanMessenger::send_msg_CQB_MC_pos(float x, float y) {
@@ -108,13 +131,6 @@ int CanMessenger::send_msg_CQB_MC_angle_speed(float angle, float speed) {
     return this->send_msg(Message(Message::MT_CQB_MC_angle_speed, sizeof(payload), (Message::u_payload){.CQB_MC_angle_speed = payload}));
 }
 
-int CanMessenger::send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r) {
-    Message::CP_CQB_MC_encs payload;
-    payload.enc_l = enc_l;
-    payload.enc_r = enc_r;
-    return this->send_msg(Message(Message::MT_CQB_MC_encs, sizeof(payload), (Message::u_payload){.CQB_MC_encs = payload}));
-}
-
 int CanMessenger::send_msg_CQB_MC_pids(float dist, float angle) {
     Message::CP_CQB_MC_pids payload;
     payload.dist = dist;
@@ -129,10 +145,9 @@ int CanMessenger::send_msg_CQB_MC_motors(float pwm_l, float pwm_r) {
     return this->send_msg(Message(Message::MT_CQB_MC_motors, sizeof(payload), (Message::u_payload){.CQB_MC_motors = payload}));
 }
 
-int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
-    Message::CP_CQB_next_order_request payload;
-    payload.count = count;
-    return this->send_msg(Message(
-        Message::MT_CQB_next_order_request, sizeof(payload), (Message::u_payload){.CQB_next_order_request = payload}
-    ));
+int CanMessenger::send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r) {
+    Message::CP_CQB_MC_encs payload;
+    payload.enc_l = enc_l;
+    payload.enc_r = enc_r;
+    return this->send_msg(Message(Message::MT_CQB_MC_encs, sizeof(payload), (Message::u_payload){.CQB_MC_encs = payload}));
 }

@@ -41,36 +41,38 @@ public:
             MC: class (motion controller)
             pos: info (most likely attribute of the class)
 
+        Note: e_message_type is encoded on 11 bits due to the CAN protocol.
     */
-    // todo priorities
     typedef enum    _e_message_type {
         /*
-            High
+            High (200-399)
         */
 
+        MT_ping                     = 210,
+        MT_CQB_pong                 = 211,
+        MT_CQR_pong                 = 212,
+
+        MT_CQR_we_are_at            = 310,
+        MT_CQR_reset                = 311,
 
         /*
-            Medium (default)
+            Medium (default) (400-599)
         */
 
-        MT_ping,
-        MT_CQB_pong,
-        MT_CQR_pong,
-
-        MT_order,
-        MT_CQB_next_order_request,
+        MT_order                    = 501,
+        MT_CQB_next_order_request   = 502,
 
         /*
-            Low (debug)
+            Low (debug) (600-799)
         */
 
-        MT_CQB_MC_pos,
-        MT_CQB_MC_angle_speed,
-        MT_CQB_MC_encs,
-        MT_CQB_MC_pids,
-        MT_CQB_MC_motors,
+        MT_CQB_MC_pos               = 701,
+        MT_CQB_MC_angle_speed       = 702,
+        MT_CQB_MC_pids              = 703,
+        MT_CQB_MC_motors            = 704,
+        MT_CQB_MC_encs              = 705,
 
-        MT_empty,
+        MT_empty                    = 800,  // placeholder, not actually used
     }               e_message_type;
 
     /*
@@ -87,13 +89,21 @@ public:
         char data[8];
     } CP_pong;
 
+    typedef struct {
+        s_vector_int16 pos;
+        float angle;
+    } CP_CQR_we_are_at;
+
+    typedef struct {
+        char padding[8];
+    } CP_CQR_reset;
+
     typedef s_order_com CP_order;
 
-    /*
-        From CQBOUGE
-    */
-
-    // info
+    typedef struct {
+        uint8_t count;
+        char padding[7];
+    } CP_CQB_next_order_request;
 
     typedef struct {
         s_vector_float pos;
@@ -102,12 +112,6 @@ public:
     typedef struct {
         float angle, speed;
     } CP_CQB_MC_angle_speed;
-
-    // debug
-
-    typedef struct {
-        int32_t enc_l, enc_r;
-    } CP_CQB_MC_encs;
 
     typedef struct {
         float dist, angle;
@@ -119,9 +123,8 @@ public:
     } CP_CQB_MC_motors;
 
     typedef struct {
-        uint8_t count;
-        char padding[7];
-    } CP_CQB_next_order_request;
+        int32_t enc_l, enc_r;
+    } CP_CQB_MC_encs;
 
     /*
         ** CAN Message **
@@ -130,20 +133,20 @@ public:
     typedef union {
         char raw_data[8];
 
-        CP_ping ping;
-        CP_pong pong;
+        CP_ping                     ping;
+        CP_pong                     pong;
 
-        CP_order order;
+        CP_CQR_we_are_at            CQR_we_are_at;
+        CP_CQR_reset                CQR_reset;
 
-        CP_CQB_MC_pos CQB_MC_pos;
+        CP_order                    order;
+        CP_CQB_next_order_request   CQB_next_order_request;
 
-        CP_CQB_MC_angle_speed CQB_MC_angle_speed;
-        CP_CQB_MC_encs CQB_MC_encs;
-        CP_CQB_MC_pids CQB_MC_pids;
-        CP_CQB_MC_motors CQB_MC_motors;
-
-        CP_CQB_next_order_request CQB_next_order_request;
-
+        CP_CQB_MC_pos               CQB_MC_pos;
+        CP_CQB_MC_angle_speed       CQB_MC_angle_speed;
+        CP_CQB_MC_pids              CQB_MC_pids;
+        CP_CQB_MC_motors            CQB_MC_motors;
+        CP_CQB_MC_encs              CQB_MC_encs;
     } u_payload;
 
     /*
@@ -158,7 +161,6 @@ public:
     */
 
     e_message_type id;  // lower = higher priority
-    // todo id:11 -> width of 'Message::id' exceeds its type
     uint8_t len;  // max len of a CAN message is 8 bytes
     u_payload payload;
 };
@@ -179,15 +181,17 @@ public:
     int send_msg_ping(char data[8]);
     int send_msg_pong(char data[8]);
 
+    int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
+    int send_msg_CQR_reset(void);
+
     int send_msg_order(s_order_com order);
+    int send_msg_CQB_next_order_request(uint8_t count);
 
     int send_msg_CQB_MC_pos(float x, float y);
     int send_msg_CQB_MC_angle_speed(float angle, float speed);
-    int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
-
-    int send_msg_CQB_next_order_request(uint8_t count);
+    int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
 
 private:
     /*

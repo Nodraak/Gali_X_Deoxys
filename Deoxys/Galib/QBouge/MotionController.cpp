@@ -39,6 +39,22 @@ MotionController::MotionController(void) :
     this->pidAngleSetGoal(0);  // pid's error
 
     timer_.start();
+    orders_ = new OrdersFIFO(ORDERS_COUNT);
+
+    this->reset();
+
+    buzzer_.period_us(1);
+}
+
+
+void MotionController::we_are_at(int16_t x, int16_t y, float angle) {
+    pos_.x = x;
+    pos_.y = y;
+    angle_ = angle;
+}
+
+
+void MotionController::reset(void) {
     enc_l_last_ = 0;
     enc_r_last_ = 0;
     last_order_timestamp_ = 0;
@@ -50,15 +66,13 @@ MotionController::MotionController(void) :
     pid_dist_out_ = 0;
     pid_angle_out_ = 0;
 
-    pos_.x = MC_START_X;
-    pos_.y = MC_START_Y;
-    angle_ = MC_START_ANGLE;
+    this->we_are_at(0, 0, 0);
     speed_ = 0;
     speed_ang_ = 0;
 
-    orders_ = new OrdersFIFO(ORDERS_COUNT);
     memset(&current_order_, 0, sizeof(s_order_exe));
-    current_order_.type = ORDER_EXE_TYPE_NONE;
+    current_order_.type = ORDER_EXE_TYPE_DELAY;
+    current_order_.delay = 0;  // make sure not to block the robot if another order comes
 
     last_order_request_timestamp_ = 0;
 }
@@ -236,12 +250,9 @@ int mc_updateCurOrder(
 
     switch (cur_order->type)
     {
-        case ORDER_EXE_TYPE_NONE:
-            dist = 0;
-            theta = 0;
-            break;
-
         case ORDER_EXE_TYPE_POS:
+            // position order
+
             dx = cur_order->pos.x - cur_pos.x;
             dy = cur_order->pos.y - cur_pos.y;
 
@@ -255,17 +266,30 @@ int mc_updateCurOrder(
             break;
 
         case ORDER_EXE_TYPE_ANGLE:
-            dist = 0;
+            // angle order while holding position
+
+            dx = cur_order->pos.x - cur_pos.x;
+            dy = cur_order->pos.y - cur_pos.y;
+
+            dist = DIST(dx, dy);
             theta = std_rad_angle(cur_order->angle - cur_angle);
 
-            if ((ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (ABS(cur_speed_ang) < MC_TARGET_TOLERANCE_ANG_SPEED))
+            if (
+                (ABS(dist) < MC_TARGET_TOLERANCE_DIST) && (ABS(cur_speed) < MC_TARGET_TOLERANCE_SPEED)
+                && (ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (ABS(cur_speed_ang) < MC_TARGET_TOLERANCE_ANG_SPEED)
+            )
                 ret = 1;
 
             break;
 
         case ORDER_EXE_TYPE_DELAY:
-            dist = 0;
-            theta = 0;
+            // delay order while holding position and angle
+
+            dx = cur_order->pos.x - cur_pos.x;
+            dy = cur_order->pos.y - cur_pos.y;
+
+            dist = DIST(dx, dy);
+            theta = std_rad_angle(cur_order->angle - cur_angle);
 
             if (time_since_last_order_finished > cur_order->delay)
                 ret = 1;
@@ -302,18 +326,18 @@ void MotionController::updateCurOrder(void) {
         &dist, &theta
     );
 
-    // if we dont have an order executing OR if we have achieved the current order
-    if ((current_order_.type == ORDER_EXE_TYPE_NONE) || have_reached_cur_order)
+    // if we have achieved the current order
+    if (have_reached_cur_order)
     {
+        // if no other orders in the queue, hold angle and position
         if (orders_->size() == 0)
         {
-            current_order_.type = ORDER_EXE_TYPE_NONE;
+            current_order_.type = ORDER_EXE_TYPE_DELAY;
+            current_order_.delay = 0;  // make sure not to block the robot if another order comes
         }
-        // if we have orders available in the queue
+        // else, consume the next order
         else
         {
-            // then, consume the next order
-
             s_order_com *next = this->orders_->front();
 
             switch (next->type)
