@@ -8,6 +8,7 @@
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
+#include "common/sys.h"
 #include "QBouge/MotionController.h"
 
 #include "common/test.h"
@@ -30,49 +31,7 @@ void pre_init(Debug *debug)
     debug->printf("IAM_QREFLECHI\n");
 #endif
 
-    debug->printf("Reset source:\n");
-
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_OBLRST))
-        debug->printf("\tRCC_FLAG_OBLRST    Option Byte Load reset\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST))
-        debug->printf("\tRCC_FLAG_PINRST    Pin reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST))
-        debug->printf("\tRCC_FLAG_PORRST    POR/PDR reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST))
-        debug->printf("\tRCC_FLAG_SFTRST    Software reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))
-        debug->printf("\tRCC_FLAG_IWDGRST   Independent Watchdog reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST))
-        debug->printf("\tRCC_FLAG_WWDGRST   Window Watchdog reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST))
-        debug->printf("\tRCC_FLAG_LPWRRST   Low Power reset.\n");
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_V18PWRRST))
-        debug->printf("\tRCC_FLAG_V18PWRRST Reset flag of the 1.8 V domain\n");  // specifiic to F303x8
-    debug->printf("\t-\n");
-
-    debug->printf("\n");
-}
-
-
-void interrupt_priorities_init(void)
-{
-    NVIC_SetPriorityGrouping(0);
-
-    NVIC_SetPriority(EXTI0_IRQn, 1);
-    NVIC_SetPriority(EXTI1_IRQn, 1);
-    NVIC_SetPriority(EXTI2_TSC_IRQn, 2);
-    NVIC_SetPriority(EXTI3_IRQn, 2);
-
-    NVIC_SetPriority(TIM2_IRQn, 5); // asserv
-
-    NVIC_SetPriority(CAN_TX_IRQn, 10);
-    NVIC_SetPriority(CAN_RX0_IRQn, 10);
-    NVIC_SetPriority(CAN_RX1_IRQn, 10);
-    NVIC_SetPriority(CAN_SCE_IRQn, 10);
-
-    NVIC_SetPriority(USART1_IRQn, 11);
-    NVIC_SetPriority(USART2_IRQn, 11);
-    NVIC_SetPriority(USART3_IRQn, 11);
+    sys_print_reset_source(debug);
 }
 
 
@@ -131,7 +90,7 @@ int main(void)
     asserv_ticker->attach(mc, &MotionController::asserv, ASSERV_DELAY);
 
     debug->printf("interrupt_priorities...\n");
-    interrupt_priorities_init();
+    sys_interrupt_priorities_init(debug);
 
     mem_stats_dynamic(debug);
 

@@ -4,8 +4,10 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/utils.h"
 
 #include "config.h"
+#include "pinout.h"
 
 #ifdef IAM_QBOUGE
     #include "PID.h"
@@ -98,6 +100,29 @@ void mem_stats_dynamic(Debug *debug)
 void mem_stats_settings(Debug *debug)
 {
     debug->printf("----- settings\n");
+
+#ifdef IAM_QBOUGE
+    debug->printf("\tMOTOR_L_PWM  = %s\n", pin2str(MOTOR_L_PWM));
+    debug->printf("\tMOTOR_L_DIR  = %s\n", pin2str(MOTOR_L_DIR));
+    debug->printf("\tMOTOR_L_CUR  = %s\n", pin2str(MOTOR_L_CUR));
+    debug->printf("\tMOTOR_L_TH   = %s\n", pin2str(MOTOR_L_TH));
+    debug->printf("\tMOTOR_L_BRK  = %s\n", pin2str(MOTOR_L_BRK));
+    debug->printf("\tENC_L_DATA1  = %s\n", pin2str(ENC_L_DATA1));
+    debug->printf("\tENC_L_DATA2  = %s\n", pin2str(ENC_L_DATA2));
+    debug->printf("\tMOTOR_R_PWM  = %s\n", pin2str(MOTOR_R_PWM));
+    debug->printf("\tMOTOR_R_DIR  = %s\n", pin2str(MOTOR_R_DIR));
+    debug->printf("\tMOTOR_R_CUR  = %s\n", pin2str(MOTOR_R_CUR));
+    debug->printf("\tMOTOR_R_TH   = %s\n", pin2str(MOTOR_R_TH));
+    debug->printf("\tMOTOR_R_BRK  = %s\n", pin2str(MOTOR_R_BRK));
+    debug->printf("\tENC_R_DATA1  = %s\n", pin2str(ENC_R_DATA1));
+    debug->printf("\tENC_R_DATA2  = %s\n", pin2str(ENC_R_DATA2));
+    debug->printf("\tXBEE_TX      = %s\n", pin2str(XBEE_TX));
+    debug->printf("\tXBEE_RX      = %s\n", pin2str(XBEE_RX));
+    debug->printf("\tCAN_TX       = %s\n", pin2str(CAN_TX));
+    debug->printf("\tCAN_RX       = %s\n", pin2str(CAN_RX));
+    debug->printf("\tBUZZER_PIN   = %s\n", pin2str(BUZZER_PIN));
+    debug->printf("\n");
+#endif
 
 #ifdef IAM_QBOUGE
     debug->printf("\tMAIN_LOOP_FPS    %d\n", MAIN_LOOP_FPS);
