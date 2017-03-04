@@ -4,6 +4,6 @@
 #define MAIN_LOOP_FPS       10
 #define MAIN_LOOP_DELAY     (1.0/MAIN_LOOP_FPS)
 
-#define ORDERS_COUNT        30
+#define ORDERS_COUNT        100
 
 #endif // CONFIG_H_INCLUDED
