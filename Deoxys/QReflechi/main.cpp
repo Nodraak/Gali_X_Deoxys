@@ -80,6 +80,9 @@ int main(void)
     debug->printf("Initialisation done.\n\n");
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
+    messenger->send_msg_CQR_reset();
+    messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
+
     /*
         Ready, wait for tirette
     */

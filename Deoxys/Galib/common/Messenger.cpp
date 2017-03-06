@@ -7,7 +7,7 @@
 #include "QBouge/MotionController.h"
 #include "pinout.h"
 
-#include "Messenger.h"
+#include "common/Messenger.h"
 
 
 /*
@@ -52,7 +52,8 @@ int CanMessenger::read_msg(Message *dest) {
     {
         dest->id = (Message::e_message_type)msg.id;
         dest->len = msg.len;
-        memcpy(dest->payload.raw_data, msg.data, 8);
+        memset(dest->payload.raw_data, 0, 8);
+        memcpy(dest->payload.raw_data, msg.data, msg.len);
     }
     return ret;
 }
@@ -61,17 +62,12 @@ int CanMessenger::read_msg(Message *dest) {
     CanMessenger::send_msg_*
 */
 
-int CanMessenger::send_msg_ping(char data[8]) {
+int CanMessenger::send_msg_ping(void) {
     Message::CP_ping payload;
-    if (data != NULL)
-        memcpy(payload.data, data, 8);
-    else
-        memset(payload.data, 0, 8);
-
     return this->send_msg(Message(Message::MT_ping, sizeof(payload), (Message::u_payload){.ping = payload}));
 }
 
-int CanMessenger::send_msg_pong(char data[8]) {
+int CanMessenger::send_msg_pong(void) {
     Message::e_message_type message_type;
     Message::CP_pong payload;
 
@@ -81,12 +77,18 @@ int CanMessenger::send_msg_pong(char data[8]) {
 #ifdef IAM_QREFLECHI
     message_type = Message::MT_CQR_pong;
 #endif
-    if (data != NULL)
-        memcpy(payload.data, data, 8);
-    else
-        memset(payload.data, 0, 8);
 
     return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
+}
+
+int CanMessenger::send_msg_CQR_match_start(void) {
+    Message::CP_CQR_match_start payload;
+    return this->send_msg(Message(Message::MT_CQR_match_start, sizeof(payload), (Message::u_payload){.CQR_match_start = payload}));
+}
+
+int CanMessenger::send_msg_CQR_match_stop(void) {
+    Message::CP_CQR_match_stop payload;
+    return this->send_msg(Message(Message::MT_CQR_match_stop, sizeof(payload), (Message::u_payload){.CQR_match_stop = payload}));
 }
 
 int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
@@ -94,13 +96,11 @@ int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
     payload.pos.x = x;
     payload.pos.y = y;
     payload.angle = angle;
-
     return this->send_msg(Message(Message::MT_CQR_we_are_at, sizeof(payload), (Message::u_payload){.CQR_we_are_at = payload}));
 }
 
 int CanMessenger::send_msg_CQR_reset(void) {
     Message::CP_CQR_reset payload;
-
     return this->send_msg(Message(Message::MT_CQR_reset, sizeof(payload), (Message::u_payload){.CQR_reset = payload}));
 }
 
@@ -120,7 +120,6 @@ int CanMessenger::send_msg_CQB_MC_pos(float x, float y) {
     Message::CP_CQB_MC_pos payload;
     payload.pos.x = x;
     payload.pos.y = y;
-
     return this->send_msg(Message(Message::MT_CQB_MC_pos, sizeof(payload), (Message::u_payload){.CQB_MC_pos = payload}));
 }
 

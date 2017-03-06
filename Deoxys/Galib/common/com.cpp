@@ -31,7 +31,7 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
     if (strcmp(ptr, "ping") == 0)
     {
         debug->printf("[UART] pong\n");
-        if (messenger->send_msg_ping(NULL))
+        if (messenger->send_msg_ping())
             debug->printf("[CAN] send_msg_ping() failed\n");
     }
     else if (strncmp(ptr, "order", 5) == 0)
@@ -94,7 +94,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
         {
             case Message::MT_ping:
                 debug->printf("[CAN] ping\n");
-                if (messenger->send_msg_pong(rec_msg.payload.ping.data))
+                if (messenger->send_msg_pong())
                     debug->printf("[CAN] send_msg_pong() failed\n");
                 break;
 
@@ -108,20 +108,26 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 
 #ifdef IAM_QBOUGE
             case Message::MT_CQR_we_are_at:
+                NVIC_DisableIRQ(TIM2_IRQn);
                 mc->we_are_at(
                     rec_msg.payload.CQR_we_are_at.pos.x,
                     rec_msg.payload.CQR_we_are_at.pos.y,
                     rec_msg.payload.CQR_we_are_at.angle
                 );
+                NVIC_EnableIRQ(TIM2_IRQn);
                 break;
 
             case Message::MT_CQR_reset:
+                NVIC_DisableIRQ(TIM2_IRQn);
                 mc->reset();
+                NVIC_EnableIRQ(TIM2_IRQn);
                 break;
 
             case Message::MT_order:
+                NVIC_DisableIRQ(TIM2_IRQn);
                 debug->printf("[CAN] rec MT_order (%d)\n", mc->orders_->push(rec_msg.payload.order));
                 // todo ack if ok, else send error
+                NVIC_EnableIRQ(TIM2_IRQn);
                 break;
 #endif
 

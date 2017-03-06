@@ -1,5 +1,8 @@
 
 #include "common/OrdersFIFO.h"
+
+#include "config.h"
+
 #include "demos.h"
 
 
@@ -104,10 +107,6 @@ int demo_360(OrdersFIFO *oc)
     return e;
 }
 
-
-#define MC_START_X          130
-#define MC_START_Y          (1080-150)
-#define MC_START_ANGLE      0
 
 s_order_com demo_table[DEMO_TABLE_SIZE] = {
     OrderCom_makeAbsPos(600-30-130-100, 1000),

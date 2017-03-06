@@ -52,6 +52,9 @@ public:
         MT_CQB_pong                 = 211,
         MT_CQR_pong                 = 212,
 
+        MT_CQR_match_start          = 220,
+        MT_CQR_match_stop           = 221,
+
         MT_CQR_we_are_at            = 310,
         MT_CQR_reset                = 311,
 
@@ -82,27 +85,25 @@ public:
     */
 
     typedef struct {
-        char data[8];
-    } CP_ping;
+    } s_no_payload;
 
-    typedef struct {
-        char data[8];
-    } CP_pong;
+    typedef s_no_payload CP_ping;
+    typedef s_no_payload CP_pong;
+
+    typedef s_no_payload CP_CQR_match_start;
+    typedef s_no_payload CP_CQR_match_stop;
 
     typedef struct {
         s_vector_int16 pos;
         float angle;
     } CP_CQR_we_are_at;
 
-    typedef struct {
-        char padding[8];
-    } CP_CQR_reset;
+    typedef s_no_payload CP_CQR_reset;
 
     typedef s_order_com CP_order;
 
     typedef struct {
         uint8_t count;
-        char padding[7];
     } CP_CQB_next_order_request;
 
     typedef struct {
@@ -135,6 +136,9 @@ public:
 
         CP_ping                     ping;
         CP_pong                     pong;
+
+        CP_CQR_match_start          CQR_match_start;
+        CP_CQR_match_stop           CQR_match_stop;
 
         CP_CQR_we_are_at            CQR_we_are_at;
         CP_CQR_reset                CQR_reset;
@@ -178,8 +182,11 @@ public:
     int read_msg(Message *msg);
 
     // data can be NULL if not payload is to be send with the pin/pong message.
-    int send_msg_ping(char data[8]);
-    int send_msg_pong(char data[8]);
+    int send_msg_ping(void);
+    int send_msg_pong(void);
+
+    int send_msg_CQR_match_start(void);
+    int send_msg_CQR_match_stop(void);
 
     int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
     int send_msg_CQR_reset(void);
