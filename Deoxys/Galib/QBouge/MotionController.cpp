@@ -25,7 +25,7 @@ MotionController::MotionController(void) :
     pid_angle_(PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D, ASSERV_DELAY)
 {
     pid_dist_.setInputLimits(-3*1000, 3*1000);  // dist (mm)
-    pid_dist_.setOutputLimits(-PID_DIST_MAX_OUPUT, PID_ANGLE_MAX_OUPUT);  // motor speed (~pwm)
+    pid_dist_.setOutputLimits(-PID_DIST_MAX_OUPUT, PID_DIST_MAX_OUPUT);  // motor speed (~pwm)
     pid_dist_.setMode(AUTO_MODE);  // AUTO_MODE or MANUAL_MODE
     pid_dist_.setBias(0); // magic *side* effect needed for the pid to work, don't comment this
     pid_dist_.setSetPoint(0);
