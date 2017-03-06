@@ -42,13 +42,12 @@ int main(void)
 
     debug->printf("Initializing\n");
 
-    mem_stats_dynamic(debug);
+    debug->printf("CanMessenger...\n");
+    CanMessenger *messenger = new CanMessenger;
+
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
-
-    debug->printf("CanMessenger...\n");
-    CanMessenger *messenger = new CanMessenger;
 
     debug->printf("Timer (loop)...\n");
     loop = new Timer;
@@ -62,7 +61,8 @@ int main(void)
     match->start();
 
     debug->printf("demo_load()...\n");
-    int ret = demo_load(orders, demo_table, DEMO_TABLE_SIZE);
+    int ret = 0;
+    ret = demo_load(orders, demo_table, DEMO_TABLE_SIZE);
     if (ret != 0)
     {
         debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
@@ -80,6 +80,36 @@ int main(void)
     debug->printf("Initialisation done.\n\n");
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
+
+    // wait for other boards to be alive
+    debug->printf("Waiting for other boards...\n");
+
+    bool alive = false;
+
+    while (!alive)
+    {
+        Message rec_msg;
+
+        messenger->send_msg_ping();
+
+        wait_ms(100);  // dont flood the can bus
+
+        while (messenger->read_msg(&rec_msg))
+        {
+
+            if (rec_msg.id == Message::MT_CQB_pong)
+            {
+                debug->printf("[can/rec] pong, breaking\n");
+                alive = true;
+            }
+        }
+
+        debug->printf("[can] reset\n");
+        messenger->set_silent(true);
+        wait_ms(5);
+        messenger->set_silent(false);
+    }
+
     messenger->send_msg_CQR_reset();
     messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
@@ -94,13 +124,20 @@ int main(void)
         Go!
     */
 
+    debug->printf("\nGo!\n");
+
     match->reset();
+    messenger->send_msg_CQR_match_start();
+
     while (true)  // todo match.read() < 90
     {
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match->read());
 
         // todo ping/pong each board -> if no response since XX, then do something
+
+        if (match->read_ms() > 90*1000)  // todo define
+            messenger->send_msg_CQR_match_stop();
 
         // update sharp + other sensors
 

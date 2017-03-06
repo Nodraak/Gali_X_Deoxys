@@ -11,8 +11,8 @@
     #define MOTOR_L_TH      NC
     #define MOTOR_L_BRK     NC
 
-    #define ENC_L_DATA1     D3  // PB_0
-    #define ENC_L_DATA2     D12 // PB_4
+    #define ENC_L_DATA1     D3
+    #define ENC_L_DATA2     A1
 
     #define MOTOR_R_PWM     A5  // PA_6
     #define MOTOR_R_DIR     D13 // PB_3
@@ -20,8 +20,8 @@
     #define MOTOR_R_TH      NC
     #define MOTOR_R_BRK     NC
 
-    #define ENC_R_DATA1     A1  // PA_1
-    #define ENC_R_DATA2     A2  // PA_3
+    #define ENC_R_DATA1     D12
+    #define ENC_R_DATA2     A2
 
     #define XBEE_TX         D1
     #define XBEE_RX         D0

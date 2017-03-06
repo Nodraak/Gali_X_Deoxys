@@ -58,6 +58,8 @@
 class MotionController {
 public:
     MotionController(void);
+    void we_are_at(int16_t x, int16_t y, float angle);
+    void reset(void);
     ~MotionController(void);
 
     /*
@@ -135,7 +137,6 @@ public:
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
     Qei enc_l_, enc_r_;  // io interfaces
-public:  // todo fix this security issue
     PID pid_dist_, pid_angle_;
 private:
 
@@ -169,8 +170,15 @@ int mc_calcNewPos(
     float *new_angle_, float *new_x_, float *new_y_
 );
 
+/*
+    Move backward if angle is not in [-90; 90].
+*/
 void mc_calcDistThetaOrderPos(float *dist_, float *theta_);
 
+/*
+    Compute dist and theta which are the error the pid must correct.
+    It returns 1 if the current order is executed.
+*/
 int mc_updateCurOrder(
     s_vector_float cur_pos,  float cur_angle, float cur_speed, float cur_speed_ang,
     s_order_exe *cur_order, float time_since_last_order_finished,

@@ -17,7 +17,7 @@ void test_run_all(Debug *debug)
     test_mc_calcNewPos(debug);
     test_mc_calcDistThetaOrderPos(debug);
     test_mc_updateCurOrder(debug);
-    test_motor_cap_pwm(debug);
+    // test_motor_cap_pwm(debug);
 #endif
     debug->printf("[Tests] Done.\n");
 

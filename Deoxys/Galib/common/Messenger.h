@@ -179,6 +179,8 @@ class CanMessenger {
 public:
     CanMessenger(void);
 
+    void set_silent(bool enable);
+
     int read_msg(Message *msg);
 
     // data can be NULL if not payload is to be send with the pin/pong message.

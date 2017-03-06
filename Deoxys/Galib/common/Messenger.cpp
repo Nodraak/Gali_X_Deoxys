@@ -58,6 +58,10 @@ int CanMessenger::read_msg(Message *dest) {
     return ret;
 }
 
+void CanMessenger::set_silent(bool enable) {
+    can_.monitor(enable);
+}
+
 /*
     CanMessenger::send_msg_*
 */

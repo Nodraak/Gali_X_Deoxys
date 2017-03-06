@@ -51,6 +51,10 @@ void MotionController::we_are_at(int16_t x, int16_t y, float angle) {
     pos_.x = x;
     pos_.y = y;
     angle_ = angle;
+
+    current_order_.pos.x = x;
+    current_order_.pos.y = y;
+    current_order_.angle = angle;
 }
 
 
@@ -73,6 +77,8 @@ void MotionController::reset(void) {
     memset(&current_order_, 0, sizeof(s_order_exe));
     current_order_.type = ORDER_EXE_TYPE_DELAY;
     current_order_.delay = 0;  // make sure not to block the robot if another order comes
+
+    orders_->reset();
 
     last_order_request_timestamp_ = 0;
 }
@@ -261,7 +267,10 @@ int mc_updateCurOrder(
             mc_calcDistThetaOrderPos(&dist, &theta);
 
             if ((ABS(dist) < MC_TARGET_TOLERANCE_DIST) && (ABS(cur_speed) < MC_TARGET_TOLERANCE_SPEED))
+            {
+                cur_order->angle = cur_angle;  // save current angle if we need to hold it
                 ret = 1;
+            }
 
             break;
 
@@ -271,13 +280,10 @@ int mc_updateCurOrder(
             dx = cur_order->pos.x - cur_pos.x;
             dy = cur_order->pos.y - cur_pos.y;
 
-            dist = DIST(dx, dy);
             theta = std_rad_angle(cur_order->angle - cur_angle);
+            dist = DIST(dx, dy) * cos(atan2(dy, dx) - cur_angle);
 
-            if (
-                (ABS(dist) < MC_TARGET_TOLERANCE_DIST) && (ABS(cur_speed) < MC_TARGET_TOLERANCE_SPEED)
-                && (ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (ABS(cur_speed_ang) < MC_TARGET_TOLERANCE_ANG_SPEED)
-            )
+            if ((ABS(theta) < MC_TARGET_TOLERANCE_ANGLE) && (ABS(cur_speed_ang) < MC_TARGET_TOLERANCE_ANG_SPEED))
                 ret = 1;
 
             break;
@@ -288,8 +294,8 @@ int mc_updateCurOrder(
             dx = cur_order->pos.x - cur_pos.x;
             dy = cur_order->pos.y - cur_pos.y;
 
-            dist = DIST(dx, dy);
             theta = std_rad_angle(cur_order->angle - cur_angle);
+            dist = DIST(dx, dy) * cos(atan2(dy, dx) - cur_angle);
 
             if (time_since_last_order_finished > cur_order->delay)
                 ret = 1;
@@ -342,9 +348,6 @@ void MotionController::updateCurOrder(void) {
 
             switch (next->type)
             {
-                case ORDER_COM_TYPE_NONE:
-                    current_order_.type = ORDER_EXE_TYPE_NONE;
-                    break;
                 case ORDER_COM_TYPE_ABS_POS:
                     current_order_.type = ORDER_EXE_TYPE_POS;
                     current_order_.pos.x = next->order_data.abs_pos.x;

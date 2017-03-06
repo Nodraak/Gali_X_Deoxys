@@ -71,13 +71,13 @@ int main(void)
 
     debug->printf("Initializing\n");
 
-    mem_stats_dynamic(debug);
+    debug->printf("CanMessenger...\n");
+    messenger = new CanMessenger;
+
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
 
-    debug->printf("CanMessenger...\n");
-    messenger = new CanMessenger;
     debug->printf("Timer...\n");
     loop = new Timer;
     loop->start();
