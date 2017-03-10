@@ -81,6 +81,9 @@ int CanMessenger::send_msg_pong(void) {
 #ifdef IAM_QREFLECHI
     message_type = Message::MT_CQR_pong;
 #endif
+#ifdef IAM_QENTRESORT
+    message_type = Message::MT_CQES_pong;
+#endif
 
     return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
 }
@@ -120,18 +123,19 @@ int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
     ));
 }
 
-int CanMessenger::send_msg_CQB_MC_pos(float x, float y) {
-    Message::CP_CQB_MC_pos payload;
+int CanMessenger::send_msg_CQB_MC_pos_angle(float x, float y, float angle) {
+    Message::CP_CQB_MC_pos_angle payload;
     payload.pos.x = x;
     payload.pos.y = y;
-    return this->send_msg(Message(Message::MT_CQB_MC_pos, sizeof(payload), (Message::u_payload){.CQB_MC_pos = payload}));
+    payload.angle = angle;
+    return this->send_msg(Message(Message::MT_CQB_MC_pos_angle, sizeof(payload), (Message::u_payload){.CQB_MC_pos_angle = payload}));
 }
 
-int CanMessenger::send_msg_CQB_MC_angle_speed(float angle, float speed) {
-    Message::CP_CQB_MC_angle_speed payload;
-    payload.angle = angle;
+int CanMessenger::send_msg_CQB_MC_speeds(float speed, float speed_ang) {
+    Message::CP_CQB_MC_speeds payload;
     payload.speed = speed;
-    return this->send_msg(Message(Message::MT_CQB_MC_angle_speed, sizeof(payload), (Message::u_payload){.CQB_MC_angle_speed = payload}));
+    payload.speed_ang = speed_ang;
+    return this->send_msg(Message(Message::MT_CQB_MC_speeds, sizeof(payload), (Message::u_payload){.CQB_MC_speeds = payload}));
 }
 
 int CanMessenger::send_msg_CQB_MC_pids(float dist, float angle) {
@@ -153,4 +157,9 @@ int CanMessenger::send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r) {
     payload.enc_l = enc_l;
     payload.enc_r = enc_r;
     return this->send_msg(Message(Message::MT_CQB_MC_encs, sizeof(payload), (Message::u_payload){.CQB_MC_encs = payload}));
+}
+
+int CanMessenger::send_msg_CQB_sleeping_a_bit(void) {
+    Message::CP_CQB_sleeping_a_bit payload;
+    return this->send_msg(Message(Message::MT_CQB_sleeping_a_bit, sizeof(payload), (Message::u_payload){.CQB_sleeping_a_bit = payload}));
 }

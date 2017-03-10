@@ -10,11 +10,17 @@
 #define PWM_STEP                (6.0*ASSERV_DELAY)              // pwm goes from 0 to X over a 1 sec timespan
 #define PWM_ERROR_TOLERANCE     0.01                            // value under which a pwm value is considered zero
 
-#define MOTOR_DIR_LEFT_FORWARD 0
-#define MOTOR_DIR_LEFT_BACKWARD 1
-
-#define MOTOR_DIR_RIGHT_FORWARD 1
-#define MOTOR_DIR_RIGHT_BACKWARD 0
+/*
+    Forward and backward direction (value of the digital input `direction` of
+    the H bridge) for each motor.
+    The code is symetric (MOTOR_DIR_LEFT_FORWARD == MOTOR_DIR_RIGHT_FORWARD),
+    but the physical motors are not. This is because the PCB is not symetric.
+    Mind the plug-to-motor symetricity also.
+*/
+#define MOTOR_DIR_LEFT_FORWARD      1
+#define MOTOR_DIR_LEFT_BACKWARD     0
+#define MOTOR_DIR_RIGHT_FORWARD     1
+#define MOTOR_DIR_RIGHT_BACKWARD    0
 
 
 class Motor {

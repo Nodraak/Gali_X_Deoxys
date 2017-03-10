@@ -134,6 +134,8 @@ public:
     */
     void ordersReset(void);
 
+    int should_send_can_bus_sleeping(void);
+
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
     Qei enc_l_, enc_r_;  // io interfaces

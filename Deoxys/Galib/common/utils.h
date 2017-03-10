@@ -33,7 +33,9 @@ double constrain(double val, double min, double max);
 // check we know who we are
 #ifndef IAM_QBOUGE
     #ifndef IAM_QREFLECHI
-        #error I do not know who I am
+        #ifndef IAM_QENTRESORT
+            #error I do not know who I am
+        #endif
     #endif
 #endif
 

@@ -15,7 +15,9 @@ class Debug {
 public:
     typedef enum _Interface {
         DEBUG_PC,
+#ifndef IAM_QENTRESORT
         DEBUG_XBEE,
+#endif
         DEBUG_LAST,
         DEBUG_ALL
     } Interface;

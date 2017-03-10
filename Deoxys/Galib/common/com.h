@@ -19,4 +19,12 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #endif
 
+#ifdef IAM_QENTRESORT
+
+#include "QEntreQSort/ax12.h"
+
+void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm);
+
+#endif
+
 #endif

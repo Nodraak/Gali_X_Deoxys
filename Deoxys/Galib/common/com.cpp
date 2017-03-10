@@ -2,8 +2,9 @@
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
+#include "QEntreQSort/ax12.h"
 
-#include "com.h"
+#include "common/com.h"
 
 #ifdef IAM_QBOUGE
 #include "QBouge/MotionController.h"
@@ -86,24 +87,32 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
 #ifdef IAM_QREFLECHI
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
+#ifdef IAM_QENTRESORT
+void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm)
+#endif
 {
     Message rec_msg;
     while (messenger->read_msg(&rec_msg))
     {
+        debug->printf("[CAN/rec] id %d\n", rec_msg.id);
         switch (rec_msg.id)
         {
             case Message::MT_ping:
-                debug->printf("[CAN] ping\n");
+                debug->printf("[CAN/rec] ping. replying pong\n");
                 if (messenger->send_msg_pong())
                     debug->printf("[CAN] send_msg_pong() failed\n");
                 break;
 
             case Message::MT_CQB_pong:
-                debug->printf("[CAN] pong (CQB)\n");
+                debug->printf("[CAN/rec] pong (CQB)\n");
                 break;
 
             case Message::MT_CQR_pong:
-                debug->printf("[CAN] pong (CQR)\n");
+                debug->printf("[CAN/rec] pong (CQR)\n");
+                break;
+
+            case Message::MT_CQES_pong:
+                debug->printf("[CAN/rec] pong (CQES)\n");
                 break;
 
 #ifdef IAM_QBOUGE
@@ -144,6 +153,27 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
                     orders->pop(); // todo wait for ack before poping
                 }
                 break;
+
+        case Message::MT_CQB_MC_pos_angle:
+            debug->printf(
+                "[CAN/CQB] pos angle %d %d %.0f\n",
+                rec_msg.payload.CQB_MC_pos_angle.pos.x,
+                rec_msg.payload.CQB_MC_pos_angle.pos.y,
+                RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
+            );
+            break;
+
+        case Message::MT_CQB_MC_speeds:
+            debug->printf(
+                "[CAN/CQB] speeds %.0f %.0f\n",
+                rec_msg.payload.CQB_MC_speeds.speed,
+                rec_msg.payload.CQB_MC_speeds.speed_ang
+            );
+            break;
+
+        case Message::MT_CQB_sleeping_a_bit:
+            debug->printf("\n\n******\nsleeping\n******\n\n");
+            break;
 #endif
 
             default:

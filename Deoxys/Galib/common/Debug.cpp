@@ -4,18 +4,24 @@
 #include "mbed.h"
 #include "BufferedSerial.h"
 
+#include "common/sys.h"
 #include "pinout.h"
-#include "Debug.h"
+
+#include "common/Debug.h"
 
 
 Debug::Debug(void) :
 interfaces_{
     BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE),
+#ifndef IAM_QENTRESORT
     BufferedSerial(XBEE_TX, XBEE_RX, INTERFACE_BUFFER_SIZE),
+#endif
 },
 interfaces_str_{
     "pc",
+#ifndef IAM_QENTRESORT
     "xbee",
+#endif
 }
 {
     int i = 0;

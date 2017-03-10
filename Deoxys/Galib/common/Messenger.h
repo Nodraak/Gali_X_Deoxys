@@ -51,12 +51,16 @@ public:
         MT_ping                     = 210,
         MT_CQB_pong                 = 211,
         MT_CQR_pong                 = 212,
+        MT_CQES_pong                = 213,
 
         MT_CQR_match_start          = 220,
         MT_CQR_match_stop           = 221,
 
-        MT_CQR_we_are_at            = 310,
-        MT_CQR_reset                = 311,
+
+        MT_CQR_reset                = 310,
+        MT_CQR_we_are_at            = 311,
+
+        MT_CQB_sleeping_a_bit       = 320,
 
         /*
             Medium (default) (400-599)
@@ -69,8 +73,8 @@ public:
             Low (debug) (600-799)
         */
 
-        MT_CQB_MC_pos               = 701,
-        MT_CQB_MC_angle_speed       = 702,
+        MT_CQB_MC_pos_angle         = 701,
+        MT_CQB_MC_speeds            = 702,
         MT_CQB_MC_pids              = 703,
         MT_CQB_MC_motors            = 704,
         MT_CQB_MC_encs              = 705,
@@ -106,13 +110,12 @@ public:
         uint8_t count;
     } CP_CQB_next_order_request;
 
-    typedef struct {
-        s_vector_float pos;
-    } CP_CQB_MC_pos;
+    typedef CP_CQR_we_are_at CP_CQB_MC_pos_angle;
 
     typedef struct {
-        float angle, speed;
-    } CP_CQB_MC_angle_speed;
+        float speed;
+        float speed_ang;
+    } CP_CQB_MC_speeds;
 
     typedef struct {
         float dist, angle;
@@ -127,6 +130,8 @@ public:
         int32_t enc_l, enc_r;
     } CP_CQB_MC_encs;
 
+    typedef s_no_payload CP_CQB_sleeping_a_bit;
+
     /*
         ** CAN Message **
     */
@@ -140,17 +145,19 @@ public:
         CP_CQR_match_start          CQR_match_start;
         CP_CQR_match_stop           CQR_match_stop;
 
-        CP_CQR_we_are_at            CQR_we_are_at;
         CP_CQR_reset                CQR_reset;
+        CP_CQR_we_are_at            CQR_we_are_at;
 
         CP_order                    order;
         CP_CQB_next_order_request   CQB_next_order_request;
 
-        CP_CQB_MC_pos               CQB_MC_pos;
-        CP_CQB_MC_angle_speed       CQB_MC_angle_speed;
+        CP_CQB_MC_pos_angle         CQB_MC_pos_angle;
+        CP_CQB_MC_speeds            CQB_MC_speeds;
         CP_CQB_MC_pids              CQB_MC_pids;
         CP_CQB_MC_motors            CQB_MC_motors;
         CP_CQB_MC_encs              CQB_MC_encs;
+
+        CP_CQB_sleeping_a_bit       CQB_sleeping_a_bit;
     } u_payload;
 
     /*
@@ -196,11 +203,13 @@ public:
     int send_msg_order(s_order_com order);
     int send_msg_CQB_next_order_request(uint8_t count);
 
-    int send_msg_CQB_MC_pos(float x, float y);
-    int send_msg_CQB_MC_angle_speed(float angle, float speed);
+    int send_msg_CQB_MC_pos_angle(float x, float y, float angle);
+    int send_msg_CQB_MC_speeds(float speed, float speed_ang);
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
+
+    int send_msg_CQB_sleeping_a_bit(void);
 
 private:
     /*

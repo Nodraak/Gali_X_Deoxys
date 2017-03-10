@@ -84,34 +84,46 @@ int main(void)
     // wait for other boards to be alive
     debug->printf("Waiting for other boards...\n");
 
-    bool alive = false;
+    float last_ping_CQB = -1;
+    float last_ping_CQES = -1;
 
-    while (!alive)
+    Message rec_msg;
+    while (true)
     {
-        Message rec_msg;
+        debug->printf("[CAN] ping...\n");
 
         messenger->send_msg_ping();
 
-        wait_ms(100);  // dont flood the can bus
+        wait_ms(100);  // dont flood the can bus and wait a litle for the reply
 
         while (messenger->read_msg(&rec_msg))
         {
-
             if (rec_msg.id == Message::MT_CQB_pong)
-            {
-                debug->printf("[can/rec] pong, breaking\n");
-                alive = true;
-            }
+                last_ping_CQB = match->read();
+            if (rec_msg.id == Message::MT_CQES_pong)
+                last_ping_CQES = match->read();
         }
 
-        debug->printf("[can] reset\n");
+        if ((match->read()-last_ping_CQB < 0.500) && (match->read()-last_ping_CQES < 0.500))
+        {
+            debug->printf("[CAN/rec] pong from all, breaking\n");
+            break;
+        }
+        else
+        {
+            debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", match->read()-last_ping_CQB < 0.500, match->read()-last_ping_CQES < 0.500);
+        }
+
         messenger->set_silent(true);
         wait_ms(5);
         messenger->set_silent(false);
     }
 
+    debug->printf("[CAN] sending reset + we_are_at\n");
     messenger->send_msg_CQR_reset();
     messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
+
+    wait_ms(200);
 
     /*
         Ready, wait for tirette

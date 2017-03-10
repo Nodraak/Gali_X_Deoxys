@@ -7,7 +7,7 @@ MBED_DEFINES = -DMBED_HEAP_STATS_ENABLED=1 -DMBED_STACK_STATS_ENABLED=1
 
 # INFINITE_LOOP_AFTER_TESTS
 # DISABLE_TESTS
-CUSTOM_DEFINES = -DIAM_QBOUGE
+CUSTOM_DEFINES = -DIAM_QENTRESORT
 
 MBED_COMPILE_OPTIONS = -N out -m NUCLEO_$(BOARD) -t GCC_ARM -v $(MBED_DEFINES) $(CUSTOM_DEFINES)
 
@@ -23,8 +23,8 @@ stats:
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 soft_re:
-	rm -rf .build/NUCLEO_$(BOARD)/GCC_ARM/libs/Galib
-	rm -f .build/NUCLEO_$(BOARD)/GCC_ARM/main*
+	rm -r .build/NUCLEO_$(BOARD)/GCC_ARM/libs/Galib
+	rm .build/NUCLEO_$(BOARD)/GCC_ARM/main*
 	mbed compile $(MBED_COMPILE_OPTIONS)
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 

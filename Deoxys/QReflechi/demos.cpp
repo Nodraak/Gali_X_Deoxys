@@ -111,25 +111,25 @@ int demo_360(OrdersFIFO *oc)
 s_order_com demo_table[DEMO_TABLE_SIZE] = {
     OrderCom_makeAbsPos(600-30-130-100, 1000),
     OrderCom_makeAbsPos(600-30-130, 1000),
-    OrderCom_makeDelay(2.1),                // devant la starting zone
+    OrderCom_makeDelay(5.1),                // devant la starting zone
 
     OrderCom_makeRelDist(200),
     OrderCom_makeAbsPos(990, 630),
-    OrderCom_makeDelay(2.2),                // milieu du terrain
+    OrderCom_makeDelay(5.2),                // milieu du terrain
 
     OrderCom_makeAbsPos(1300, 270),
     OrderCom_makeAbsAngle(DEG2RAD(-85)),
     OrderCom_makeRelDist(70),
-    OrderCom_makeDelay(2.3),                // fusee
+    OrderCom_makeDelay(5.3),                // fusee
 
     OrderCom_makeAbsPos(1200, 550),
     OrderCom_makeAbsAngle(DEG2RAD(0)),
     OrderCom_makeAbsPos(2000-150-130-10, 800-60),
-    OrderCom_makeDelay(2.4),                // cylindre du fond
+    OrderCom_makeDelay(5.4),                // cylindre du fond
 
     OrderCom_makeAbsPos(1200, 600),
     OrderCom_makeAbsPos(1310, 770),
-    OrderCom_makeDelay(2.5),                // devant le palmier
+    OrderCom_makeDelay(5.5),                // devant le palmier
 
     OrderCom_makeRelDist(-150),
     OrderCom_makeAbsAngle(DEG2RAD(-45)),
@@ -138,7 +138,7 @@ s_order_com demo_table[DEMO_TABLE_SIZE] = {
     OrderCom_makeAbsPos(600-30-130, 1000),
     OrderCom_makeAbsPos(MC_START_X+100, MC_START_Y),
     OrderCom_makeAbsPos(MC_START_X, MC_START_Y),
-    OrderCom_makeDelay(2.6)                 // back home
+    OrderCom_makeDelay(5.6)                 // back home
 };
 
 

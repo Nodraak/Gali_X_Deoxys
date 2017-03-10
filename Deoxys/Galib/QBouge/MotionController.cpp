@@ -15,6 +15,7 @@
 
 #include "MotionController.h"
 
+int g_should_send_can_bus_sleeping = 0;
 
 MotionController::MotionController(void) :
     motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CUR, MOTOR_L_TH, MOTOR_L_BRK),
@@ -81,6 +82,8 @@ void MotionController::reset(void) {
     orders_->reset();
 
     last_order_request_timestamp_ = 0;
+
+    g_should_send_can_bus_sleeping = 0;
 }
 
 
@@ -369,6 +372,9 @@ void MotionController::updateCurOrder(void) {
                 case ORDER_COM_TYPE_DELAY:
                     current_order_.type = ORDER_EXE_TYPE_DELAY;
                     current_order_.delay = next->order_data.delay;
+
+                    g_should_send_can_bus_sleeping = 1;
+
                     break;
             }
 
@@ -486,16 +492,13 @@ void MotionController::debug(Debug *debug) {
 }
 
 void MotionController::debug(CanMessenger *cm) {
-    cm->send_msg_CQB_MC_pos(pos_.x, pos_.y);
-    cm->send_msg_CQB_MC_angle_speed(RAD2DEG(angle_), speed_);
+// todo: can fifo ? yes, but still take advantage of built in hw can fifo (of size 3 IIRC)
+    cm->send_msg_CQB_MC_pos_angle(pos_.x, pos_.y, angle_);
+    // cm->send_msg_CQB_MC_speeds(speed_, speed_ang_);
 
-    cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
-    cm->send_msg_CQB_MC_pids(pid_dist_out_, pid_angle_out_);
-    cm->send_msg_CQB_MC_motors(motor_l_.getSPwm(), motor_r_.getSPwm());
-
-    // cm->send_msg_CQB_MC_order_pos(int16_t x, int16_t y);
-    // cm->send_msg_CQB_MC_order_angle(float angle);
-    // cm->send_msg_CQB_MC_order_delay(float delay);
+    // cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
+    // cm->send_msg_CQB_MC_pids(pid_dist_out_, pid_angle_out_);
+    // cm->send_msg_CQB_MC_motors(motor_l_.getSPwm(), motor_r_.getSPwm());
 }
 
 void MotionController::pidDistSetGoal(float goal) {
@@ -518,6 +521,15 @@ void MotionController::ordersReset(void) {
     current_order_.type = ORDER_EXE_TYPE_NONE;
 
     orders_->reset();
+}
+
+int MotionController::should_send_can_bus_sleeping(void) {
+    if (g_should_send_can_bus_sleeping)
+    {
+        g_should_send_can_bus_sleeping = false;
+        return true;
+    }
+    return false;
 }
 
 #endif // #ifdef IAM_QBOUGE

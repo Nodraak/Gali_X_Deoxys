@@ -42,14 +42,14 @@ int main(void)
     Timer *loop = NULL;
     Ticker *asserv_ticker = NULL;
 
-    PwmOut ml(MOTOR_L_PWM);
-    ml.period(0.001 * 0.05);
-    ml.write(0);
-    PwmOut mr(MOTOR_R_PWM);
-    mr.period(0.001 * 0.05);
-    mr.write(0);
+    PwmOut *ml = new PwmOut(MOTOR_L_PWM);
+    ml->period(0.001 * 0.05);
+    ml->write(0);
+    PwmOut *mr = new PwmOut(MOTOR_R_PWM);
+    mr->period(0.001 * 0.05);
+    mr->write(0);
 
-    PwmOut buzzer_(A7);
+    PwmOut buzzer_(BUZZER_PIN);
 
     buzzer_.period(1./2000);
     buzzer_.write(0.50);
@@ -108,9 +108,8 @@ int main(void)
 
     while (true)
     {
-        debug->printf("[timer/match] %.3f\n", match.read());
-
         loop->reset();
+        debug->printf("[timer/match] %.3f\n", match.read());
 
         com_handle_can(debug, messenger, mc);
 
@@ -120,7 +119,13 @@ int main(void)
             messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
         }
 
+        if (mc->should_send_can_bus_sleeping())
+        {
+            messenger->send_msg_CQB_sleeping_a_bit();
+        }
+
         mc->debug(debug);
+        mc->debug(messenger);
 
         main_sleep(debug, loop);
     }
