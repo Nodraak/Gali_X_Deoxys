@@ -43,8 +43,6 @@ MotionController::MotionController(void) :
     orders_ = new OrdersFIFO(ORDERS_COUNT);
 
     this->reset();
-
-    buzzer_.period_us(1);
 }
 
 

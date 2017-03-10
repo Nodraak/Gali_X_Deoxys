@@ -43,4 +43,6 @@ protected:
     Level current_level_;
 };
 
+void debug_pre_init(Debug *debug);
+
 #endif

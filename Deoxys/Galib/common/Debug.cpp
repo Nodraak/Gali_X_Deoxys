@@ -10,6 +10,22 @@
 #include "common/Debug.h"
 
 
+void debug_pre_init(Debug *debug)
+{
+#ifdef IAM_QBOUGE
+    debug->printf("IAM_QBOUGE\n");
+#endif
+#ifdef IAM_QREFLECHI
+    debug->printf("IAM_QREFLECHI\n");
+#endif
+#ifdef IAM_QENTRESORT
+    debug->printf("IAM_QENTRESORT\n");
+#endif
+
+    sys_print_reset_source(debug);
+}
+
+
 Debug::Debug(void) :
 interfaces_{
     BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE),

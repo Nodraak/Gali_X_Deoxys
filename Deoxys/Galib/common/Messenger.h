@@ -13,6 +13,10 @@
 */
 #define CAN_BUS_FREQUENCY (500*1000)
 
+#define CAN_FRAME_BUS_OCCUPATION        (1.0/CAN_BUS_FREQUENCY * (44+64))  // time in sec that a frame requiert to be transmitted
+#define CAN_MAX_MSG_PER_SEC             (1.0/CAN_FRAME_BUS_OCCUPATION)
+#define CAN_MAX_MSG_PER_ASSERV_FRAME    (CAN_MAX_MSG_PER_SEC/ASSERV_FPS)
+// todo print theses stats
 
 /*
     The Message is mostly used internally by the CanMessenger class, you most

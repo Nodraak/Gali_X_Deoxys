@@ -22,16 +22,34 @@ MotionController *mc = NULL;
 bool request_next_order = false;
 void asserv_main(void);
 
-void pre_init(Debug *debug)
-{
-#ifdef IAM_QBOUGE
-    debug->printf("IAM_QBOUGE\n");
-#endif
-#ifdef IAM_QREFLECHI
-    debug->printf("IAM_QREFLECHI\n");
-#endif
 
-    sys_print_reset_source(debug);
+PwmOut buzzer_(BUZZER_PIN);
+
+void bip(void)
+{
+    buzzer_.period(1./4000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+
+    buzzer_.period_us(1);
+    wait_ms(200);
+
+    buzzer_.period(1./4000);
+    buzzer_.write(0.50);
+    wait_ms(200);
+
+    buzzer_.period_us(1);
+}
+
+
+int demo_load(MotionController *mc, s_order_com *demo, int demo_size)
+{
+    int e = 0, i = 0;
+
+    for (i = 0; i < demo_size; ++i)
+        e += mc->orders_->push(demo[i]);
+
+    return e;
 }
 
 
@@ -49,8 +67,6 @@ int main(void)
     mr->period(0.001 * 0.05);
     mr->write(0);
 
-    PwmOut buzzer_(BUZZER_PIN);
-
     buzzer_.period(1./2000);
     buzzer_.write(0.50);
     wait_ms(200);
@@ -60,14 +76,13 @@ int main(void)
     buzzer_.period(1./4000);
     buzzer_.write(0.50);
     wait_ms(400);
-    buzzer_.period_us(1);
 
     /*
         Initializing
     */
 
     debug = new Debug;
-    pre_init(debug);
+    debug_pre_init(debug);
 
     debug->printf("Initializing\n");
 
@@ -97,6 +112,12 @@ int main(void)
     debug->printf("Initialisation done.\n\n");
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
+    bip();
+
+    wait(1);
+
+    delete ml;
+    delete mr;
     // todo wait for tirette (can msg)
 
     /*

@@ -25,7 +25,7 @@ int main(void)
         Initializing
     */
 
-    PwmOut buzzer_(PC_8);
+    PwmOut buzzer_(BUZZER_PIN);
 
     buzzer_.period(1./4000);
     buzzer_.write(0.50);
@@ -39,6 +39,7 @@ int main(void)
     buzzer_.period_us(1);
 
     debug = new Debug;
+    debug_pre_init(debug);
 
     debug->printf("Initializing\n");
 
@@ -80,6 +81,11 @@ int main(void)
     debug->printf("Initialisation done.\n\n");
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
+
+#define ASSERV_FPS 200
+    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
+    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
+    debug->printf("CAN_MAX_MSG_PER_ASSERV_FRAME %.1f\n", CAN_MAX_MSG_PER_ASSERV_FRAME);
 
     // wait for other boards to be alive
     debug->printf("Waiting for other boards...\n");
