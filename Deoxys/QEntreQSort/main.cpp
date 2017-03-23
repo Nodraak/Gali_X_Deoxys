@@ -56,7 +56,7 @@ g_debug = debug;
     loop->start();
 
     debug->printf("AX12_arm...\n");
-    AX12_arm ax12_arm(6, 1, 5, 8, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);
+    AX12_arm ax12_arm(1, 5, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);
 
     mem_stats_dynamic(debug);
 
@@ -82,7 +82,7 @@ g_debug = debug;
         Go!
     */
 
-    int pos[5] = {520, 630, 50, 410, 330};
+    int pos[5] = {630, 50, 330};
 
     Timer t;
     t.start();
@@ -119,9 +119,9 @@ g_debug = debug;
                 b = atoi(ptr);
 
                 pos[a] = b;
-                printf("have pos %d %d %d %d %d\n", pos[0], pos[1], pos[2], pos[3], pos[4]);
+                printf("have pos %d %d %d\n", pos[0], pos[1], pos[2]);
 
-                ax12_arm.write_pos_all(pos[0], pos[1], pos[2], pos[3], pos[4]);
+                ax12_arm.write_pos_all(pos[0], pos[1], pos[2]);
             }
             else
                 debug->printf("unknown cmd\n");
@@ -131,9 +131,9 @@ g_debug = debug;
         wait_ms(100);
     }
 
-ax12_arm.write_pos_all(530, 660, 613, 610, 330);
+ax12_arm.write_pos_all(660, 613, 330);
 wait_ms(1000);
-ax12_arm.write_pos_all(507, 700-100, 920-50, 510+100, 317);
+ax12_arm.write_pos_all(700-100, 920-50, 317);
 wait_ms(1000);
 
     Timer match;

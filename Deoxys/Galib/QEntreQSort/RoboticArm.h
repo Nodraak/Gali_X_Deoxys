@@ -25,7 +25,8 @@
 #define AX12_E_ID           (-257)
 #define AX12_E_LEN          (-258)
 #define AX12_E_CHECKSUM     (-259)
-#define AX12_E_UNKNOWN      (-260)
+#define AX12_E_UNHANDLED_CMD (-260)
+#define AX12_E_READ_CMD     (-261)
 
 #define BAUD_RATE                       (200*1000)
 #define MAX_BITS_PER_MSG_REQUEST        70
@@ -60,8 +61,6 @@ public:
     AX12(void);
 
 private:
-    void set_baud(int baud);
-
     void txrx_set_rx(void);
     void txrx_set_tx(void);
 
@@ -72,8 +71,8 @@ private:
             between -255 and -1: error returned by the AX12
             < -255: error during reception
     */
-    int ___send_request(uint8_t payload_len, uint8_t *payload_data);
-    int __send_request(uint8_t len, uint8_t *data);
+    int __send_request(uint8_t payload_len, uint8_t *payload_data);
+    int _send_request_with_retries(uint8_t len, uint8_t *data);
 
     int _read(uint8_t id, uint8_t instruction_len, uint8_t instruction_cmd, uint8_t addr, uint8_t read_len);
     int _write(uint8_t id, uint8_t instruction_len, uint8_t instruction_cmd, uint8_t addr, uint8_t data1);
@@ -109,12 +108,12 @@ private:
 
 class AX12_arm {
 public:
-    AX12_arm(int id_base, int id_vert1, int id_vert2, int id_vert3, int id_horiz, PinName pin_pwm, PinName valve);
+    AX12_arm(int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve);
 
     void ping_all(void);
 
     void read_pos_all(void);
-    void write_pos_all(int pos1, int pos2, int pos3, int pos4, int pos5);
+    void write_pos_all(int pos1, int pos2, int pos3);
 
     void read_speed_all(void);
     void write_speed_all(uint16_t speed);
@@ -126,15 +125,16 @@ public:
     void set_valve_off(void);
 
     void arm_move_down(void);
-    void arm_move_up(void);
+    void arm_move_up_right(void);
+    void arm_move_up_left(void);
 
     void do_sequence(void);
 
 private:
-    int id_base_, id_vert1_, id_vert2_, id_vert3_, id_horiz_;
+    int id_base_, id_vert_, id_horiz_;
     AX12 ax12_;
     PwmOut servo_;
     DigitalOut valve_;
 };
 
-#endif  // #ifndef ROBOTIC_ARM_H_INCLUDE
+#endif  // #ifndef ROBOTIC_ARM_H_INCLUDED

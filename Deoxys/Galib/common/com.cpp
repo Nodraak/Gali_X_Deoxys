@@ -2,12 +2,15 @@
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
-#include "QEntreQSort/RoboticArm.h"
 
 #include "common/com.h"
 
 #ifdef IAM_QBOUGE
 #include "QBouge/MotionController.h"
+#endif
+
+#ifdef IAM_QENTRESORT
+#include "QEntreQSort/RoboticArm.h"
 #endif
 
 
