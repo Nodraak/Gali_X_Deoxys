@@ -7,7 +7,7 @@
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
-#include "QEntreQSort/ax12.h"
+#include "QEntreQSort/RoboticArm.h"
 
 #include "common/test.h"
 
