@@ -360,7 +360,7 @@ void MotionController::updateMotors(void) {
         // two two magnitudes (in order to keep the scale)
         if ((ABS(mot_l_val) > 1) || (ABS(mot_r_val) > 1))
         {
-            m = ABS(MAX(mot_l_val, mot_r_val));
+            m = MAX(ABS(mot_l_val), ABS(mot_r_val));
             mot_l_val /= m;
             mot_r_val /= m;
         }

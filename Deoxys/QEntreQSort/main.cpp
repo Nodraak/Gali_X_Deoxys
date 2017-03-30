@@ -17,6 +17,10 @@
 
 Debug *g_debug = NULL;
 
+DigitalOut led_status(A5);
+DigitalOut led_ping_CQR(A4);
+
+
 int main(void)
 {
     Debug *debug = NULL;
@@ -28,17 +32,9 @@ int main(void)
     bool is_current_order_executed_ = false;
     float last_order_executed_timestamp = -1;
 
-    PwmOut buzzer_(BUZZER_PIN);
+    led_status = 1;
+    led_ping_CQR = 0;
 
-    buzzer_.period(1./2000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./2000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./2000);
-    buzzer_.write(0.50);
-    wait_ms(400);
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
     /*
@@ -53,6 +49,8 @@ g_debug = debug;
 
     debug->printf("CanMessenger...\n");
     messenger = new CanMessenger;
+
+    led_status = 0;
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
@@ -82,6 +80,8 @@ g_debug = debug;
             // break
     }
 
+    led_ping_CQR = 1;
+
     // todo wait for tirette (can msg)
 
     // while (1)
@@ -98,6 +98,8 @@ g_debug = debug;
     {
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match.read());
+
+        led_status = ((int)match.read()) % 2;
 
         com_handle_can(debug, messenger, orders, &ax12_arm);
 

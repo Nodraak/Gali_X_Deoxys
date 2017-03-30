@@ -23,36 +23,6 @@ bool request_next_order = false;
 void asserv_main(void);
 
 
-PwmOut buzzer_(BUZZER_PIN);
-
-void bip(void)
-{
-    buzzer_.period(1./4000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-
-    buzzer_.period_us(1);
-    wait_ms(200);
-
-    buzzer_.period(1./4000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-
-    buzzer_.period_us(1);
-}
-
-
-int demo_load(MotionController *mc, s_order_com *demo, int demo_size)
-{
-    int e = 0, i = 0;
-
-    for (i = 0; i < demo_size; ++i)
-        e += mc->orders_->push(demo[i]);
-
-    return e;
-}
-
-
 int main(void)
 {
     Debug *debug = NULL;
@@ -69,16 +39,6 @@ int main(void)
     PwmOut *mr = new PwmOut(MOTOR_R_PWM);
     mr->period(0.001 * 0.05);
     mr->write(0);
-
-    buzzer_.period(1./2000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./3000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./4000);
-    buzzer_.write(0.50);
-    wait_ms(400);
 
     /*
         Initializing

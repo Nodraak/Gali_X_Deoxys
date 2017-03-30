@@ -1,3 +1,5 @@
+#ifdef IAM_QENTRESORT
+
 #ifndef ROBOTIC_ARM_H_INCLUDED
 #define ROBOTIC_ARM_H_INCLUDED
 
@@ -136,4 +138,5 @@ private:
     DigitalOut valve_;
 };
 
-#endif  // #ifndef ROBOTIC_ARM_H_INCLUDED
+#endif // #ifndef ROBOTIC_ARM_H_INCLUDED
+#endif // #ifdef IAM_QENTRESORT

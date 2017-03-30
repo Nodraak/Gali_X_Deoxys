@@ -16,6 +16,11 @@
 #include "pinout.h"
 
 
+DigitalOut led_status(A5);
+DigitalOut led_ping_CQB(A4);
+DigitalOut led_ping_CQES(A3);
+
+
 int main(void)
 {
     Debug *debug = NULL;
@@ -24,6 +29,10 @@ int main(void)
     /*
         Initializing
     */
+
+    led_status = 1;
+    led_ping_CQB = 0;
+    led_ping_CQES = 0;
 
     PwmOut buzzer_(BUZZER_PIN);
 
@@ -45,6 +54,8 @@ int main(void)
 
     debug->printf("CanMessenger...\n");
     CanMessenger *messenger = new CanMessenger;
+
+    led_status = 0;
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
@@ -92,6 +103,8 @@ int main(void)
     Message rec_msg;
     while (true)
     {
+        led_status = ((int)match->read()) % 2;
+
         debug->printf("[CAN] ping...\n");
 
         messenger->send_msg_ping();
@@ -137,6 +150,9 @@ int main(void)
 
     wait_ms(200);
 
+    led_ping_CQB = 1;
+    led_ping_CQES = 1;
+
     /*
         Ready, wait for tirette
     */
@@ -157,6 +173,8 @@ int main(void)
     {
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match->read());
+
+        led_status = ((int)match->read()) % 2;
 
         // todo ping/pong each board -> if no response since XX, then do something
 

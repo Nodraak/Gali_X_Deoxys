@@ -1,3 +1,5 @@
+#ifdef IAM_QBOUGE
+
 /*
     Code forked from https://developer.mbed.org/users/aberk/code/QEI/
     Changes:
@@ -48,4 +50,5 @@ private:
     volatile int pulses_;
 };
 
-#endif /* QEI_H */
+#endif // #ifdef QEI_H_INCLUDED
+#endif // #ifdef IAM_QBOUGE

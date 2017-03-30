@@ -1,3 +1,4 @@
+#ifdef IAM_QENTRESORT
 
 /*
 void BufferedSerial::clear(void) {
@@ -339,3 +340,5 @@ void AX12_arm::seq_move_down(void) {
 g_debug->printf("\tmove down\n");
     this->arm_move_down();
 }
+
+#endif // #ifdef IAM_QENTRESORT

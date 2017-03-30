@@ -21,9 +21,6 @@
     #define ENC_R_DATA1     A1
     #define ENC_R_DATA2     A2
 
-    #define XBEE_TX         D1
-    #define XBEE_RX         D0
-
     #define CAN_TX          D2
     #define CAN_RX          D10
 

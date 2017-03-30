@@ -1,3 +1,4 @@
+#ifdef IAM_QBOUGE
 
 #include "QBouge/Qei.h"
 
@@ -10,10 +11,10 @@ Qei::Qei(PinName channelA, PinName channelB): channelA_(channelA), channelB_(cha
     prevState_ = currState_;
 
     // register isr
-    channelA_.rise(this, &Qei::encode);
-    channelA_.fall(this, &Qei::encode);
-    channelB_.rise(this, &Qei::encode);
-    channelB_.fall(this, &Qei::encode);
+    channelA_.rise(callback(this, &Qei::encode));
+    channelA_.fall(callback(this, &Qei::encode));
+    channelB_.rise(callback(this, &Qei::encode));
+    channelB_.fall(callback(this, &Qei::encode));
 }
 
 int Qei::getPulses(void) {
@@ -41,3 +42,5 @@ void Qei::encode(void) {
 
     prevState_ = currState_;
 }
+
+#endif // #ifdef IAM_QBOUGE
