@@ -85,13 +85,13 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #endif
 
 #ifdef IAM_QBOUGE
-void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, MotionController *mc)
 #endif
 #ifdef IAM_QREFLECHI
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 #ifdef IAM_QENTRESORT
-void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, AX12_arm *ax12_arm)
 #endif
 {
     Message rec_msg;
@@ -136,10 +136,14 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm)
                 break;
 
             case Message::MT_order:
-                NVIC_DisableIRQ(TIM2_IRQn);
-                debug->printf("[CAN] rec MT_order (%d)\n", mc->orders_->push(rec_msg.payload.order));
                 // todo ack if ok, else send error
-                NVIC_EnableIRQ(TIM2_IRQn);
+                // todo sync with CQES
+                debug->printf("[CAN] rec MT_order (%d)\n", orders->push(rec_msg.payload.order));
+                break;
+
+            case Message::MT_CQES_finished:
+                if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED)
+                    mc->is_current_order_executed_ = true;
                 break;
 #endif
 
@@ -157,26 +161,39 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm)
                 }
                 break;
 
-        case Message::MT_CQB_MC_pos_angle:
-            debug->printf(
-                "[CAN/CQB] pos angle %d %d %.0f\n",
-                rec_msg.payload.CQB_MC_pos_angle.pos.x,
-                rec_msg.payload.CQB_MC_pos_angle.pos.y,
-                RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
-            );
-            break;
+            case Message::MT_CQB_MC_pos_angle:
+                debug->printf(
+                    "[CAN/CQB] pos angle %d %d %.0f\n",
+                    rec_msg.payload.CQB_MC_pos_angle.pos.x,
+                    rec_msg.payload.CQB_MC_pos_angle.pos.y,
+                    RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
+                );
+                break;
+#endif
 
-        case Message::MT_CQB_MC_speeds:
-            debug->printf(
-                "[CAN/CQB] speeds %.0f %.0f\n",
-                rec_msg.payload.CQB_MC_speeds.speed,
-                rec_msg.payload.CQB_MC_speeds.speed_ang
-            );
-            break;
+#ifdef IAM_QENTRESORT
+            case Message::MT_CQB_MC_pos_angle:
+                // ignore on CQES
+                break;
 
-        case Message::MT_CQB_sleeping_a_bit:
-            debug->printf("\n\n******\nsleeping\n******\n\n");
-            break;
+            case Message::MT_CQR_reset:
+                orders->reset();
+                break;
+
+            case Message::MT_order:
+                debug->printf(
+                    "[CAN] rec MT_order (%d) (%s)\n",
+                    orders->push(rec_msg.payload.order),
+                    e2s_order_com_type[rec_msg.payload.order.type]
+                );
+                // todo sync with CQB
+                break;
+
+            case Message::MT_CQB_finished:
+                debug->printf("[CAN/rec] MT_CQB_finished\n");
+                if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
+                    orders->current_order_.type = ORDER_EXE_TYPE_NONE;
+                break;
 #endif
 
             default:

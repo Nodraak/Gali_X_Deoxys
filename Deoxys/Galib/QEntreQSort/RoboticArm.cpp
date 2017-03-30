@@ -303,55 +303,39 @@ void AX12_arm::set_valve_off(void) {
 void AX12_arm::arm_move_down(void) {
     this->write_pos_all(800, 195, 330);
 }
+
 void AX12_arm::arm_move_up_right(void) {
     this->write_pos_all(720, 780, 635);
 }
+
 void AX12_arm::arm_move_up_left(void) {
     this->write_pos_all(720, 780, 30);
 }
 
-void AX12_arm::do_sequence(void) {
-    int sleep_grab = 1000;
-    int sleep_move = 3000;
-    int sleep_leave = 500;
-
-g_debug->printf("do_sequence:\n");
-
-    // init
-g_debug->printf("\tset_servo_off\n");
+void AX12_arm::seq_init(void) {
+g_debug->printf("\tinit\n");
     this->set_servo_off();
-g_debug->printf("\tset_valve_on\n");
+    this->arm_move_down();
+}
+
+void AX12_arm::seq_grab(void) {
+g_debug->printf("\tgrab\n");
     this->set_valve_on();
-g_debug->printf("\tarm_move_down\n");
-    this->arm_move_down();
-g_debug->printf("\twait_ms\n");
-    wait_ms(sleep_move);
-
-    // grab
-g_debug->printf("\tset_servo_on\n");
     this->set_servo_on();
-g_debug->printf("\twait_ms\n");
-    wait_ms(500);  // just enough for the servo to move and the valve to catch
-g_debug->printf("\tset_servo_off\n");
+}
+
+void AX12_arm::seq_move_up(void) {
+g_debug->printf("\tmove up\n");
     this->set_servo_off();
-g_debug->printf("\twait_ms\n");
-    wait_ms(sleep_grab);
-
-    // move up
-g_debug->printf("\tarm_move_up\n");
     this->arm_move_up_right();
-g_debug->printf("\twait_ms\n");
-    wait_ms(sleep_move);  // make sure it is in proper pos
+}
 
-    // leave
-g_debug->printf("\tset_valve_off\n");
+void AX12_arm::seq_release(void) {
+g_debug->printf("\trelease\n");
     this->set_valve_off();
-g_debug->printf("\twait_ms\n");
-    wait_ms(sleep_leave);
+}
 
-    // go back in starting pos
-g_debug->printf("\tarm_move_down\n");
+void AX12_arm::seq_move_down(void) {
+g_debug->printf("\tmove down\n");
     this->arm_move_down();
-g_debug->printf("\twait_ms\n");
-    wait_ms(sleep_move);
 }

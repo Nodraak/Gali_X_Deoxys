@@ -3,12 +3,13 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 
 #ifdef IAM_QBOUGE
 
 #include "QBouge/MotionController.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, MotionController *mc);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, MotionController *mc);
 
 #endif
 
@@ -23,7 +24,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #include "QEntreQSort/RoboticArm.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, AX12_arm *ax12_arm);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, AX12_arm *ax12_arm);
 
 #endif
 

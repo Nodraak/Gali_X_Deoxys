@@ -1,32 +1,27 @@
 #ifndef ROBOTIC_ARM_H_INCLUDED
 #define ROBOTIC_ARM_H_INCLUDED
 
+#include "pinout.h"
 
-#define AX12_PIN_SWITCH     D13
-#define AX12_PIN_TX         D1
-#define AX12_PIN_RX         D0
-#define AX12_PIN_SERVO      D5
-#define AX12_PIN_VALVE      D12
-
-#define AX12_PING_CMD       0x1
-#define AX12_PING_LEN       (2+0)
-#define AX12_READ_CMD       0x2
-#define AX12_READ_LEN       (2+2)
-#define AX12_READ_1B        1
-#define AX12_READ_2B        2
-#define AX12_WRITE_CMD      0x3
-#define AX12_WRITE_1B_LEN   (3+1)
-#define AX12_WRITE_2B_LEN   (3+2)
-#define AX12_RESET_CMD      0x6
-#define AX12_RESET_LEN      (2+0)
+#define AX12_PING_CMD           0x1
+#define AX12_PING_LEN           (2+0)
+#define AX12_READ_CMD           0x2
+#define AX12_READ_LEN           (2+2)
+#define AX12_READ_1B            1
+#define AX12_READ_2B            2
+#define AX12_WRITE_CMD          0x3
+#define AX12_WRITE_1B_LEN       (3+1)
+#define AX12_WRITE_2B_LEN       (3+2)
+#define AX12_RESET_CMD          0x6
+#define AX12_RESET_LEN          (2+0)
 
 // errors -255 to -1 are reserved for error code returned by the AX12
-#define AX12_E_TIMEOUT      (-256)
-#define AX12_E_ID           (-257)
-#define AX12_E_LEN          (-258)
-#define AX12_E_CHECKSUM     (-259)
-#define AX12_E_UNHANDLED_CMD (-260)
-#define AX12_E_READ_CMD     (-261)
+#define AX12_E_TIMEOUT          (-256)
+#define AX12_E_ID               (-257)
+#define AX12_E_LEN              (-258)
+#define AX12_E_CHECKSUM         (-259)
+#define AX12_E_UNHANDLED_CMD    (-260)
+#define AX12_E_READ_CMD         (-261)
 
 #define BAUD_RATE                       (200*1000)
 #define MAX_BITS_PER_MSG_REQUEST        70
@@ -34,9 +29,13 @@
 #define MAX_BITS_PER_MSG_RESPONSE       100
 #define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 750)  // us
 
-#define AX12_MAX_RETRIES                5
+#define AX12_MAX_RETRIES                3
 #define AX12_SLEEP_TIME_BETWEEN_RETRIES 5  // ms
-#define AX12_MAX_DELAY_DUE_TO_RETRIES   (AX12_MAX_RETRIES*AX12_SLEEP_TIME_BETWEEN_RETRIES*6)  // 4 ax12
+
+#define SLEEP_INIT      0.500  // time for the arm to move in ready pos (should already be ready)
+#define SLEEP_GRAB      0.500  // time for the servo to move (to catch the cylinder)
+#define SLEEP_MOVE      1.000  // time for the arm to move
+#define SLEEP_RELEASE   0.100  // time for the arm to release the cylinder
 
 
 #if AX12_TIME_FOR_DATA_TO_BE_SENT > 1000  // us
@@ -49,10 +48,6 @@
 
 #if AX12_READ_TIMEOUT > 1500  // us
     #error "[AX12] AX12_READ_TIMEOUT is unnecessarly long. You should reduce it."
-#endif
-
-#if AX12_MAX_DELAY_DUE_TO_RETRIES > 250  // ms
-    #error "[AX12] In case of bad communication to the ax12, you might spend a lot of time trying to communicate."
 #endif
 
 
@@ -128,7 +123,11 @@ public:
     void arm_move_up_right(void);
     void arm_move_up_left(void);
 
-    void do_sequence(void);
+    void seq_init(void);
+    void seq_grab(void);
+    void seq_move_up(void);
+    void seq_release(void);
+    void seq_move_down(void);
 
 private:
     int id_base_, id_vert_, id_horiz_;

@@ -115,6 +115,14 @@ int CanMessenger::send_msg_order(s_order_com order) {
     return this->send_msg(Message(Message::MT_order, sizeof(order), (Message::u_payload){.order = order}));
 }
 
+int CanMessenger::send_msg_CQB_finished(void) {
+    return this->send_msg(Message(Message::MT_CQB_finished, 0, (Message::u_payload){}));
+}
+
+int CanMessenger::send_msg_CQES_finished(void) {
+    return this->send_msg(Message(Message::MT_CQES_finished, 0, (Message::u_payload){}));
+}
+
 int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
     Message::CP_CQB_next_order_request payload;
     payload.count = count;
@@ -157,9 +165,4 @@ int CanMessenger::send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r) {
     payload.enc_l = enc_l;
     payload.enc_r = enc_r;
     return this->send_msg(Message(Message::MT_CQB_MC_encs, sizeof(payload), (Message::u_payload){.CQB_MC_encs = payload}));
-}
-
-int CanMessenger::send_msg_CQB_sleeping_a_bit(void) {
-    Message::CP_CQB_sleeping_a_bit payload;
-    return this->send_msg(Message(Message::MT_CQB_sleeping_a_bit, sizeof(payload), (Message::u_payload){.CQB_sleeping_a_bit = payload}));
 }

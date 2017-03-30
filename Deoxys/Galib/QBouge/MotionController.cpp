@@ -15,7 +15,6 @@
 
 #include "MotionController.h"
 
-int g_should_send_can_bus_sleeping = 0;
 
 MotionController::MotionController(void) :
     motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CUR, MOTOR_L_TH, MOTOR_L_BRK),
@@ -40,7 +39,14 @@ MotionController::MotionController(void) :
     this->pidAngleSetGoal(0);  // pid's error
 
     timer_.start();
-    orders_ = new OrdersFIFO(ORDERS_COUNT);
+    last_order_executed_timestamp_ = 0;
+
+    current_order_.type = ORDER_EXE_TYPE_NONE;
+    current_order_.delay = 0;
+    current_order_.pos.x = 0;
+    current_order_.pos.y = 0;
+    current_order_.angle = 0;
+    is_current_order_executed_ = false;
 
     this->reset();
 }
@@ -60,7 +66,6 @@ void MotionController::we_are_at(int16_t x, int16_t y, float angle) {
 void MotionController::reset(void) {
     enc_l_last_ = 0;
     enc_r_last_ = 0;
-    last_order_timestamp_ = 0;
 
     enc_l_val_ = 0;
     enc_r_val_ = 0;
@@ -72,21 +77,6 @@ void MotionController::reset(void) {
     this->we_are_at(0, 0, 0);
     speed_ = 0;
     speed_ang_ = 0;
-
-    memset(&current_order_, 0, sizeof(s_order_exe));
-    current_order_.type = ORDER_EXE_TYPE_DELAY;
-    current_order_.delay = 0;  // make sure not to block the robot if another order comes
-
-    orders_->reset();
-
-    last_order_request_timestamp_ = 0;
-
-    g_should_send_can_bus_sleeping = 0;
-}
-
-
-MotionController::~MotionController(void) {
-    delete orders_;
 }
 
 
@@ -250,13 +240,31 @@ int mc_updateCurOrder(
     float dist = 0, theta = 0;  // units: mm, rad
     int ret = 0;
 
-    dist = *dist_;
-    theta = *theta_;
-
     // update the goals in function of the given order
 
     switch (cur_order->type)
     {
+        case ORDER_EXE_TYPE_NONE:
+            // nothing to do
+            ret = 1;
+            break;
+
+        case ORDER_EXE_TYPE_DELAY:
+        case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
+        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:
+            // hold position and angle
+            dx = cur_order->pos.x - cur_pos.x;
+            dy = cur_order->pos.y - cur_pos.y;
+            theta = std_rad_angle(cur_order->angle - cur_angle);
+            dist = DIST(dx, dy) * cos(atan2(dy, dx) - cur_angle);
+
+            if ((cur_order->type == ORDER_EXE_TYPE_DELAY) && (cur_order->delay != 0))  // todo real delay vs holdPos vs None orders)
+            {
+                if (time_since_last_order_finished > cur_order->delay)
+                    ret = 1;
+            }
+            break;
+
         case ORDER_EXE_TYPE_POS:
             // position order
 
@@ -289,18 +297,16 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_EXE_TYPE_DELAY:
-            // delay order while holding position and angle
+        case ORDER_EXE_TYPE_ARM_INIT:
+        case ORDER_EXE_TYPE_ARM_GRAB:
+        case ORDER_EXE_TYPE_ARM_MOVE_UP:
+        case ORDER_EXE_TYPE_ARM_RELEASE:
+        case ORDER_EXE_TYPE_ARM_MOVE_DOWN:
+            // ignore on CQB
+            break;
 
-            dx = cur_order->pos.x - cur_pos.x;
-            dy = cur_order->pos.y - cur_pos.y;
-
-            theta = std_rad_angle(cur_order->angle - cur_angle);
-            dist = DIST(dx, dy) * cos(atan2(dy, dx) - cur_angle);
-
-            if (time_since_last_order_finished > cur_order->delay)
-                ret = 1;
-
+        case ORDER_EXE_TYPE_LAST:
+            // nothing to do
             break;
     }
 
@@ -311,75 +317,14 @@ int mc_updateCurOrder(
 }
 
 
-bool MotionController::should_request_next_order(Debug *debug) {
-    // if room for storing another order is available, request the next one
-    if ((ORDERS_COUNT - this->orders_->size() > 0) && (timer_.read() - last_order_request_timestamp_ > 0.300))
-    {
-        last_order_request_timestamp_ = timer_.read();
-        return true;
-    }
-    return false;
-}
-
-
 void MotionController::updateCurOrder(void) {
     float dist = 0, theta = 0;  // units: mm, rad
-    bool have_reached_cur_order = 0;
-    float match_timestamp = timer_.read();
 
-    have_reached_cur_order = mc_updateCurOrder(
+    is_current_order_executed_ = mc_updateCurOrder(
         pos_, angle_, speed_, speed_ang_,
-        &current_order_, match_timestamp-last_order_timestamp_,
+        &current_order_, timer_.read()-last_order_executed_timestamp_,
         &dist, &theta
     );
-
-    // if we have achieved the current order
-    if (have_reached_cur_order)
-    {
-        // if no other orders in the queue, hold angle and position
-        if (orders_->size() == 0)
-        {
-            current_order_.type = ORDER_EXE_TYPE_DELAY;
-            current_order_.delay = 0;  // make sure not to block the robot if another order comes
-        }
-        // else, consume the next order
-        else
-        {
-            s_order_com *next = this->orders_->front();
-
-            switch (next->type)
-            {
-                case ORDER_COM_TYPE_ABS_POS:
-                    current_order_.type = ORDER_EXE_TYPE_POS;
-                    current_order_.pos.x = next->order_data.abs_pos.x;
-                    current_order_.pos.y = next->order_data.abs_pos.y;
-                    break;
-                case ORDER_COM_TYPE_ABS_ANGLE:
-                    current_order_.type = ORDER_EXE_TYPE_ANGLE;
-                    current_order_.angle = next->order_data.abs_angle;
-                    break;
-                case ORDER_COM_TYPE_REL_DIST:
-                    current_order_.type = ORDER_EXE_TYPE_POS;
-                    current_order_.pos.x += next->order_data.rel_dist * cos(current_order_.angle);
-                    current_order_.pos.y += next->order_data.rel_dist * sin(current_order_.angle);
-                    break;
-                case ORDER_COM_TYPE_REL_ANGLE:
-                    current_order_.type = ORDER_EXE_TYPE_ANGLE;
-                    current_order_.angle += next->order_data.rel_angle;
-                    break;
-                case ORDER_COM_TYPE_DELAY:
-                    current_order_.type = ORDER_EXE_TYPE_DELAY;
-                    current_order_.delay = next->order_data.delay;
-
-                    g_should_send_can_bus_sleeping = 1;
-
-                    break;
-            }
-
-            this->orders_->pop();
-            last_order_timestamp_ = match_timestamp;
-        }
-    }
 
     this->pidDistSetGoal(dist);
     this->pidAngleSetGoal(theta);
@@ -387,11 +332,19 @@ void MotionController::updateCurOrder(void) {
 
 
 void MotionController::computePid(void) {
-    pid_dist_.setProcessValue(-pid_dist_goal_);
-    pid_dist_out_ = pid_dist_.compute();
+    if (is_current_order_executed_)
+    {
+        pid_dist_out_ = 0;
+        pid_angle_out_ = 0;
+    }
+    else
+    {
+        pid_dist_.setProcessValue(-pid_dist_goal_);
+        pid_dist_out_ = pid_dist_.compute();
 
-    pid_angle_.setProcessValue(-pid_angle_goal_);
-    pid_angle_out_ = pid_angle_.compute();
+        pid_angle_.setProcessValue(-pid_angle_goal_);
+        pid_angle_out_ = pid_angle_.compute();
+    }
 }
 
 
@@ -419,9 +372,7 @@ void MotionController::updateMotors(void) {
 
 
 void MotionController::debug(Debug *debug) {
-    int i = 0;
-
-    debug->printf("[MC/i] (ticks l r) %d %d \n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/i] (ticks l r) %d %d\n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
     debug->printf("[MC/o_mot] (pwm current) %.3f %.3f %.3f %.3f\n",
         motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
@@ -432,61 +383,10 @@ void MotionController::debug(Debug *debug) {
         pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_, (int)RAD2DEG(speed_ang_)
     );
 
-    if ((current_order_.type != ORDER_EXE_TYPE_NONE) || orders_->size())
-        debug->printf("[MC/orders] (type - pos angle delay)\n");
-
-    if (current_order_.type == ORDER_EXE_TYPE_NONE)
-    {
-        debug->printf("[MC/orders] current -> none\n");
-    }
-    else
-    {
-        debug->printf(
-            "[MC/orders] current -> %s - %d %d %d %.3f\n", e2s_order_exe_type[current_order_.type],
-            current_order_.pos.x, current_order_.pos.y, (int)RAD2DEG(current_order_.angle), current_order_.delay
-        );
-    }
-
-    if (orders_->size() == 0)
-        debug->printf("[MC/orders] empty\n");
-    else
-    {
-        for (i = 0; i < orders_->size(); ++i)
-        {
-            s_order_com *cur = orders_->elem(i);
-
-            debug->printf("[MC/orders] %d/%d -> %s ", i, orders_->size(), e2s_order_com_type[cur->type]);
-
-            switch (cur->type)
-            {
-                case ORDER_COM_TYPE_NONE:
-                    // nothing to do
-                    break;
-
-                case ORDER_COM_TYPE_ABS_POS:
-                    debug->printf("%d %d", cur->order_data.abs_pos.x, cur->order_data.abs_pos.y);
-                    break;
-
-                case ORDER_COM_TYPE_ABS_ANGLE:
-                    debug->printf("%d", (int)RAD2DEG(cur->order_data.abs_angle));
-                    break;
-
-                case ORDER_COM_TYPE_REL_DIST:
-                    debug->printf("%d", cur->order_data.rel_dist);
-                    break;
-
-                case ORDER_COM_TYPE_REL_ANGLE:
-                    debug->printf("%d", (int)RAD2DEG(cur->order_data.rel_angle));
-                    break;
-
-                case ORDER_COM_TYPE_DELAY:
-                    debug->printf("%.3f", cur->order_data.delay);
-                    break;
-            }
-
-            debug->printf("\n");
-        }
-    }
+    debug->printf(
+        "[MC/order] %s %d %d %d %.3f\n", e2s_order_exe_type[current_order_.type],
+        current_order_.pos.x, current_order_.pos.y, (int)RAD2DEG(current_order_.angle), current_order_.delay
+    );
 }
 
 void MotionController::debug(CanMessenger *cm) {
@@ -505,29 +405,6 @@ void MotionController::pidDistSetGoal(float goal) {
 
 void MotionController::pidAngleSetGoal(float goal) {
     pid_angle_goal_ = goal;
-}
-
-void MotionController::setMotor(float l, float r) {
-    this->orders_->reset();  // override orders and pid to make sure they don't interfere
-
-    motor_l_.setSPwm(l);
-    motor_r_.setSPwm(r);
-}
-
-void MotionController::ordersReset(void) {
-    memset(&current_order_, 0, sizeof(s_order_exe));
-    current_order_.type = ORDER_EXE_TYPE_NONE;
-
-    orders_->reset();
-}
-
-int MotionController::should_send_can_bus_sleeping(void) {
-    if (g_should_send_can_bus_sleeping)
-    {
-        g_should_send_can_bus_sleeping = false;
-        return true;
-    }
-    return false;
 }
 
 #endif // #ifdef IAM_QBOUGE

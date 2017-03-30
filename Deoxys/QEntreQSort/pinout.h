@@ -3,13 +3,16 @@
 
 #ifndef SIMULATION
 
-    #define XBEE_TX         D1
-    #define XBEE_RX         D0
-
     #define CAN_TX          D2
     #define CAN_RX          D10
 
     #define BUZZER_PIN      D5
+
+    #define AX12_PIN_SWITCH     D13
+    #define AX12_PIN_TX         D1
+    #define AX12_PIN_RX         D0
+    #define AX12_PIN_SERVO      D5
+    #define AX12_PIN_VALVE      D12
 
 #else  // #ifndef SIMULATION
 

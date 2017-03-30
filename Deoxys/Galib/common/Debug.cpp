@@ -29,13 +29,13 @@ void debug_pre_init(Debug *debug)
 Debug::Debug(void) :
 interfaces_{
     BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE),
-#ifndef IAM_QENTRESORT
+#ifdef IAM_QREFLECHI
     BufferedSerial(XBEE_TX, XBEE_RX, INTERFACE_BUFFER_SIZE),
 #endif
 },
 interfaces_str_{
     "pc",
-#ifndef IAM_QENTRESORT
+#ifdef IAM_QREFLECHI
     "xbee",
 #endif
 }

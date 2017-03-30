@@ -120,36 +120,20 @@ public:
     void pidDistSetGoal(float goal);
     void pidAngleSetGoal(float goal);
 
-    /*
-        Set the motors speed (range is 0-1).
-
-        ** WARNING **
-        This function is dangerous and has side effects. You should not called
-        it unless you know what you are doing.
-    */
-    void setMotor(float l, float r);
-
-    /*
-        Reset the OrdersFIFO orders_ and the s_order_exe current_order_.
-    */
-    void ordersReset(void);
-
-    int should_send_can_bus_sleeping(void);
-
 private:  // I/O
     Motor motor_l_, motor_r_;  // io interfaces
     Qei enc_l_, enc_r_;  // io interfaces
     PID pid_dist_, pid_angle_;
-private:
 
-    Timer timer_;
     int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
-    float last_order_timestamp_;  // s from match start
 
     // pid
     int32_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
     float pid_dist_goal_, pid_angle_goal_;  // units: mm and rad
     float pid_dist_out_, pid_angle_out_;  // unit: between -1 and +1
+
+    Timer timer_;
+    float last_order_executed_timestamp_;
 
 public:
     // robot infos
@@ -158,11 +142,8 @@ public:
     float speed_;  // unit: mm/sec
     float speed_ang_;  // unit: rad/sec
 
-    // planned orders
-    OrdersFIFO *orders_;
     s_order_exe current_order_;
-
-    float last_order_request_timestamp_;  // s from match start
+    bool is_current_order_executed_;
 };
 
 

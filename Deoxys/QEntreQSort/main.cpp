@@ -3,6 +3,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/OrdersFIFO.h"
 #include "common/com.h"
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
@@ -21,6 +22,11 @@ int main(void)
     Debug *debug = NULL;
     CanMessenger *messenger = NULL;
     Timer *loop = NULL;
+    Timer match;
+    match.start();
+
+    bool is_current_order_executed_ = false;
+    float last_order_executed_timestamp = -1;
 
     PwmOut buzzer_(BUZZER_PIN);
 
@@ -33,6 +39,7 @@ int main(void)
     buzzer_.period(1./2000);
     buzzer_.write(0.50);
     wait_ms(400);
+    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
     /*
         Initializing
@@ -56,12 +63,14 @@ g_debug = debug;
     loop->start();
 
     debug->printf("AX12_arm...\n");
-    AX12_arm ax12_arm(1, 5, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);
+    AX12_arm ax12_arm(1, 8, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);
 
     mem_stats_dynamic(debug);
 
-    debug->printf("Initialisation done.\n\n");
+    debug->printf("Initialisation done (%f).\n\n", match.read());
     debug->set_current_level(Debug::DEBUG_DEBUG);
+
+    wait_ms(500);
 
     // todo
     // while (true)
@@ -82,70 +91,101 @@ g_debug = debug;
         Go!
     */
 
-    int pos[5] = {630, 50, 330};
 
-    Timer t;
-    t.start();
-
-    while (true)
-    {
-        char buffer[BUFFER_SIZE], *ptr = NULL;
-        if (debug->get_line(buffer, BUFFER_SIZE) != -1)
-        {
-            if (buffer[0] == 'g')
-            {
-                debug->printf("*** go !!! ***\n");
-                ax12_arm.do_sequence();
-            }
-            else if (buffer[0] == 's')
-            {
-                char *ptr = buffer+2;
-                int a;
-
-                a = atoi(ptr);
-
-                debug->printf("set speed %d\n", a);
-                ax12_arm.write_speed_all(a);
-            }
-            else if (buffer[0] == 'p')
-            {
-                char *ptr = buffer;
-                int a, b;
-
-                a = atoi(ptr);
-                while (*ptr != ' ')
-                    ++ptr;
-                ++ptr;
-                b = atoi(ptr);
-
-                pos[a] = b;
-                printf("have pos %d %d %d\n", pos[0], pos[1], pos[2]);
-
-                ax12_arm.write_pos_all(pos[0], pos[1], pos[2]);
-            }
-            else
-                debug->printf("unknown cmd\n");
-        }
-
-        // ax12_arm.read_pos_all();
-        wait_ms(100);
-    }
-
-ax12_arm.write_pos_all(660, 613, 330);
-wait_ms(1000);
-ax12_arm.write_pos_all(700-100, 920-50, 317);
-wait_ms(1000);
-
-    Timer match;
-    match.start();
+    match.reset();
 
     while (true)
     {
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match.read());
-        // ax12_arm.read_pos_all();
 
-        com_handle_can(debug, messenger, &ax12_arm);
+        com_handle_can(debug, messenger, orders, &ax12_arm);
+
+        // equiv MC::updateCurOrder
+
+        // update the goals in function of the given order
+
+        int time_since_last_order_finished = match.read() - last_order_executed_timestamp;
+
+        switch (orders->current_order_.type)
+        {
+            case ORDER_EXE_TYPE_NONE:
+                // nothing to do
+                is_current_order_executed_ = 1;
+                break;
+
+            case ORDER_EXE_TYPE_DELAY:
+                // todo wait -> timer_.read()-last_order_executed_timestamp_
+                if (time_since_last_order_finished > orders->current_order_.delay)
+                    is_current_order_executed_ = true;
+                break;
+
+            case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
+            case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:
+            case ORDER_EXE_TYPE_POS:
+            case ORDER_EXE_TYPE_ANGLE:
+                // ignore on CQES
+                break;
+
+            case ORDER_EXE_TYPE_ARM_INIT:
+                ax12_arm.seq_init();
+                orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+                orders->current_order_.delay = SLEEP_INIT;
+                last_order_executed_timestamp = match.read();
+                // is_current_order_executed_ = true;
+                break;
+            case ORDER_EXE_TYPE_ARM_GRAB:
+                ax12_arm.seq_grab();
+                orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+                orders->current_order_.delay = SLEEP_GRAB;
+                last_order_executed_timestamp = match.read();
+                // is_current_order_executed_ = true;
+                break;
+            case ORDER_EXE_TYPE_ARM_MOVE_UP:
+                ax12_arm.seq_move_up();
+                orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+                orders->current_order_.delay = SLEEP_MOVE;
+                last_order_executed_timestamp = match.read();
+                // is_current_order_executed_ = true;
+                break;
+            case ORDER_EXE_TYPE_ARM_RELEASE:
+                ax12_arm.seq_release();
+                orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+                orders->current_order_.delay = SLEEP_RELEASE;
+                last_order_executed_timestamp = match.read();
+                // is_current_order_executed_ = true;
+                break;
+            case ORDER_EXE_TYPE_ARM_MOVE_DOWN:
+                ax12_arm.seq_move_down();
+                orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+                orders->current_order_.delay = SLEEP_MOVE;
+                last_order_executed_timestamp = match.read();
+                // is_current_order_executed_ = true;
+                break;
+
+            case ORDER_EXE_TYPE_LAST:
+                // nothing to do
+                break;
+        }
+
+        // end equiv MC::updateCurOrder
+
+        if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED)
+        {
+            messenger->send_msg_CQES_finished();
+            is_current_order_executed_ = true;
+        }
+
+        if (is_current_order_executed_)
+        {
+            // get the next order
+            while (orders->next_order_execute())
+                ;
+
+            is_current_order_executed_ = false;
+            last_order_executed_timestamp = match.read();
+        }
+
 
         main_sleep(debug, loop);
     }

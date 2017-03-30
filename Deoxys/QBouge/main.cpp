@@ -57,8 +57,11 @@ int main(void)
 {
     Debug *debug = NULL;
     CanMessenger *messenger = NULL;
+    OrdersFIFO *orders = NULL;
     Timer *loop = NULL;
     Ticker *asserv_ticker = NULL;
+    Timer match;
+    match.start();
 
     PwmOut *ml = new PwmOut(MOTOR_L_PWM);
     ml->period(0.001 * 0.05);
@@ -93,57 +96,72 @@ int main(void)
     mem_stats_settings(debug);
     test_run_all(debug);
 
+    debug->printf("OrdersFIFO...\n");
+    orders = new OrdersFIFO(ORDERS_COUNT);
+
     debug->printf("Timer...\n");
     loop = new Timer;
     loop->start();
+
+    delete ml;
+    delete mr;
 
     debug->printf("MotionController...\n");
     mc = new MotionController;
 
     debug->printf("Ticker...\n");
     asserv_ticker = new Ticker;
-    asserv_ticker->attach(mc, &MotionController::asserv, ASSERV_DELAY);
+    asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
 
     debug->printf("interrupt_priorities...\n");
     sys_interrupt_priorities_init(debug);
 
     mem_stats_dynamic(debug);
 
-    debug->printf("Initialisation done.\n\n");
+    debug->printf("Initialisation done. (%f)\n\n", match.read());
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
-    bip();
+    wait_ms(500);
 
-    wait(1);
 
-    delete ml;
-    delete mr;
     // todo wait for tirette (can msg)
 
     /*
         Go!
     */
 
-    Timer match;
-    match.start();
+
+    match.reset();
 
     while (true)
     {
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match.read());
 
-        com_handle_can(debug, messenger, mc);
+        com_handle_can(debug, messenger, orders, mc);
 
-        if (mc->should_request_next_order(debug))
+        if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
-            debug->printf("[CAN] send next_order_request\n");
-            messenger->send_msg_CQB_next_order_request(ORDERS_COUNT - mc->orders_->size());
+            messenger->send_msg_CQB_finished();
+            mc->is_current_order_executed_ = true;
         }
 
-        if (mc->should_send_can_bus_sleeping())
+        if (mc->is_current_order_executed_)
         {
-            messenger->send_msg_CQB_sleeping_a_bit();
+            // get the next order
+            while (orders->next_order_execute())
+                ;
+
+            // copy it to MC
+            NVIC_DisableIRQ(TIM2_IRQn);
+            memcpy(&mc->current_order_, &orders->current_order_, sizeof(s_order_exe));
+            NVIC_EnableIRQ(TIM2_IRQn);
+
+            mc->is_current_order_executed_ = false;
         }
+
+        if (orders->next_order_should_request())
+            messenger->send_msg_CQB_next_order_request(1);
 
         mc->debug(debug);
         mc->debug(messenger);

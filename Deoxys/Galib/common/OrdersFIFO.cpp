@@ -1,28 +1,65 @@
 
 #include <cstring>  // memset, memmove
+#include "common/Debug.h"
+#include "config.h"
 #include "common/OrdersFIFO.h"
 
 
 const char *e2s_order_com_type[ORDER_COM_TYPE_LAST] = {
     "NONE",
+
+    "DELAY",
+
+    "WAIT_CQB",
+    "WAIT_CQES",
+
     "ABS_POS",
     "ABS_ANGLE",
     "REL_DIST",
     "REL_ANGLE",
-    "DELAY"
+
+    "ORDER_COM_TYPE_ARM_INIT",
+    "ORDER_COM_TYPE_ARM_GRAB",
+    "ORDER_COM_TYPE_ARM_MOVE_UP",
+    "ORDER_COM_TYPE_ARM_RELEASE",
+    "ORDER_COM_TYPE_ARM_MOVE_DOWN"
 };
+
 
 const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
     "NONE",
+
+    "DELAY",
+
+    "WAIT_CQB",
+    "WAIT_CQES",
+
     "POS",
     "ANGLE",
-    "DELAY"
+
+    "ORDER_COM_TYPE_ARM_INIT",
+    "ORDER_COM_TYPE_ARM_GRAB",
+    "ORDER_COM_TYPE_ARM_MOVE_UP",
+    "ORDER_COM_TYPE_ARM_RELEASE",
+    "ORDER_COM_TYPE_ARM_MOVE_DOWN"
 };
 
 
 OrdersFIFO::OrdersFIFO(uint8_t fifo_size) {
-    fifo_size_ = fifo_size;
+    current_order_.type = ORDER_EXE_TYPE_NONE;
+    current_order_.delay = 0;
+#ifdef IAM_QBOUGE
+    current_order_.pos.x = 0;
+    current_order_.pos.y = 0;
+    current_order_.angle = 0;
+#endif
+
+    timer_.start();
+    last_order_executed_timestamp_ = 0;
+    last_order_request_timestamp_ = 0;
+
     orders_ = new s_order_com[fifo_size];
+    fifo_size_ = fifo_size;
     this->reset();
 }
 
@@ -39,55 +76,229 @@ int OrdersFIFO::push(s_order_com item) {
     if (order_count_ == fifo_size_)
         return 1;
 
-    memmove(&orders_[order_count_], &item, sizeof(s_order_com));
+    memcpy(&orders_[order_count_], &item, sizeof(s_order_com));
     order_count_ ++;
 
     return 0;
 }
 
+int OrdersFIFO::next_order_execute(void) {
+    int ret = 0;
+
+    // if no other orders in the queue, hold angle and position
+    if (order_count_ == 0)
+    {
+        current_order_.type = ORDER_EXE_TYPE_NONE;
+        current_order_.delay = 0;
+    }
+    // else, consume the next order
+    else
+    {
+        s_order_com *next = this->front();
+
+        switch (next->type)
+        {
+            case ORDER_COM_TYPE_NONE:
+                current_order_.type = ORDER_EXE_TYPE_NONE;
+                break;
+
+            case ORDER_COM_TYPE_DELAY:
+                current_order_.type = ORDER_EXE_TYPE_DELAY;
+                current_order_.delay = next->order_data.delay;
+                break;
+
+            case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
+                current_order_.type = ORDER_EXE_TYPE_WAIT_CQB_FINISHED;
+                break;
+
+            case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
+                current_order_.type = ORDER_EXE_TYPE_WAIT_CQES_FINISHED;
+                break;
+
+#ifdef IAM_QBOUGE
+            case ORDER_COM_TYPE_ABS_POS:
+                current_order_.type = ORDER_EXE_TYPE_POS;
+                current_order_.pos.x = next->order_data.abs_pos.x;
+                current_order_.pos.y = next->order_data.abs_pos.y;
+                break;
+
+            case ORDER_COM_TYPE_ABS_ANGLE:
+                current_order_.type = ORDER_EXE_TYPE_ANGLE;
+                current_order_.angle = next->order_data.abs_angle;
+                break;
+
+            case ORDER_COM_TYPE_REL_DIST:
+                current_order_.type = ORDER_EXE_TYPE_POS;
+                current_order_.pos.x += next->order_data.rel_dist * cos(current_order_.angle);
+                current_order_.pos.y += next->order_data.rel_dist * sin(current_order_.angle);
+                break;
+
+            case ORDER_COM_TYPE_REL_ANGLE:
+                current_order_.type = ORDER_EXE_TYPE_ANGLE;
+                current_order_.angle += next->order_data.rel_angle;
+                break;
+#else
+            case ORDER_COM_TYPE_ABS_POS:
+            case ORDER_COM_TYPE_ABS_ANGLE:
+            case ORDER_COM_TYPE_REL_DIST:
+            case ORDER_COM_TYPE_REL_ANGLE:
+                // ignore if not on CQB
+                ret = 1;
+#endif
+
+#ifdef IAM_QENTRESORT
+            case ORDER_COM_TYPE_ARM_INIT:
+                current_order_.type = ORDER_EXE_TYPE_ARM_INIT;
+                break;
+
+            case ORDER_COM_TYPE_ARM_GRAB:
+                current_order_.type = ORDER_EXE_TYPE_ARM_GRAB;
+                break;
+
+            case ORDER_COM_TYPE_ARM_MOVE_UP:
+                current_order_.type = ORDER_EXE_TYPE_ARM_MOVE_UP;
+                break;
+
+            case ORDER_COM_TYPE_ARM_RELEASE:
+                current_order_.type = ORDER_EXE_TYPE_ARM_RELEASE;
+                break;
+
+            case ORDER_COM_TYPE_ARM_MOVE_DOWN:
+                current_order_.type = ORDER_EXE_TYPE_ARM_MOVE_DOWN;
+                break;
+#else
+            case ORDER_COM_TYPE_ARM_INIT:
+            case ORDER_COM_TYPE_ARM_GRAB:
+            case ORDER_COM_TYPE_ARM_MOVE_UP:
+            case ORDER_COM_TYPE_ARM_RELEASE:
+            case ORDER_COM_TYPE_ARM_MOVE_DOWN:
+                // ignore if not on CQES
+                ret = 1;
+                break;
+#endif
+
+            case ORDER_COM_TYPE_LAST:
+                // nothing to do
+                break;
+        }
+
+        this->pop();
+        last_order_executed_timestamp_ = timer_.read();
+    }
+
+    return ret;
+}
+
+bool OrdersFIFO::next_order_should_request(void) {
+    if ((ORDERS_COUNT - order_count_ > 0) && (timer_.read() - last_order_request_timestamp_ > 0.500))  // todo define
+    {
+        last_order_request_timestamp_ = timer_.read();
+        return true;
+    }
+    return false;
+}
+
 void OrdersFIFO::pop(void) {
-    if (this->size() == 0)
+    if (order_count_ == 0)
         return;
 
     order_count_ --;
-
-    memmove(&orders_[0], &orders_[1], sizeof(s_order_com)*order_count_);
 
     if (order_count_ == 0)
     {
         memset(&orders_[0], 0, sizeof(s_order_com));
         orders_[0].type = ORDER_COM_TYPE_NONE;
     }
+    else
+    {
+        memmove(&orders_[0], &orders_[1], sizeof(s_order_com)*order_count_);
+    }
 }
 
 s_order_com *OrdersFIFO::front(void) {
-    if (this->size() == 0)
+    if (order_count_ == 0)
         return NULL;
     else
-        return this->elem(0);
+        return &orders_[0];
 }
 
-s_order_com *OrdersFIFO::back(void) {
-    if (this->size() == 0)
-        return NULL;
-    else
-        return this->elem(order_count_-1);
-}
-
-s_order_com *OrdersFIFO::elem(uint8_t id) {
-    if (id >= order_count_)
-        return NULL;
-    return &orders_[id];
-}
-
-uint8_t OrdersFIFO::size(void) {
+int OrdersFIFO::size(void) {
     return order_count_;
 }
 
+void OrdersFIFO::debug(Debug *debug) {
+    int i = 0;
+
+    if (this->size() == 0)
+        debug->printf("[MC/orders] empty\n");
+    else
+    {
+        for (i = 0; i < this->size(); ++i)
+        {
+            s_order_com *cur = &orders_[i];
+
+            debug->printf("[MC/orders] %d/%d -> %s ", i, this->size(), e2s_order_com_type[cur->type]);
+
+            switch (cur->type)
+            {
+                case ORDER_COM_TYPE_NONE:
+                    // nothing to do
+                    break;
+
+                case ORDER_COM_TYPE_ABS_POS:
+                    debug->printf("%d %d", cur->order_data.abs_pos.x, cur->order_data.abs_pos.y);
+                    break;
+
+                case ORDER_COM_TYPE_ABS_ANGLE:
+                    debug->printf("%d", (int)RAD2DEG(cur->order_data.abs_angle));
+                    break;
+
+                case ORDER_COM_TYPE_REL_DIST:
+                    debug->printf("%d", cur->order_data.rel_dist);
+                    break;
+
+                case ORDER_COM_TYPE_REL_ANGLE:
+                    debug->printf("%d", (int)RAD2DEG(cur->order_data.rel_angle));
+                    break;
+
+                case ORDER_COM_TYPE_DELAY:
+                    debug->printf("%.3f", cur->order_data.delay);
+                    break;
+            }
+
+            debug->printf("\n");
+        }
+    }
+}
 
 /*
-    Order_make*
+    OrderCom_make*
 */
+
+s_order_com OrderCom_makeNone(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_NONE;
+    return tmp;
+}
+
+s_order_com OrderCom_makeDelay(float delay) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_DELAY;
+    tmp.order_data.delay = delay;
+    return tmp;
+}
+
+s_order_com OrderCom_makeWaitCQBFinished(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_WAIT_CQB_FINISHED;
+    return tmp;
+}
+
+s_order_com OrderCom_makeWaitCQESFinished(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_WAIT_CQES_FINISHED;
+    return tmp;
+}
 
 s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y) {
     s_order_com tmp;
@@ -118,9 +329,32 @@ s_order_com OrderCom_makeRelAngle(float angle) {
     return tmp;
 }
 
-s_order_com OrderCom_makeDelay(float delay) {
+s_order_com OrderCom_makeArmInit(void) {
     s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_DELAY;
-    tmp.order_data.delay = delay;
+    tmp.type = ORDER_COM_TYPE_ARM_INIT;
+    return tmp;
+}
+
+s_order_com OrderCom_makeArmGrab(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_ARM_GRAB;
+    return tmp;
+}
+
+s_order_com OrderCom_makeArmMoveUp(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_ARM_MOVE_UP;
+    return tmp;
+}
+
+s_order_com OrderCom_makeArmRelease(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_ARM_RELEASE;
+    return tmp;
+}
+
+s_order_com OrderCom_makeArmMoveDown(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_ARM_MOVE_DOWN;
     return tmp;
 }

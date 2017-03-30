@@ -54,22 +54,18 @@ int main(void)
     loop = new Timer;
     loop->start();
 
-    debug->printf("OrdersFIFO...\n");
-    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
+    debug->printf("demo_init ...\n");
+    OrdersFIFO *orders = demo_init();
+    if (orders == NULL)
+    {
+        debug->printf("ERROR demo_init()\n");
+        while (1)
+            ;
+    }
 
     debug->printf("Timer (match)...\n");
     match = new Timer;
     match->start();
-
-    debug->printf("demo_load()...\n");
-    int ret = 0;
-    ret = demo_load(orders, demo_table, DEMO_TABLE_SIZE);
-    if (ret != 0)
-    {
-        debug->printf("ERROR when filling OrdersFIFO (%d)\n", ret);
-        while (1)
-            ;
-    }
 
     // init sharp + other sensors
     // init servos + other actuators
@@ -100,28 +96,38 @@ int main(void)
 
         messenger->send_msg_ping();
 
-        wait_ms(100);  // dont flood the can bus and wait a litle for the reply
+        wait_ms(250);  // dont flood the can bus and wait a litle for the reply
 
         while (messenger->read_msg(&rec_msg))
         {
+            debug->printf("[CAN/rec] id=%d\n", rec_msg.id);
+
             if (rec_msg.id == Message::MT_CQB_pong)
                 last_ping_CQB = match->read();
             if (rec_msg.id == Message::MT_CQES_pong)
                 last_ping_CQES = match->read();
         }
 
-        if ((match->read()-last_ping_CQB < 0.500) && (match->read()-last_ping_CQES < 0.500))
+        bool ping_CQB = (match->read()-last_ping_CQB) < 0.500;
+        bool ping_CQES = (match->read()-last_ping_CQES) < 0.500;
+
+        led_ping_CQB = ping_CQB;
+        led_ping_CQES = ping_CQES;
+
+        if (ping_CQB && ping_CQES)
         {
             debug->printf("[CAN/rec] pong from all, breaking\n");
             break;
         }
         else
         {
-            debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", match->read()-last_ping_CQB < 0.500, match->read()-last_ping_CQES < 0.500);
+            debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
         }
 
         messenger->set_silent(true);
-        wait_ms(5);
+        wait_ms(10);
+
+        // 1/(200*1000) * (128*11)  bus off recovery time (let other boards to initialise)
         messenger->set_silent(false);
     }
 

@@ -64,14 +64,16 @@ public:
         MT_CQR_reset                = 310,
         MT_CQR_we_are_at            = 311,
 
-        MT_CQB_sleeping_a_bit       = 320,
-
         /*
             Medium (default) (400-599)
         */
 
-        MT_order                    = 501,
-        MT_CQB_next_order_request   = 502,
+        MT_order                    = 500,
+
+        MT_CQB_finished             = 510,
+        MT_CQES_finished            = 511,
+
+        MT_CQB_next_order_request   = 520,
 
         /*
             Low (debug) (600-799)
@@ -134,8 +136,6 @@ public:
         int32_t enc_l, enc_r;
     } CP_CQB_MC_encs;
 
-    typedef s_no_payload CP_CQB_sleeping_a_bit;
-
     /*
         ** CAN Message **
     */
@@ -160,8 +160,6 @@ public:
         CP_CQB_MC_pids              CQB_MC_pids;
         CP_CQB_MC_motors            CQB_MC_motors;
         CP_CQB_MC_encs              CQB_MC_encs;
-
-        CP_CQB_sleeping_a_bit       CQB_sleeping_a_bit;
     } u_payload;
 
     /*
@@ -205,6 +203,8 @@ public:
     int send_msg_CQR_reset(void);
 
     int send_msg_order(s_order_com order);
+    int send_msg_CQB_finished(void);
+    int send_msg_CQES_finished(void);
     int send_msg_CQB_next_order_request(uint8_t count);
 
     int send_msg_CQB_MC_pos_angle(float x, float y, float angle);
@@ -212,8 +212,6 @@ public:
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
-
-    int send_msg_CQB_sleeping_a_bit(void);
 
 private:
     /*
