@@ -33,6 +33,7 @@ Message::Message(e_message_type id_, unsigned int len_, u_payload payload_) {
 
 CanMessenger::CanMessenger(void) : can_(CAN_RX, CAN_TX) {
     can_.frequency(CAN_BUS_FREQUENCY);
+    or_count_ = 0;
 }
 
 int CanMessenger::send_msg(Message msg) {
@@ -45,7 +46,7 @@ int CanMessenger::send_msg(Message msg) {
 
 int CanMessenger::read_msg(Message *dest) {
     CANMessage msg;
-    int ret = 0;
+    int ret = 0, i = 0;
 
     ret = can_.read(msg);
     if (ret)
@@ -54,6 +55,12 @@ int CanMessenger::read_msg(Message *dest) {
         dest->len = msg.len;
         memset(dest->payload.raw_data, 0, 8);
         memcpy(dest->payload.raw_data, msg.data, msg.len);
+
+        for (i = 0; i < or_count_; ++i)
+        {
+            if (or_types_[i] == dest->id)
+                or_callbacks_[i](dest);
+        }
     }
     return ret;
 }
@@ -61,6 +68,18 @@ int CanMessenger::read_msg(Message *dest) {
 void CanMessenger::set_silent(bool enable) {
     can_.monitor(enable);
 }
+
+int CanMessenger::on_receive_add(Message::e_message_type type, Callback<void(void*)> cb) {
+    if (or_count_ == ON_RECEIVE_SLOT_COUNT)
+        return 1;
+
+    or_types_[or_count_] = type;
+    or_callbacks_[or_count_] = cb;
+    or_count_ ++;
+
+    return 0;
+}
+
 
 /*
     CanMessenger::send_msg_*

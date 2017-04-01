@@ -17,6 +17,7 @@
 #define CAN_MAX_MSG_PER_SEC             (1.0/CAN_FRAME_BUS_OCCUPATION)
 #define CAN_MAX_MSG_PER_ASSERV_FRAME    (CAN_MAX_MSG_PER_SEC/ASSERV_FPS)
 // todo print theses stats
+#define ON_RECEIVE_SLOT_COUNT 20  // todo check overflow
 
 /*
     The Message is mostly used internally by the CanMessenger class, you most
@@ -222,7 +223,18 @@ private:
     */
     int send_msg(Message msg);
 
+public:
+    int on_receive_add(Message::e_message_type type, Callback<void(void*)> cb);
+
 private:
+
+    /*
+        On Receive a specific msg type, the corresponding function is callled.
+    */
+    int                     or_count_;
+    Message::e_message_type or_types_[ON_RECEIVE_SLOT_COUNT];
+    Callback<void (void*)>  or_callbacks_[ON_RECEIVE_SLOT_COUNT];
+
     CAN can_;
 };
 

@@ -4,6 +4,7 @@
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
+#include "common/StatusLeds.h"
 #include "common/com.h"
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
@@ -17,9 +18,6 @@
 
 Debug *g_debug = NULL;
 
-DigitalOut led_status(A5);
-DigitalOut led_ping_CQR(A4);
-
 
 int main(void)
 {
@@ -32,8 +30,7 @@ int main(void)
     bool is_current_order_executed_ = false;
     float last_order_executed_timestamp = -1;
 
-    led_status = 1;
-    led_ping_CQR = 0;
+    StatusLeds sl(A5, NC, A4, NC);
 
     /*
         Initializing
@@ -48,7 +45,7 @@ g_debug = debug;
     debug->printf("CanMessenger...\n");
     messenger = new CanMessenger;
 
-    led_status = 0;
+    sl.init_half();
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
@@ -59,6 +56,15 @@ g_debug = debug;
     loop->start();
 
     OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
+
+    debug->printf("EventQueue...\n");
+
+    EventQueue queue;
+
+    int led_id = queue.call_every(500, callback(&sl, &StatusLeds::running));  // 500 ms
+
+    messenger->on_receive_add(Message::MT_CQB_pong, callback(&sl, &StatusLeds::on_CQB_pong));
+    messenger->on_receive_add(Message::MT_CQES_pong, callback(&sl, &StatusLeds::on_CQES_pong));
 
     debug->printf("AX12_arm...\n");
     AX12_arm ax12_arm(1, 8, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);
@@ -80,8 +86,6 @@ g_debug = debug;
             // break
     }
 
-    led_ping_CQR = 1;
-
     // todo wait for tirette (can msg)
 
     // while (1)
@@ -91,7 +95,6 @@ g_debug = debug;
         Go!
     */
 
-
     match.reset();
 
     while (true)
@@ -99,11 +102,10 @@ g_debug = debug;
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match.read());
 
-        led_status = ((int)match.read()) % 2;
-
         com_handle_can(debug, messenger, orders, &ax12_arm);
 
         // equiv MC::updateCurOrder
+        queue.dispatch(0);  // non blocking dispatch
 
         // update the goals in function of the given order
 
@@ -189,7 +191,8 @@ g_debug = debug;
         }
 
 
-        main_sleep(debug, loop);
+        // main_sleep(debug, loop);
+        Thread::wait(100);  // ms
     }
 
     /*

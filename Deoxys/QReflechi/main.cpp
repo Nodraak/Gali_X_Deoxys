@@ -4,6 +4,7 @@
 #include "common/Debug.h"
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
+#include "common/StatusLeds.h"
 #include "common/com.h"
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
@@ -16,11 +17,6 @@
 #include "pinout.h"
 
 
-DigitalOut led_status(A5);
-DigitalOut led_ping_CQB(A4);
-DigitalOut led_ping_CQES(A3);
-
-
 int main(void)
 {
     Debug *debug = NULL;
@@ -30,9 +26,7 @@ int main(void)
         Initializing
     */
 
-    led_status = 1;
-    led_ping_CQB = 0;
-    led_ping_CQES = 0;
+    StatusLeds sl(A5, A4, NC, A3);
 
     debug = new Debug;
     debug_pre_init(debug);
@@ -42,7 +36,7 @@ int main(void)
     debug->printf("CanMessenger...\n");
     CanMessenger *messenger = new CanMessenger;
 
-    led_status = 0;
+    sl.init_half();
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
@@ -87,16 +81,19 @@ int main(void)
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
 
+    messenger->on_receive_add(Message::MT_CQB_pong, callback(&sl, &StatusLeds::on_CQB_pong));
+    messenger->on_receive_add(Message::MT_CQES_pong, callback(&sl, &StatusLeds::on_CQES_pong));
+
+    EventQueue queue;
+    int led_id = queue.call_every(500, callback(&sl, &StatusLeds::running));  // 500 ms
+    int ping_id = queue.call_every(500, callback(messenger, &CanMessenger::send_msg_ping));  // 500 ms
+
     Message rec_msg;
     while (true)
     {
-        led_status = ((int)match->read()) % 2;
-
         debug->printf("[CAN] ping...\n");
 
-        messenger->send_msg_ping();
-
-        wait_ms(250);  // dont flood the can bus and wait a litle for the reply
+        queue.dispatch(0);  // non blocking dispatch
 
         while (messenger->read_msg(&rec_msg))
         {
@@ -111,9 +108,6 @@ int main(void)
         bool ping_CQB = (match->read()-last_ping_CQB) < 0.500;
         bool ping_CQES = (match->read()-last_ping_CQES) < 0.500;
 
-        led_ping_CQB = ping_CQB;
-        led_ping_CQES = ping_CQES;
-
         if (ping_CQB && ping_CQES)
         {
             debug->printf("[CAN/rec] pong from all, breaking\n");
@@ -124,11 +118,7 @@ int main(void)
             debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
         }
 
-        messenger->set_silent(true);
-        wait_ms(10);
-
-        // 1/(200*1000) * (128*11)  bus off recovery time (let other boards to initialise)
-        messenger->set_silent(false);
+        Thread::wait(100);  // ms - dont flood the can bus and wait a litle for the reply
     }
 
     debug->printf("[CAN] sending reset + we_are_at\n");
@@ -136,9 +126,6 @@ int main(void)
     messenger->send_msg_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     wait_ms(200);
-
-    led_ping_CQB = 1;
-    led_ping_CQES = 1;
 
     /*
         Ready, wait for tirette
@@ -161,14 +148,13 @@ int main(void)
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match->read());
 
-        led_status = ((int)match->read()) % 2;
-
         // todo ping/pong each board -> if no response since XX, then do something
 
         if (match->read_ms() > 90*1000)  // todo define
             messenger->send_msg_CQR_match_stop();
 
         // update sharp + other sensors
+        queue.dispatch(0);  // non blocking dispatch
 
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
