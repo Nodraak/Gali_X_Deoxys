@@ -119,7 +119,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, A
                 break;
 
 #ifdef IAM_QBOUGE
-            case Message::MT_CQR_we_are_at:
+            case Message::MT_we_are_at:
                 NVIC_DisableIRQ(TIM2_IRQn);
                 mc->we_are_at(
                     rec_msg.payload.CQR_we_are_at.pos.x,

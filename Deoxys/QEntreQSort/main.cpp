@@ -35,8 +35,6 @@ int main(void)
     led_status = 1;
     led_ping_CQR = 0;
 
-    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
-
     /*
         Initializing
     */
@@ -59,6 +57,8 @@ g_debug = debug;
     debug->printf("Timer...\n");
     loop = new Timer;
     loop->start();
+
+    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
 
     debug->printf("AX12_arm...\n");
     AX12_arm ax12_arm(1, 8, 9, AX12_PIN_SERVO, AX12_PIN_VALVE);

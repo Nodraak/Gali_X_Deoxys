@@ -98,12 +98,12 @@ int CanMessenger::send_msg_CQR_match_stop(void) {
     return this->send_msg(Message(Message::MT_CQR_match_stop, sizeof(payload), (Message::u_payload){.CQR_match_stop = payload}));
 }
 
-int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
+int CanMessenger::send_msg_we_are_at(int16_t x, int16_t y, float angle) {
     Message::CP_CQR_we_are_at payload;
     payload.pos.x = x;
     payload.pos.y = y;
     payload.angle = angle;
-    return this->send_msg(Message(Message::MT_CQR_we_are_at, sizeof(payload), (Message::u_payload){.CQR_we_are_at = payload}));
+    return this->send_msg(Message(Message::MT_we_are_at, sizeof(payload), (Message::u_payload){.CQR_we_are_at = payload}));
 }
 
 int CanMessenger::send_msg_CQR_reset(void) {

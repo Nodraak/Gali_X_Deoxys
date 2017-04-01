@@ -34,19 +34,6 @@ int main(void)
     led_ping_CQB = 0;
     led_ping_CQES = 0;
 
-    PwmOut buzzer_(BUZZER_PIN);
-
-    buzzer_.period(1./4000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./3000);
-    buzzer_.write(0.50);
-    wait_ms(200);
-    buzzer_.period(1./2000);
-    buzzer_.write(0.50);
-    wait_ms(400);
-    buzzer_.period_us(1);
-
     debug = new Debug;
     debug_pre_init(debug);
 
@@ -146,7 +133,7 @@ int main(void)
 
     debug->printf("[CAN] sending reset + we_are_at\n");
     messenger->send_msg_CQR_reset();
-    messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
+    messenger->send_msg_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     wait_ms(200);
 

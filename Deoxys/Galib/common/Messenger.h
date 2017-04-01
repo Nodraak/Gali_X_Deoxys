@@ -62,7 +62,8 @@ public:
 
 
         MT_CQR_reset                = 310,
-        MT_CQR_we_are_at            = 311,
+
+        MT_we_are_at                = 311,
 
         /*
             Medium (default) (400-599)
@@ -199,7 +200,7 @@ public:
     int send_msg_CQR_match_start(void);
     int send_msg_CQR_match_stop(void);
 
-    int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
+    int send_msg_we_are_at(int16_t x, int16_t y, float angle);
     int send_msg_CQR_reset(void);
 
     int send_msg_order(s_order_com order);
