@@ -4,6 +4,12 @@
 #include "common/Debug.h"
 #include "common/utils.h"
 
+
+#define ARM_NONE    0
+#define ARM_LEFT    1
+#define ARM_RIGHT   2
+
+
 /*
     Orders that are transmitted through the CAN bus.
     They are not directly usable and can be of various types (abs or rel).
@@ -52,6 +58,8 @@ typedef struct  _s_order_com {
         float           abs_angle;  // rad
         int32_t         rel_dist;   // mm
         float           rel_angle;  // rad
+
+        uint8_t         which_arm;  // 0=nothing, 1=left, 2=right
     } order_data;
 }               s_order_com;
 
@@ -92,6 +100,9 @@ typedef struct  _s_order_exe {
     float angle;  // rad
 #endif
 
+#ifdef IAM_QENTRESORT
+    uint8_t which_arm;  // 0=nothing, 1=left, 2=right
+#endif
 }               s_order_exe;
 
 
@@ -104,6 +115,8 @@ public:
         Clear the FIFO.
     */
     void reset(void);
+
+    void we_are_at(int16_t x, int16_t y, float angle);
 
     /*
         Append a new order to the list of orders to execute.
@@ -174,10 +187,10 @@ s_order_com OrderCom_makeAbsAngle(float angle);
 s_order_com OrderCom_makeRelDist(int32_t dist);
 s_order_com OrderCom_makeRelAngle(float angle);
 
-s_order_com OrderCom_makeArmInit(void);
-s_order_com OrderCom_makeArmGrab(void);
-s_order_com OrderCom_makeArmMoveUp(void);
-s_order_com OrderCom_makeArmRelease(void);
-s_order_com OrderCom_makeArmMoveDown(void);
+s_order_com OrderCom_makeArmInit(uint8_t which_arm);
+s_order_com OrderCom_makeArmGrab(uint8_t which_arm);
+s_order_com OrderCom_makeArmMoveUp(uint8_t which_arm);
+s_order_com OrderCom_makeArmRelease(uint8_t which_arm);
+s_order_com OrderCom_makeArmMoveDown(uint8_t which_arm);
 
 #endif // #ifndef ORDER_H_INCLUDED

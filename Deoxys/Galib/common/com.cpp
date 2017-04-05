@@ -91,10 +91,11 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, M
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 #ifdef IAM_QENTRESORT
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, AX12_arm *ax12_arm)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 {
     Message rec_msg;
+
     while (messenger->read_msg(&rec_msg))
     {
         debug->printf("[CAN/rec] id %d\n", rec_msg.id);
@@ -120,6 +121,11 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, A
 
 #ifdef IAM_QBOUGE
             case Message::MT_we_are_at:
+                orders->we_are_at(
+                    rec_msg.payload.CQR_we_are_at.pos.x,
+                    rec_msg.payload.CQR_we_are_at.pos.y,
+                    rec_msg.payload.CQR_we_are_at.angle
+                );
                 NVIC_DisableIRQ(TIM2_IRQn);
                 mc->we_are_at(
                     rec_msg.payload.CQR_we_are_at.pos.x,
@@ -157,7 +163,8 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, A
                 {
                     if (messenger->send_msg_order(*orders->front()))
                         debug->printf("[CAN] send_msg_order() failed\n");
-                    orders->pop(); // todo wait for ack before poping
+                    else
+                        orders->pop(); // todo wait for ack before poping
                 }
                 break;
 

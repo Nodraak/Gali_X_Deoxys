@@ -100,7 +100,7 @@ int main(void)
 
         com_handle_can(debug, messenger, orders, mc);
 
-        if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
+        if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
             messenger->send_msg_CQB_finished();
             mc->is_current_order_executed_ = true;

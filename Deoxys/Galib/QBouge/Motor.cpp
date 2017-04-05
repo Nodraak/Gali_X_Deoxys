@@ -3,7 +3,6 @@
 #include "mbed.h"
 
 #include "common/utils.h"
-#include "QBouge/MotionController.h"
 #include "config.h"
 
 #include "Motor.h"
@@ -15,6 +14,7 @@ Motor::Motor(
     pwm_(pwm_pin), dir_(dir_pin), current_sense_(current_sense), thermal_flag_(thermal_flag), brake_(brake)
 {
     forward_dir_ = forward_dir;
+    last_sPwm_ = 0;
 
     pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
 
@@ -29,37 +29,35 @@ void Motor::setUPwm(float uPwm) {
     pwm_ = uPwm;
 }
 
-float motor_cap_pwm(float requested, float current) {
-    if (ABS(requested) < PWM_ERROR_TOLERANCE)
-        return 0;
+void Motor::setSPwm(float sPwm) {
+    if (ABS(sPwm) < PWM_ERROR_TOLERANCE)
+    {
+        sPwm = 0;
+        last_sPwm_ = 0;
+    }
     else
     {
-        bool reversed_dir = requested < 0;
+        float current = last_sPwm_;
 
-        if (reversed_dir)
+        sPwm = constrain(sPwm, -1, 1);
+
+        // step the raw value
+        if (ABS(sPwm - current) > PWM_STEP)
         {
-            requested = -requested;
-            current = -current;
+            if (sPwm > current)
+                sPwm = current + PWM_STEP;
+            else
+                sPwm = current - PWM_STEP;
         }
 
-        float val = map(requested, 0, 1, PWM_MIN, 1);
+        last_sPwm_ = sPwm;
 
-        // cap based on absolute max (define). That way, changing PWM_MAX does not change the PIDs settings.
-        if (val > PWM_MAX)
-            val = PWM_MAX;
+        // map for applying the pwm
+        sPwm = SIGN(sPwm) * map(ABS(sPwm), 0, 1, PWM_MIN, 1);
 
-        // cap based on current speed of the wheel
-        // todo: improve this (by reading speed_ for ex)
-        float max_pwm = current + PWM_STEP;
-        if (val > max_pwm)
-            val = max_pwm;
-
-        return reversed_dir ? -val : val;
+        // cap for boundary checking
+        sPwm = constrain(sPwm, -PWM_MAX, PWM_MAX);
     }
-}
-
-void Motor::setSPwm(float sPwm) {
-    sPwm = motor_cap_pwm(sPwm, this->getSPwm());
 
     this->setUPwm(ABS(sPwm));
     this->setDir(sPwm >= 0);

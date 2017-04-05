@@ -157,86 +157,113 @@ s_order_com demo_test_enc_turn[] = {
 
 s_order_com demo_table_arm[] = {
 
+    OrderCom_makeArmInit(ARM_LEFT),
+    OrderCom_makeArmInit(ARM_RIGHT),
+
 /*
     1) Cylinder starting zone
 */
     // go in pos
+
     OrderCom_makeAbsPos(600-(D+50), 1000),
     OrderCom_makeAbsAngle(DEG2RAD(180)),
     OrderCom_makeAbsPos(600-(D+10), 1000),
 
-    OrderCom_makeArmInit(),
+    OrderCom_makeArmMoveDown(ARM_LEFT),
+    OrderCom_makeArmMoveDown(ARM_RIGHT),
 
     // take
-    OrderCom_makeAbsAngle(DEG2RAD(180+theta_deg)),  // right (back-side)
+
+    OrderCom_makeAbsAngle(DEG2RAD(180-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(),
-    OrderCom_makeWaitCQESFinished(),
+    OrderCom_makeArmGrab(ARM_RIGHT),
+
+    // OrderCom_makeWaitCQESFinished(),
 
     // load it
+
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(),
-    OrderCom_makeArmRelease(),
-    OrderCom_makeArmMoveDown(),
+    OrderCom_makeArmMoveUp(ARM_RIGHT),
+    OrderCom_makeArmRelease(ARM_RIGHT),
+    OrderCom_makeArmMoveDown(ARM_RIGHT),
+
     OrderCom_makeWaitCQESFinished(),
 
 /*
     2) Cylinder middle
 */
     // go in pos
+
     OrderCom_makeAbsPos(1100, 500+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1100, 500+(D+10)),
 
-    OrderCom_makeArmInit(),
-
     // take
-    OrderCom_makeAbsAngle(DEG2RAD(90+theta_deg)),  // right (back-side)
+
+    OrderCom_makeAbsAngle(DEG2RAD(90-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(),
-    OrderCom_makeWaitCQESFinished(),
+    OrderCom_makeArmGrab(ARM_RIGHT),
+
+    // OrderCom_makeWaitCQESFinished(),
 
     // load it
+
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(),
-    OrderCom_makeArmRelease(),
-    OrderCom_makeArmMoveDown(),
+    OrderCom_makeArmMoveUp(ARM_RIGHT),
+    OrderCom_makeArmRelease(ARM_RIGHT),
+    OrderCom_makeArmMoveDown(ARM_RIGHT),
+
     OrderCom_makeWaitCQESFinished(),
 
 /*
     3) Rocket stacked side
 */
     // go in pos
+
     OrderCom_makeAbsPos(1350, 80/2+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1350, 80/2+(D+10)),
 
-    OrderCom_makeArmInit(),
-
     // grab 1
-    OrderCom_makeAbsAngle(DEG2RAD(90+theta_deg)),  // right (back-side)
-    OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(),
-    OrderCom_makeWaitCQESFinished(),
 
-    // load 1 (todo: grab 2)
     OrderCom_makeAbsAngle(DEG2RAD(90-theta_deg)),  // left (back-side)
+
     OrderCom_makeWaitCQBFinished(),
 
-    OrderCom_makeArmMoveUp(),
-    OrderCom_makeArmRelease(),
-    OrderCom_makeArmMoveDown(),
+    // OrderCom_makeArmGrab(ARM_RIGHT),
+
     OrderCom_makeWaitCQESFinished(),
 
-    // (todo: load 2) grab 3
+    // load 1 + grab 2
+
     OrderCom_makeAbsAngle(DEG2RAD(90+theta_deg)),  // right (back-side)
+
     OrderCom_makeWaitCQBFinished(),
 
-    OrderCom_makeArmMoveUp(),
-    OrderCom_makeArmRelease(),
-    OrderCom_makeArmMoveDown(),
+    // OrderCom_makeArmGrab(ARM_LEFT),
+    OrderCom_makeArmMoveUp(ARM_RIGHT),
+    OrderCom_makeArmRelease(ARM_RIGHT),
+    OrderCom_makeArmMoveDown(ARM_RIGHT),
+
     OrderCom_makeWaitCQESFinished(),
 
+    // load 2 + grab 3
+
+    OrderCom_makeAbsAngle(DEG2RAD(90-theta_deg)),  // left (back-side)
+
+    OrderCom_makeWaitCQBFinished(),
+
+    // OrderCom_makeArmGrab(ARM_RIGHT),
+    OrderCom_makeArmMoveUp(ARM_LEFT),
+    OrderCom_makeArmRelease(ARM_LEFT),
+    OrderCom_makeArmMoveDown(ARM_LEFT),
+
+    OrderCom_makeWaitCQESFinished(),
+
+    // get back
+
+    OrderCom_makeAbsAngle(DEG2RAD(90)),
+    OrderCom_makeRelDist(300),
 
     OrderCom_makeNone()
 };

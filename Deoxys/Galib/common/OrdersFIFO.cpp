@@ -72,6 +72,17 @@ void OrdersFIFO::reset(void) {
     order_count_ = 0;
 }
 
+void OrdersFIFO::we_are_at(int16_t x, int16_t y, float angle) {
+#ifdef IAM_QBOUGE
+    current_order_.pos.x = x;
+    current_order_.pos.y = y;
+    current_order_.angle = angle;
+#endif
+#ifdef IAM_QENTRESORT
+    current_order_.which_arm = ARM_NONE;
+#endif
+}
+
 int OrdersFIFO::push(s_order_com item) {
     if (order_count_ == fifo_size_)
         return 1;
@@ -149,22 +160,27 @@ int OrdersFIFO::next_order_execute(void) {
 #ifdef IAM_QENTRESORT
             case ORDER_COM_TYPE_ARM_INIT:
                 current_order_.type = ORDER_EXE_TYPE_ARM_INIT;
+                current_order_.which_arm = next->order_data.which_arm;
                 break;
 
             case ORDER_COM_TYPE_ARM_GRAB:
                 current_order_.type = ORDER_EXE_TYPE_ARM_GRAB;
+                current_order_.which_arm = next->order_data.which_arm;
                 break;
 
             case ORDER_COM_TYPE_ARM_MOVE_UP:
                 current_order_.type = ORDER_EXE_TYPE_ARM_MOVE_UP;
+                current_order_.which_arm = next->order_data.which_arm;
                 break;
 
             case ORDER_COM_TYPE_ARM_RELEASE:
                 current_order_.type = ORDER_EXE_TYPE_ARM_RELEASE;
+                current_order_.which_arm = next->order_data.which_arm;
                 break;
 
             case ORDER_COM_TYPE_ARM_MOVE_DOWN:
                 current_order_.type = ORDER_EXE_TYPE_ARM_MOVE_DOWN;
+                current_order_.which_arm = next->order_data.which_arm;
                 break;
 #else
             case ORDER_COM_TYPE_ARM_INIT:
@@ -329,32 +345,37 @@ s_order_com OrderCom_makeRelAngle(float angle) {
     return tmp;
 }
 
-s_order_com OrderCom_makeArmInit(void) {
+s_order_com OrderCom_makeArmInit(uint8_t which_arm) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ARM_INIT;
+    tmp.order_data.which_arm = which_arm;
     return tmp;
 }
 
-s_order_com OrderCom_makeArmGrab(void) {
+s_order_com OrderCom_makeArmGrab(uint8_t which_arm) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ARM_GRAB;
+    tmp.order_data.which_arm = which_arm;
     return tmp;
 }
 
-s_order_com OrderCom_makeArmMoveUp(void) {
+s_order_com OrderCom_makeArmMoveUp(uint8_t which_arm) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ARM_MOVE_UP;
+    tmp.order_data.which_arm = which_arm;
     return tmp;
 }
 
-s_order_com OrderCom_makeArmRelease(void) {
+s_order_com OrderCom_makeArmRelease(uint8_t which_arm) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ARM_RELEASE;
+    tmp.order_data.which_arm = which_arm;
     return tmp;
 }
 
-s_order_com OrderCom_makeArmMoveDown(void) {
+s_order_com OrderCom_makeArmMoveDown(uint8_t which_arm) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ARM_MOVE_DOWN;
+    tmp.order_data.which_arm = which_arm;
     return tmp;
 }

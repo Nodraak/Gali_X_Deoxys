@@ -24,7 +24,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #include "QEntreQSort/RoboticArm.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, AX12_arm *ax12_arm);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #endif
 

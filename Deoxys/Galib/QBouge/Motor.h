@@ -7,8 +7,8 @@
 
 #define PWM_MIN                 0.08                            // pwm value at which the robot start moving
 #define PWM_MAX                 1.00                            // should be 1.00 during matchs
-#define PWM_STEP                (6.0*ASSERV_DELAY)              // pwm goes from 0 to X over a 1 sec timespan
-#define PWM_ERROR_TOLERANCE     0.01                            // value under which a pwm value is considered zero
+#define PWM_STEP                (1.0/(ASSERV_FPS*1.0))          // pwm goes from 0 to 1 over a X sec timespan
+#define PWM_ERROR_TOLERANCE     (PWM_STEP/2)
 
 /*
     Forward and backward direction (value of the digital input `direction` of
@@ -85,23 +85,13 @@ protected:
     DigitalOut dir_;
     bool forward_dir_;
     float speed_;  // unit: mm/sec
+    float last_sPwm_;
 
 public:
     AnalogIn current_sense_;
     DigitalIn thermal_flag_;
     DigitalOut brake_;
 };
-
-/*
-    Limit the pwm to smoothes the transition between speeds.
-
-    Arguments:
-        requested: new signed pwm value.
-        current: current signed pwm value.
-
-    Returns the new signed pwm value.
-*/
-float motor_cap_pwm(float requested, float current);
 
 #endif // #ifndef MOTOR_H_INCLUDED
 #endif // #ifdef IAM_QBOUGE

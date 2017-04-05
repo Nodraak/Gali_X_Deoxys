@@ -20,7 +20,9 @@
 int main(void)
 {
     Debug *debug = NULL;
-    Timer *loop = NULL, *match = NULL;
+    Timer *loop = NULL;
+    Timer match;
+    match.start();
 
     /*
         Initializing
@@ -54,10 +56,6 @@ int main(void)
         while (1)
             ;
     }
-
-    debug->printf("Timer (match)...\n");
-    match = new Timer;
-    match->start();
 
     // init sharp + other sensors
     // init servos + other actuators
@@ -100,13 +98,13 @@ int main(void)
             debug->printf("[CAN/rec] id=%d\n", rec_msg.id);
 
             if (rec_msg.id == Message::MT_CQB_pong)
-                last_ping_CQB = match->read();
+                last_ping_CQB = match.read();
             if (rec_msg.id == Message::MT_CQES_pong)
-                last_ping_CQES = match->read();
+                last_ping_CQES = match.read();
         }
 
-        bool ping_CQB = (match->read()-last_ping_CQB) < 0.500;
-        bool ping_CQES = (match->read()-last_ping_CQES) < 0.500;
+        bool ping_CQB = (match.read()-last_ping_CQB) < 1.000;
+        bool ping_CQES = (match.read()-last_ping_CQES) < 1.000;
 
         if (ping_CQB && ping_CQES)
         {
@@ -140,18 +138,18 @@ int main(void)
 
     debug->printf("\nGo!\n");
 
-    match->reset();
+    match.reset();
     messenger->send_msg_CQR_match_start();
 
     while (true)  // todo match.read() < 90
     {
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", match->read());
+        debug->printf("[timer/match] %.3f\n", match.read());
 
         // todo ping/pong each board -> if no response since XX, then do something
 
-        if (match->read_ms() > 90*1000)  // todo define
-            messenger->send_msg_CQR_match_stop();
+        // if (match->read_ms() > 90*1000)  // todo define
+        //     messenger->send_msg_CQR_match_stop();
 
         // update sharp + other sensors
         queue.dispatch(0);  // non blocking dispatch
@@ -172,7 +170,6 @@ int main(void)
     debug->set_current_level(Debug::DEBUG_INITIALISATION);
     debug->printf("Cleaning...\n");
 
-    delete match;
     delete orders;
     delete loop;
     delete messenger;

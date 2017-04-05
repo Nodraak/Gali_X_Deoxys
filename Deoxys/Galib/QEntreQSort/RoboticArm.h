@@ -3,6 +3,7 @@
 #ifndef ROBOTIC_ARM_H_INCLUDED
 #define ROBOTIC_ARM_H_INCLUDED
 
+#include "common/OrdersFIFO.h"
 #include "pinout.h"
 
 #define AX12_PING_CMD           0x1
@@ -27,17 +28,17 @@
 
 #define BAUD_RATE                       (200*1000)
 #define MAX_BITS_PER_MSG_REQUEST        70
-#define AX12_TIME_FOR_DATA_TO_BE_SENT   (1000*1000*MAX_BITS_PER_MSG_REQUEST/BAUD_RATE + 250)  // us
+#define AX12_TIME_FOR_DATA_TO_BE_SENT   (1000*1000*MAX_BITS_PER_MSG_REQUEST/BAUD_RATE + 350)  // us
 #define MAX_BITS_PER_MSG_RESPONSE       100
-#define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 750)  // us
+#define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 1000)  // us
 
 #define AX12_MAX_RETRIES                3
 #define AX12_SLEEP_TIME_BETWEEN_RETRIES 5  // ms
 
-#define SLEEP_INIT      0.500  // time for the arm to move in ready pos (should already be ready)
-#define SLEEP_GRAB      0.500  // time for the servo to move (to catch the cylinder)
-#define SLEEP_MOVE      1.000  // time for the arm to move
-#define SLEEP_RELEASE   0.100  // time for the arm to release the cylinder
+#define SLEEP_INIT                      0.500  // time for the arm to move in ready pos (should already be ready)
+#define SLEEP_GRAB                      0.750  // time for the servo to move (to catch the cylinder)
+#define SLEEP_MOVE                      1.500  // time for the arm to move
+#define SLEEP_RELEASE                   0.250  // time for the arm to release the cylinder
 
 
 #if AX12_TIME_FOR_DATA_TO_BE_SENT > 1000  // us
@@ -78,6 +79,8 @@ private:
 public:
     int send_ping(uint8_t id);
 
+    int write_id(uint8_t id, uint8_t new_id);
+
     int read_delay(uint8_t id);
     int write_delay(uint8_t id, uint8_t delay);
 
@@ -105,7 +108,7 @@ private:
 
 class AX12_arm {
 public:
-    AX12_arm(int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve);
+    AX12_arm(AX12 *ax12_com, uint8_t which_arm, int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve);
 
     void ping_all(void);
 
@@ -121,10 +124,6 @@ public:
     void set_valve_on(void);
     void set_valve_off(void);
 
-    void arm_move_down(void);
-    void arm_move_up_right(void);
-    void arm_move_up_left(void);
-
     void seq_init(void);
     void seq_grab(void);
     void seq_move_up(void);
@@ -132,8 +131,9 @@ public:
     void seq_move_down(void);
 
 private:
+    AX12 *ax12_;
+    uint8_t which_arm_;
     int id_base_, id_vert_, id_horiz_;
-    AX12 ax12_;
     PwmOut servo_;
     DigitalOut valve_;
 };

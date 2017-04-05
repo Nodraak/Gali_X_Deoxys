@@ -206,6 +206,10 @@ int AX12::send_ping(uint8_t id) {
     return this->_send_request_with_retries(3, data);
 };
 
+int AX12::write_id(uint8_t id, uint8_t new_id) {
+    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x03, new_id);
+}
+
 int AX12::read_delay(uint8_t id) {
     return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, 0x05, AX12_READ_1B);
 }
@@ -235,62 +239,77 @@ int AX12::read_baud_rate(uint8_t id) {
 };
 
 int AX12::write_baud_rate(uint8_t id, uint8_t baud_rate_id) {
-    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x04, baud_rate_id, 200);
+    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x04, baud_rate_id);
 };
 
 /*============================================================================*/
 
-AX12_arm::AX12_arm(int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve) :
+AX12_arm::AX12_arm(AX12 *ax12_com, uint8_t which_arm, int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve) :
     id_base_(id_base), id_vert_(id_vert), id_horiz_(id_horiz),
-    servo_(pin_pwm), valve_(valve) {
-
+    servo_(pin_pwm), valve_(valve)
+{
+    ax12_ = ax12_com;
+    which_arm_ = which_arm;
     servo_.period(1./50);
-
-    this->set_servo_off();
-    this->set_valve_off();
-    this->arm_move_down();
+    this->seq_init();
 };
 
 void AX12_arm::ping_all(void) {
-    ax12_.send_ping(id_base_);
-    ax12_.send_ping(id_vert_);
-    ax12_.send_ping(id_horiz_);
+    ax12_->send_ping(id_base_);
+    ax12_->send_ping(id_vert_);
+    ax12_->send_ping(id_horiz_);
 };
 
 void AX12_arm::read_pos_all(void) {
     g_debug->printf("\t\t\t\tall pos %4d %4d %4d\n",
-        ax12_.read_pos(id_base_),
-        ax12_.read_pos(id_vert_),
-        ax12_.read_pos(id_horiz_)
+        ax12_->read_pos(id_base_),
+        ax12_->read_pos(id_vert_),
+        ax12_->read_pos(id_horiz_)
     );
 };
 
 void AX12_arm::write_pos_all(int pos1, int pos2, int pos3) {
-    ax12_.write_pos(id_base_, pos1);
-    ax12_.write_pos(id_vert_, pos2);
-    ax12_.write_pos(id_horiz_, pos3);
+    ax12_->write_pos(id_base_, pos1);
+    ax12_->write_pos(id_vert_, pos2);
+    ax12_->write_pos(id_horiz_, pos3);
 };
 
 void AX12_arm::read_speed_all(void) {
     g_debug->printf("\t\t\t\tall speed %4d %4d %4d\n",
-        ax12_.read_speed(id_base_),
-        ax12_.read_speed(id_vert_),
-        ax12_.read_speed(id_horiz_)
+        ax12_->read_speed(id_base_),
+        ax12_->read_speed(id_vert_),
+        ax12_->read_speed(id_horiz_)
     );
 }
 
 void AX12_arm::write_speed_all(uint16_t speed) {
-    ax12_.write_speed(id_base_, speed);
-    ax12_.write_speed(id_vert_, speed);
-    ax12_.write_speed(id_horiz_, speed);
+    ax12_->write_speed(id_base_, speed);
+    ax12_->write_speed(id_vert_, speed);
+    ax12_->write_speed(id_horiz_, speed);
 };
 
 void AX12_arm::set_servo_on(void) {
-    servo_.write(0.03);
+    switch (which_arm_)
+    {
+        case ARM_LEFT:
+            servo_.write(0.03);
+            break;
+        case ARM_RIGHT:
+            servo_.write(0.13);
+            break;
+    }
 }
 
 void AX12_arm::set_servo_off(void) {
-    servo_.write(0.12);
+    switch (which_arm_)
+    {
+        case ARM_LEFT:
+            servo_.write(0.12);
+            break;
+        case ARM_RIGHT:
+            servo_.write(0.07);
+            break;
+    }
 }
 
 void AX12_arm::set_valve_on(void) {
@@ -301,22 +320,11 @@ void AX12_arm::set_valve_off(void) {
     valve_ = true;
 }
 
-void AX12_arm::arm_move_down(void) {
-    this->write_pos_all(800, 195, 330);
-}
-
-void AX12_arm::arm_move_up_right(void) {
-    this->write_pos_all(720, 780, 635);
-}
-
-void AX12_arm::arm_move_up_left(void) {
-    this->write_pos_all(720, 780, 30);
-}
-
 void AX12_arm::seq_init(void) {
 g_debug->printf("\tinit\n");
     this->set_servo_off();
-    this->arm_move_down();
+    this->set_valve_off();
+    // this->arm_move_down();
 }
 
 void AX12_arm::seq_grab(void) {
@@ -328,7 +336,15 @@ g_debug->printf("\tgrab\n");
 void AX12_arm::seq_move_up(void) {
 g_debug->printf("\tmove up\n");
     this->set_servo_off();
-    this->arm_move_up_right();
+    switch (which_arm_)
+    {
+        case ARM_LEFT:
+            this->write_pos_all(360, 740, 640);
+            break;
+        case ARM_RIGHT:
+            this->write_pos_all(430, 750, 330);
+            break;
+    }
 }
 
 void AX12_arm::seq_release(void) {
@@ -338,7 +354,15 @@ g_debug->printf("\trelease\n");
 
 void AX12_arm::seq_move_down(void) {
 g_debug->printf("\tmove down\n");
-    this->arm_move_down();
+    switch (which_arm_)
+    {
+        case ARM_LEFT:
+            this->write_pos_all(450, 160, 330);
+            break;
+        case ARM_RIGHT:
+            this->write_pos_all(370, 160, 640);
+            break;
+    }
 }
 
 #endif // #ifdef IAM_QENTRESORT
