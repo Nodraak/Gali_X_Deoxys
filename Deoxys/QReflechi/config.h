@@ -16,9 +16,5 @@
 #define MC_START_Y          920
 #define MC_START_ANGLE      DEG2RAD(180)
 
-// demo_test_com
-// #define MC_START_X          0
-// #define MC_START_Y          0
-// #define MC_START_ANGLE      DEG2RAD(0)
 
 #endif // CONFIG_H_INCLUDED

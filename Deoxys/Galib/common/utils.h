@@ -15,6 +15,7 @@ typedef struct _s_vector_int16 {
 #define DEG2RAD(val)        ((val)*M_PI/180)
 
 #define ABS(val)            (((val) < 0) ? (-(val)) : (val))
+#define SIGN(x)             ((x) > 0 ? 1 : -1)
 #define DIST(x, y)          sqrt((x)*(x) + (y)*(y))
 #define MAX(a, b)           ((a) > (b) ? (a) : (b))
 

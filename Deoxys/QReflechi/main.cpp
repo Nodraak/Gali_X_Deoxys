@@ -39,10 +39,14 @@ int main(void)
     CanMessenger *messenger = new CanMessenger;
 
     sl.init_half();
+    debug->printf("t=%f\n", match.read());
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
+    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
+    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
+    debug->printf("CAN_MAX_MSG_PER_200Hz_FRAME %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
 
     debug->printf("Timer (loop)...\n");
     loop = new Timer;
@@ -62,16 +66,13 @@ int main(void)
 
     // init ia ?
 
+    debug->printf("interrupt_priorities...\n");
+    sys_interrupt_priorities_init(debug);
+
     mem_stats_dynamic(debug);
 
-    debug->printf("Initialisation done.\n\n");
+    debug->printf("Initialisation done (%f).\n\n", match.read());
     debug->set_current_level(Debug::DEBUG_DEBUG);
-
-
-#define ASSERV_FPS 200
-    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
-    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
-    debug->printf("CAN_MAX_MSG_PER_ASSERV_FRAME %.1f\n", CAN_MAX_MSG_PER_ASSERV_FRAME);
 
     // wait for other boards to be alive
     debug->printf("Waiting for other boards...\n");
@@ -129,7 +130,6 @@ int main(void)
         Ready, wait for tirette
     */
 
-    // todo wait for other boards -> ping msg over can -> or wait to be in while to find out | + setup isr to ping ?
     // todo wait for tirette
 
     /*
@@ -151,7 +151,6 @@ int main(void)
         // if (match->read_ms() > 90*1000)  // todo define
         //     messenger->send_msg_CQR_match_stop();
 
-        // update sharp + other sensors
         queue.dispatch(0);  // non blocking dispatch
 
         com_handle_serial(debug, messenger);

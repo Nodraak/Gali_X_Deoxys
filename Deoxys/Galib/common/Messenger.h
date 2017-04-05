@@ -15,8 +15,8 @@
 
 #define CAN_FRAME_BUS_OCCUPATION        (1.0/CAN_BUS_FREQUENCY * (44+64))  // time in sec that a frame requiert to be transmitted
 #define CAN_MAX_MSG_PER_SEC             (1.0/CAN_FRAME_BUS_OCCUPATION)
-#define CAN_MAX_MSG_PER_ASSERV_FRAME    (CAN_MAX_MSG_PER_SEC/ASSERV_FPS)
-// todo print theses stats
+#define CAN_MAX_MSG_PER_200Hz_FRAME     (CAN_MAX_MSG_PER_SEC/200.0)
+
 #define ON_RECEIVE_SLOT_COUNT 20  // todo check overflow
 
 /*
@@ -87,7 +87,8 @@ public:
         MT_CQB_MC_motors            = 704,
         MT_CQB_MC_encs              = 705,
 
-        MT_empty                    = 800,  // placeholder, not actually used
+        MT_empty                    = 2046,  // placeholder, not actually used
+        MT_last                     = 2047
     }               e_message_type;
 
     /*

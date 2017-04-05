@@ -52,9 +52,14 @@ int main(void)
     debug->printf("CanMessenger...\n");
     messenger = new CanMessenger;
 
+    debug->printf("t=%f\n", match.read());
+
     mem_stats_objects(debug);
     mem_stats_settings(debug);
     test_run_all(debug);
+    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
+    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
+    debug->printf("CAN_MAX_MSG_PER_200Hz_FRAME %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
 
     debug->printf("OrdersFIFO...\n");
     orders = new OrdersFIFO(ORDERS_COUNT);
@@ -81,15 +86,11 @@ int main(void)
     debug->printf("Initialisation done. (%f)\n\n", match.read());
     debug->set_current_level(Debug::DEBUG_DEBUG);
 
-    wait_ms(500);
-
-
     // todo wait for tirette (can msg)
 
     /*
         Go!
     */
-
 
     match.reset();
 

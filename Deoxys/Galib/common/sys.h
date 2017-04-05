@@ -4,7 +4,7 @@
 #include "common/Debug.h"
 
 void sys_print_reset_source(Debug *debug);
-void sys_interrupt_priorities_init(Debug *debug);
+void sys_interrupt_priorities_init(void);
 
 
 #endif // SYS_H_INCLUDED
