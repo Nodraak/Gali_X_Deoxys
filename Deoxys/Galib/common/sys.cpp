@@ -36,23 +36,28 @@ void sys_interrupt_priorities_init(void)
 {
     NVIC_SetPriorityGrouping(0);
 
+    // encoders input (DigitalIn interrupt)
     NVIC_SetPriority(EXTI0_IRQn, 1);
     NVIC_SetPriority(EXTI1_IRQn, 1);
     NVIC_SetPriority(EXTI2_IRQn, 1);
     NVIC_SetPriority(EXTI3_IRQn, 1);
 
-    NVIC_SetPriority(TIM2_IRQn, 3); // ISR (asserv)
+    // asserv (mbed ticker (ISR) via TIM2)
+    NVIC_SetPriority(TIM2_IRQn, 3);
 
-    NVIC_SetPriority(TIM1_BRK_TIM15_IRQn, 5); // pwm
-    NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 5); // pwm
-    NVIC_SetPriority(TIM1_TRG_COM_IRQn, 5); // pwm
-    NVIC_SetPriority(TIM1_CC_IRQn, 5); // pwm
+    // pwm outputs (mbed PwmOut via TIM1)
+    NVIC_SetPriority(TIM1_BRK_TIM15_IRQn, 5);
+    NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 5);
+    NVIC_SetPriority(TIM1_TRG_COM_IRQn, 5);
+    NVIC_SetPriority(TIM1_CC_IRQn, 5);
 
-    NVIC_SetPriority(CAN1_TX_IRQn, 10);
-    NVIC_SetPriority(CAN1_RX0_IRQn, 10);
-    NVIC_SetPriority(CAN1_RX1_IRQn, 10);
-    NVIC_SetPriority(CAN1_SCE_IRQn, 10);
+    // CAN bus
+    NVIC_SetPriority(CAN1_TX_IRQn, 10);     // transmit
+    NVIC_SetPriority(CAN1_RX0_IRQn, 10);    // receive
+    NVIC_SetPriority(CAN1_RX1_IRQn, 10);    // receive
+    NVIC_SetPriority(CAN1_SCE_IRQn, 10);    // on error interrupts
 
+    // U(S)ART
     NVIC_SetPriority(USART1_IRQn, 11);
     NVIC_SetPriority(USART2_IRQn, 11);
 }

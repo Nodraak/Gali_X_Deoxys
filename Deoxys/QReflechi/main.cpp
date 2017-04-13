@@ -9,6 +9,7 @@
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
+#include "common/sys.h"
 
 #include "common/test.h"
 
@@ -67,7 +68,7 @@ int main(void)
     // init ia ?
 
     debug->printf("interrupt_priorities...\n");
-    sys_interrupt_priorities_init(debug);
+    sys_interrupt_priorities_init();
 
     mem_stats_dynamic(debug);
 

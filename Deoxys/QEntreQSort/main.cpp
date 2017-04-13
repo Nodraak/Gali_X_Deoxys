@@ -9,6 +9,7 @@
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
+#include "common/sys.h"
 #include "QEntreQSort/Actuator.h"
 #include "QEntreQSort/RoboticArm.h"
 
@@ -360,7 +361,7 @@ g_debug = debug;
     arms[ACT_SIDE_RIGHT]->write_speed_all(500);
 
     debug->printf("interrupt_priorities...\n");
-    sys_interrupt_priorities_init(debug);
+    sys_interrupt_priorities_init();
 
     mem_stats_dynamic(debug);
 

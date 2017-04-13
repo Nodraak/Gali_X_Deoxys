@@ -79,7 +79,7 @@ int main(void)
     asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
 
     debug->printf("interrupt_priorities...\n");
-    sys_interrupt_priorities_init(debug);
+    sys_interrupt_priorities_init();
 
     mem_stats_dynamic(debug);
 
