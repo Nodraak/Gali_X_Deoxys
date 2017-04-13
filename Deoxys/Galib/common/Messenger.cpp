@@ -150,6 +150,21 @@ int CanMessenger::send_msg_CQB_next_order_request(uint8_t count) {
     ));
 }
 
+int CanMessenger::send_msg_I_am_doing(e_order_exe_type order) {
+    Message::CP_I_am_doing payload;
+#ifdef IAM_QBOUGE
+    sprintf(payload.i_am, "CQB");
+#endif
+#ifdef IAM_QREFLECHI
+    sprintf(payload.i_am, "CQR");
+#endif
+#ifdef IAM_QENTRESORT
+    sprintf(payload.i_am, "CQE");
+#endif
+    payload.order = order;
+    return this->send_msg(Message(Message::MT_I_am_doing, sizeof(payload), (Message::u_payload){.I_am_doing = payload}));
+}
+
 int CanMessenger::send_msg_CQB_MC_pos_angle(float x, float y, float angle) {
     Message::CP_CQB_MC_pos_angle payload;
     payload.pos.x = x;

@@ -323,6 +323,10 @@ s_order_com OrderCom_makeWaitCQESFinished(void) {
     return tmp;
 }
 
+s_order_com OrderCom_makeAbsPos(s_vector_int16 pos) {
+    return OrderCom_makeAbsPos(pos.x, pos.y);
+}
+
 s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_ABS_POS;

@@ -11,13 +11,13 @@
         - STMF3: 1 M Hz
         - MCP2551 module: 1 M Hz
 */
-#define CAN_BUS_FREQUENCY (500*1000)
+#define CAN_BUS_FREQUENCY               (500*1000)
 
 #define CAN_FRAME_BUS_OCCUPATION        (1.0/CAN_BUS_FREQUENCY * (44+64))  // time in sec that a frame requiert to be transmitted
 #define CAN_MAX_MSG_PER_SEC             (1.0/CAN_FRAME_BUS_OCCUPATION)
 #define CAN_MAX_MSG_PER_200Hz_FRAME     (CAN_MAX_MSG_PER_SEC/200.0)
 
-#define ON_RECEIVE_SLOT_COUNT 20  // todo check overflow
+#define ON_RECEIVE_SLOT_COUNT           20
 
 /*
     The Message is mostly used internally by the CanMessenger class, you most
@@ -81,6 +81,8 @@ public:
             Low (debug) (600-799)
         */
 
+        MT_I_am_doing               = 650,  // current order
+
         MT_CQB_MC_pos_angle         = 701,
         MT_CQB_MC_speeds            = 702,
         MT_CQB_MC_pids              = 703,
@@ -118,6 +120,11 @@ public:
     typedef struct {
         uint8_t count;
     } CP_CQB_next_order_request;
+
+    typedef struct {
+        char i_am[4];
+        e_order_exe_type order;
+    } CP_I_am_doing;
 
     typedef CP_CQR_we_are_at CP_CQB_MC_pos_angle;
 
@@ -158,6 +165,7 @@ public:
         CP_order                    order;
         CP_CQB_next_order_request   CQB_next_order_request;
 
+        CP_I_am_doing               I_am_doing;
         CP_CQB_MC_pos_angle         CQB_MC_pos_angle;
         CP_CQB_MC_speeds            CQB_MC_speeds;
         CP_CQB_MC_pids              CQB_MC_pids;
@@ -209,6 +217,8 @@ public:
     int send_msg_CQB_finished(void);
     int send_msg_CQES_finished(void);
     int send_msg_CQB_next_order_request(uint8_t count);
+
+    int send_msg_I_am_doing(e_order_exe_type order);
 
     int send_msg_CQB_MC_pos_angle(float x, float y, float angle);
     int send_msg_CQB_MC_speeds(float speed, float speed_ang);

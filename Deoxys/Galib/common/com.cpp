@@ -167,6 +167,14 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                 }
                 break;
 
+            case Message::MT_I_am_doing:
+                debug->printf(
+                    "[CAN] \t\t\t I am doing %s %s\n",
+                    rec_msg.payload.I_am_doing.i_am,
+                    e2s_order_exe_type[rec_msg.payload.I_am_doing.order]
+                );
+                break;
+
             case Message::MT_CQB_MC_pos_angle:
                 debug->printf(
                     "[CAN/CQB] pos angle %d %d %.0f\n",

@@ -180,6 +180,7 @@ s_order_com OrderCom_makeDelay(float delay);
 s_order_com OrderCom_makeWaitCQBFinished(void);
 s_order_com OrderCom_makeWaitCQESFinished(void);
 
+s_order_com OrderCom_makeAbsPos(s_vector_int16 pos);
 s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y);
 s_order_com OrderCom_makeAbsAngle(float angle);
 s_order_com OrderCom_makeRelDist(int32_t dist);
