@@ -12,8 +12,9 @@ void BufferedSerial::clear(void) {
 #include "common/Debug.h"
 #include "QEntreQSort/Actuator.h"
 
-#include "QEntreQSort/RoboticArm.h"
+#include "config.h"
 
+#include "QEntreQSort/RoboticArm.h"
 
 extern Debug *g_debug;
 
@@ -208,39 +209,39 @@ int AX12::send_ping(uint8_t id) {
 };
 
 int AX12::write_id(uint8_t id, uint8_t new_id) {
-    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x03, new_id);
+    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, REG_ADDR_ID, new_id);
 }
 
 int AX12::read_delay(uint8_t id) {
-    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, 0x05, AX12_READ_1B);
+    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, REG_ADDR_RESPONSE_DELAY, AX12_READ_1B);
 }
 
 int AX12::write_delay(uint8_t id, uint8_t delay) {
-    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x05, delay);
+    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, REG_ADDR_RESPONSE_DELAY, delay);
 }
 
 int AX12::read_pos(uint8_t id) {
-    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, 0x24, AX12_READ_2B);  // TODO 0x24 -> reg addr of position
+    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, REG_ADDR_CURRENT_POSITION, AX12_READ_2B);
 };
 
 int AX12::write_pos(uint8_t id, uint16_t pos) {
-    return this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, 0x1E, pos & 0xFF, pos >> 8);
+    return this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, REG_ADDR_GOAL_POSITION, pos & 0xFF, pos >> 8);
 };
 
 int AX12::read_speed(uint8_t id) {
-    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, 0x20, AX12_READ_2B);
+    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, REG_ADDR_SPEED, AX12_READ_2B);
 };
 
 int AX12::write_speed(uint8_t id, uint16_t speed) {
-    return this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, 0x20, speed & 0xFF, speed >> 8);
+    return this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, REG_ADDR_SPEED, speed & 0xFF, speed >> 8);
 };
 
 int AX12::read_baud_rate(uint8_t id) {
-    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, 0x04, AX12_READ_1B);
+    return this->_read(id, AX12_READ_LEN, AX12_READ_CMD, REG_ADDR_BAUD_RATE, AX12_READ_1B);
 };
 
 int AX12::write_baud_rate(uint8_t id, uint8_t baud_rate_id) {
-    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, 0x04, baud_rate_id);
+    return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, REG_ADDR_BAUD_RATE, baud_rate_id);
 };
 
 /*============================================================================*/
@@ -251,7 +252,7 @@ AX12_arm::AX12_arm(AX12 *ax12_com, uint8_t which_arm, int id_base, int id_vert, 
 {
     ax12_ = ax12_com;
     which_arm_ = which_arm;
-    servo_.period(1./50);
+    servo_.period(SERVO_PWM_PERIOD);
     this->seq_init();
 };
 

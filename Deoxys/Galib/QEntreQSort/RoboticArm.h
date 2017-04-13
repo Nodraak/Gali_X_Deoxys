@@ -6,39 +6,59 @@
 #include "common/OrdersFIFO.h"
 #include "pinout.h"
 
-#define AX12_PING_CMD           0x1
-#define AX12_PING_LEN           (2+0)
-#define AX12_READ_CMD           0x2
-#define AX12_READ_LEN           (2+2)
-#define AX12_READ_1B            1
-#define AX12_READ_2B            2
-#define AX12_WRITE_CMD          0x3
-#define AX12_WRITE_1B_LEN       (3+1)
-#define AX12_WRITE_2B_LEN       (3+2)
-#define AX12_RESET_CMD          0x6
-#define AX12_RESET_LEN          (2+0)
-
-// errors -255 to -1 are reserved for error code returned by the AX12
-#define AX12_E_TIMEOUT          (-256)
-#define AX12_E_ID               (-257)
-#define AX12_E_LEN              (-258)
-#define AX12_E_CHECKSUM         (-259)
-#define AX12_E_UNHANDLED_CMD    (-260)
-#define AX12_E_READ_CMD         (-261)
 
 #define BAUD_RATE                       (200*1000)
-#define MAX_BITS_PER_MSG_REQUEST        70
-#define AX12_TIME_FOR_DATA_TO_BE_SENT   (1000*1000*MAX_BITS_PER_MSG_REQUEST/BAUD_RATE + 350)  // us
-#define MAX_BITS_PER_MSG_RESPONSE       100
-#define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 1000)  // us
 
 #define AX12_MAX_RETRIES                3
 #define AX12_SLEEP_TIME_BETWEEN_RETRIES 5  // ms
 
 #define SLEEP_INIT                      0.500  // time for the arm to move in ready pos (should already be ready)
-#define SLEEP_GRAB                      0.750  // time for the servo to move (to catch the cylinder)
-#define SLEEP_MOVE                      1.500  // time for the arm to move
+#define SLEEP_GRAB                      1.250  // time for the servo to move (to catch the cylinder)
+#define SLEEP_MOVE                      1.000  // time for the arm to move
 #define SLEEP_RELEASE                   0.250  // time for the arm to release the cylinder
+
+/*
+    Commands and their lengths
+*/
+#define AX12_PING_CMD                   0x1
+#define AX12_PING_LEN                   (2+0)
+#define AX12_READ_CMD                   0x2
+#define AX12_READ_LEN                   (2+2)
+#define AX12_READ_1B                    1
+#define AX12_READ_2B                    2
+#define AX12_WRITE_CMD                  0x3
+#define AX12_WRITE_1B_LEN               (3+1)
+#define AX12_WRITE_2B_LEN               (3+2)
+#define AX12_RESET_CMD                  0x6
+#define AX12_RESET_LEN                  (2+0)
+
+/*
+    Registers
+*/
+// EEPROM (ro)
+#define REG_ADDR_ID                     0x03    // 1 byte
+#define REG_ADDR_BAUD_RATE              0x04    // 1 byte
+#define REG_ADDR_RESPONSE_DELAY         0x05    // 1 byte
+// RAM (rw)
+#define REG_ADDR_GOAL_POSITION          0x1E    // 2 bytes
+#define REG_ADDR_SPEED                  0x20    // 2 bytes
+#define REG_ADDR_CURRENT_POSITION       0x24    // 2 bytes
+
+/*
+    Errors
+    Note: -255 to -1 are reserved for error code returned by the AX12
+*/
+#define AX12_E_TIMEOUT                  (-256)
+#define AX12_E_ID                       (-257)
+#define AX12_E_LEN                      (-258)
+#define AX12_E_CHECKSUM                 (-259)
+#define AX12_E_UNHANDLED_CMD            (-260)
+#define AX12_E_READ_CMD                 (-261)
+
+#define MAX_BITS_PER_MSG_REQUEST        70
+#define AX12_TIME_FOR_DATA_TO_BE_SENT   (1000*1000*MAX_BITS_PER_MSG_REQUEST/BAUD_RATE + 350)  // us
+#define MAX_BITS_PER_MSG_RESPONSE       100
+#define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 1000)  // us
 
 
 #if AX12_TIME_FOR_DATA_TO_BE_SENT > 1000  // us
