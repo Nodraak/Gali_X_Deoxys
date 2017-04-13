@@ -9,6 +9,7 @@
 #include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/utils.h"
+#include "QEntreQSort/Actuator.h"
 #include "QEntreQSort/RoboticArm.h"
 
 #include "common/test.h"
@@ -145,33 +146,33 @@ void main_do_com(Debug *debug, AX12_arm **arms)
 #endif
         if (strncmp(buffer, "p", 1) == 0)
         {
-            arms[ARM_LEFT]->ping_all();
-            arms[ARM_RIGHT]->ping_all();
+            arms[ACT_SIDE_LEFT]->ping_all();
+            arms[ACT_SIDE_RIGHT]->ping_all();
         }
         else if (strncmp(buffer, "ls", 2) == 0)
         {
-            arms[ARM_LEFT]->seq_init();
+            arms[ACT_SIDE_LEFT]->seq_init();
             wait(SLEEP_INIT);
-            arms[ARM_LEFT]->seq_grab();
+            arms[ACT_SIDE_LEFT]->seq_grab();
             wait(SLEEP_GRAB);
-            arms[ARM_LEFT]->seq_move_up();
+            arms[ACT_SIDE_LEFT]->seq_move_up();
             wait(SLEEP_MOVE);
-            arms[ARM_LEFT]->seq_release();
+            arms[ACT_SIDE_LEFT]->seq_release();
             wait(SLEEP_RELEASE);
-            arms[ARM_LEFT]->seq_move_down();
+            arms[ACT_SIDE_LEFT]->seq_move_down();
             wait(SLEEP_MOVE);
         }
         else if (strncmp(buffer, "rs", 2) == 0)
         {
-            arms[ARM_RIGHT]->seq_init();
+            arms[ACT_SIDE_RIGHT]->seq_init();
             wait(SLEEP_INIT);
-            arms[ARM_RIGHT]->seq_grab();
+            arms[ACT_SIDE_RIGHT]->seq_grab();
             wait(SLEEP_GRAB);
-            arms[ARM_RIGHT]->seq_move_up();
+            arms[ACT_SIDE_RIGHT]->seq_move_up();
             wait(SLEEP_MOVE);
-            arms[ARM_RIGHT]->seq_release();
+            arms[ACT_SIDE_RIGHT]->seq_release();
             wait(SLEEP_RELEASE);
-            arms[ARM_RIGHT]->seq_move_down();
+            arms[ACT_SIDE_RIGHT]->seq_move_down();
             wait(SLEEP_MOVE);
         }
         else if (strncmp(buffer, "aws", 3) == 0)
@@ -182,8 +183,8 @@ void main_do_com(Debug *debug, AX12_arm **arms)
             a = atoi(ptr);
 
             debug->printf("set speed %d\n", a);
-            arms[ARM_LEFT]->write_speed_all(a);
-            arms[ARM_RIGHT]->write_speed_all(a);
+            arms[ACT_SIDE_LEFT]->write_speed_all(a);
+            arms[ACT_SIDE_RIGHT]->write_speed_all(a);
         }
         else if (strncmp(buffer, "lwp", 3) == 0)
         {
@@ -199,7 +200,7 @@ void main_do_com(Debug *debug, AX12_arm **arms)
             posL[a] = b;
             debug->printf("have pos L %d %d %d\n", posL[0], posL[1], posL[2]);
 
-            arms[ARM_LEFT]->write_pos_all(posL[0], posL[1], posL[2]);
+            arms[ACT_SIDE_LEFT]->write_pos_all(posL[0], posL[1], posL[2]);
         }
         else if (strncmp(buffer, "rwp", 3) == 0)
         {
@@ -215,12 +216,12 @@ void main_do_com(Debug *debug, AX12_arm **arms)
             posR[a] = b;
             debug->printf("have pos R %d %d %d\n", posR[0], posR[1], posR[2]);
 
-            arms[ARM_RIGHT]->write_pos_all(posR[0], posR[1], posR[2]);
+            arms[ACT_SIDE_RIGHT]->write_pos_all(posR[0], posR[1], posR[2]);
         }
         else if (strncmp(buffer, "arp", 3) == 0)
         {
-            arms[ARM_LEFT]->read_pos_all();
-            arms[ARM_RIGHT]->read_pos_all();
+            arms[ACT_SIDE_LEFT]->read_pos_all();
+            arms[ACT_SIDE_RIGHT]->read_pos_all();
         }
         else
             debug->printf("unknown cmd\n");
@@ -352,11 +353,11 @@ g_debug = debug;
     AX12 *ax12 = new AX12;
     AX12_arm *arms[3] = {
         NULL,
-        new AX12_arm(ax12, ARM_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE),
-        new AX12_arm(ax12, ARM_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE)
+        new AX12_arm(ax12, ACT_SIDE_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE),
+        new AX12_arm(ax12, ACT_SIDE_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE)
     };
-    arms[ARM_LEFT]->write_speed_all(500);
-    arms[ARM_RIGHT]->write_speed_all(500);
+    arms[ACT_SIDE_LEFT]->write_speed_all(500);
+    arms[ACT_SIDE_RIGHT]->write_speed_all(500);
 
     debug->printf("interrupt_priorities...\n");
     sys_interrupt_priorities_init(debug);

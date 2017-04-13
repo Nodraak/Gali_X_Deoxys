@@ -10,6 +10,7 @@ void BufferedSerial::clear(void) {
 #include "BufferedSerial.h"
 
 #include "common/Debug.h"
+#include "QEntreQSort/Actuator.h"
 
 #include "QEntreQSort/RoboticArm.h"
 
@@ -291,11 +292,11 @@ void AX12_arm::write_speed_all(uint16_t speed) {
 void AX12_arm::set_servo_on(void) {
     switch (which_arm_)
     {
-        case ARM_LEFT:
+        case ACT_SIDE_LEFT:
             servo_.write(0.03);
             break;
-        case ARM_RIGHT:
-            servo_.write(0.13);
+        case ACT_SIDE_RIGHT:
+            servo_.write(0.14);
             break;
     }
 }
@@ -303,10 +304,10 @@ void AX12_arm::set_servo_on(void) {
 void AX12_arm::set_servo_off(void) {
     switch (which_arm_)
     {
-        case ARM_LEFT:
+        case ACT_SIDE_LEFT:
             servo_.write(0.12);
             break;
-        case ARM_RIGHT:
+        case ACT_SIDE_RIGHT:
             servo_.write(0.07);
             break;
     }
@@ -338,10 +339,10 @@ g_debug->printf("\tmove up\n");
     this->set_servo_off();
     switch (which_arm_)
     {
-        case ARM_LEFT:
+        case ACT_SIDE_LEFT:
             this->write_pos_all(360, 740, 640);
             break;
-        case ARM_RIGHT:
+        case ACT_SIDE_RIGHT:
             this->write_pos_all(430, 750, 330);
             break;
     }
@@ -356,10 +357,10 @@ void AX12_arm::seq_move_down(void) {
 g_debug->printf("\tmove down\n");
     switch (which_arm_)
     {
-        case ARM_LEFT:
+        case ACT_SIDE_LEFT:
             this->write_pos_all(450, 160, 330);
             break;
-        case ARM_RIGHT:
+        case ACT_SIDE_RIGHT:
             this->write_pos_all(370, 160, 640);
             break;
     }

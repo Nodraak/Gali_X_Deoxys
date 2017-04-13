@@ -1,6 +1,7 @@
 
 #include "common/Debug.h"
 #include "common/OrdersFIFO.h"
+#include "QEntreQSort/Actuator.h"
 
 #include "config.h"
 
@@ -139,8 +140,8 @@ s_order_com demo_test_enc_turn[] = {
 #define l           (Pra)
 #define L           (Rc + Lra + Hr2)
 
-#define D           sqrt(l*l  + L*L)  // distance to center of cylinder
-#define theta       (1.0*l/L)               // angle to turn to take the cylinder
+#define D           DIST(l, L)          // distance to center of cylinder
+#define theta       (1.0*l/L)           // angle to turn to take the cylinder
 #define theta_deg   (theta*180/3.14)
 
 /*
@@ -157,35 +158,39 @@ s_order_com demo_test_enc_turn[] = {
 
 s_order_com demo_table_arm[] = {
 
-    OrderCom_makeArmInit(ARM_LEFT),
-    OrderCom_makeArmInit(ARM_RIGHT),
+    OrderCom_makeArmInit(ACT_SIDE_LEFT),
+    OrderCom_makeArmInit(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+    OrderCom_makeWaitCQESFinished(),
 
 /*
     1) Cylinder starting zone
 */
     // go in pos
 
+OrderCom_makeAbsPos((s_vector_int16){.x=(int16_t)600-((int16_t)D+(int16_t)50), .y=1000}),
+
     OrderCom_makeAbsPos(600-(D+50), 1000),
     OrderCom_makeAbsAngle(DEG2RAD(180)),
     OrderCom_makeAbsPos(600-(D+10), 1000),
-
-    OrderCom_makeArmMoveDown(ARM_LEFT),
-    OrderCom_makeArmMoveDown(ARM_RIGHT),
 
     // take
 
     OrderCom_makeAbsAngle(DEG2RAD(180-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(ARM_RIGHT),
+    OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
 
-    // OrderCom_makeWaitCQESFinished(),
+    OrderCom_makeWaitCQESFinished(),
+
+    OrderCom_makeAbsAngle(DEG2RAD(180)),
 
     // load it
 
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(ARM_RIGHT),
-    OrderCom_makeArmRelease(ARM_RIGHT),
-    OrderCom_makeArmMoveDown(ARM_RIGHT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
+    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -194,24 +199,27 @@ s_order_com demo_table_arm[] = {
 */
     // go in pos
 
+    OrderCom_makeAbsPos(900, 1000),
+    OrderCom_makeAbsPos(1100, 1000),
+    OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1100, 500+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
-    OrderCom_makeAbsPos(1100, 500+(D+10)),
+    OrderCom_makeAbsPos(1100, 500+(D+10)-10),
 
     // take
 
     OrderCom_makeAbsAngle(DEG2RAD(90-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(ARM_RIGHT),
+    OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
 
     // OrderCom_makeWaitCQESFinished(),
 
     // load it
 
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(ARM_RIGHT),
-    OrderCom_makeArmRelease(ARM_RIGHT),
-    OrderCom_makeArmMoveDown(ARM_RIGHT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
+    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -230,7 +238,7 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeWaitCQBFinished(),
 
-    // OrderCom_makeArmGrab(ARM_RIGHT),
+    // OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -240,10 +248,10 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeWaitCQBFinished(),
 
-    // OrderCom_makeArmGrab(ARM_LEFT),
-    OrderCom_makeArmMoveUp(ARM_RIGHT),
-    OrderCom_makeArmRelease(ARM_RIGHT),
-    OrderCom_makeArmMoveDown(ARM_RIGHT),
+    // OrderCom_makeArmGrab(ACT_SIDE_LEFT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
+    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -253,10 +261,10 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeWaitCQBFinished(),
 
-    // OrderCom_makeArmGrab(ARM_RIGHT),
-    OrderCom_makeArmMoveUp(ARM_LEFT),
-    OrderCom_makeArmRelease(ARM_LEFT),
-    OrderCom_makeArmMoveDown(ARM_LEFT),
+    // OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_LEFT),
+    OrderCom_makeArmRelease(ACT_SIDE_LEFT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
 
     OrderCom_makeWaitCQESFinished(),
 

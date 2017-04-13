@@ -1,7 +1,11 @@
 
 #include <cstring>  // memset, memmove
+
 #include "common/Debug.h"
+#include "QEntreQSort/Actuator.h"
+
 #include "config.h"
+
 #include "common/OrdersFIFO.h"
 
 
@@ -79,7 +83,7 @@ void OrdersFIFO::we_are_at(int16_t x, int16_t y, float angle) {
     current_order_.angle = angle;
 #endif
 #ifdef IAM_QENTRESORT
-    current_order_.which_arm = ARM_NONE;
+    current_order_.which_arm = ACT_SIDE_NONE;
 #endif
 }
 

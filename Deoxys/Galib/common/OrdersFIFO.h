@@ -5,11 +5,6 @@
 #include "common/utils.h"
 
 
-#define ARM_NONE    0
-#define ARM_LEFT    1
-#define ARM_RIGHT   2
-
-
 /*
     Orders that are transmitted through the CAN bus.
     They are not directly usable and can be of various types (abs or rel).
