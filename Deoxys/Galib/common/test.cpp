@@ -2,7 +2,6 @@
 #include "common/OrdersFIFO.h"
 #ifdef IAM_QBOUGE
 #include "QBouge/test_mc.h"
-#include "QBouge/test_motor.h"
 #endif
 #include "test.h"
 

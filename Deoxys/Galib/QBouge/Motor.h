@@ -26,9 +26,7 @@
 class Motor {
 
 public:
-    Motor(
-        PinName pwm_pin, PinName dir_pin, bool forward_dir, PinName current_sense, PinName thermal_flag, PinName brake
-    );
+    Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir);
 
     /*
         Set direction.
@@ -86,11 +84,6 @@ protected:
     bool forward_dir_;
     float speed_;  // unit: mm/sec
     float last_sPwm_;
-
-public:
-    AnalogIn current_sense_;
-    DigitalIn thermal_flag_;
-    DigitalOut brake_;
 };
 
 #endif // #ifndef MOTOR_H_INCLUDED

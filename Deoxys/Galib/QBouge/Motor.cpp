@@ -8,11 +8,7 @@
 #include "Motor.h"
 
 
-Motor::Motor(
-    PinName pwm_pin, PinName dir_pin, bool forward_dir, PinName current_sense, PinName thermal_flag, PinName brake
-) :
-    pwm_(pwm_pin), dir_(dir_pin), current_sense_(current_sense), thermal_flag_(thermal_flag), brake_(brake)
-{
+Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin), dir_(dir_pin) {
     forward_dir_ = forward_dir;
     last_sPwm_ = 0;
 

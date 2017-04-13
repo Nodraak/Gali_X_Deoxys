@@ -5,18 +5,12 @@
 
     #define MOTOR_L_PWM     D9
     #define MOTOR_L_DIR     D11
-    #define MOTOR_L_CUR     A3
-    #define MOTOR_L_TH      NC
-    #define MOTOR_L_BRK     NC
 
     #define ENC_L_DATA1     D3
     #define ENC_L_DATA2     D12
 
     #define MOTOR_R_PWM     D6
     #define MOTOR_R_DIR     D13
-    #define MOTOR_R_CUR     A4
-    #define MOTOR_R_TH      NC
-    #define MOTOR_R_BRK     NC
 
     #define ENC_R_DATA1     A1
     #define ENC_R_DATA2     A2

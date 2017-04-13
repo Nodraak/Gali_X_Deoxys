@@ -17,8 +17,8 @@
 
 
 MotionController::MotionController(void) :
-    motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD, MOTOR_L_CUR, MOTOR_L_TH, MOTOR_L_BRK),
-    motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD, MOTOR_R_CUR, MOTOR_R_TH, MOTOR_R_BRK),
+    motor_l_(MOTOR_L_PWM, MOTOR_L_DIR, MOTOR_DIR_LEFT_FORWARD),
+    motor_r_(MOTOR_R_PWM, MOTOR_R_DIR, MOTOR_DIR_RIGHT_FORWARD),
     enc_l_(ENC_L_DATA1, ENC_L_DATA2),
     enc_r_(ENC_R_DATA1, ENC_R_DATA2),
     pid_dist_(PID_DIST_P, PID_DIST_I, PID_DIST_D, ASSERV_DELAY),
@@ -374,10 +374,7 @@ void MotionController::updateMotors(void) {
 void MotionController::debug(Debug *debug) {
     debug->printf("[MC/i] (ticks l r) %d %d\n", enc_l_val_, enc_r_val_);
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
-    debug->printf("[MC/o_mot] (pwm current) %.3f %.3f %.3f %.3f\n",
-        motor_l_.getSPwm(), motor_l_.current_sense_.read()*4,
-        motor_r_.getSPwm(), motor_r_.current_sense_.read()*4
-    );
+    debug->printf("[MC/o_mot] (pwm) %.3f %.3f\n", motor_l_.getSPwm(), motor_r_.getSPwm());
     debug->printf(
         "[MC/o_robot] (pos angle speed ang_speed) %.0f %.0f %d %.0f %d\n",
         pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_, (int)RAD2DEG(speed_ang_)
