@@ -60,7 +60,7 @@ OrdersFIFO::OrdersFIFO(uint8_t fifo_size) {
 
     timer_.start();
     last_order_executed_timestamp_ = 0;
-    last_order_request_timestamp_ = 0;
+    request_next_order_at_timestamp_ = 0;
 
     orders_ = new s_order_com[fifo_size];
     fifo_size_ = fifo_size;
@@ -93,6 +93,9 @@ int OrdersFIFO::push(s_order_com item) {
 
     memcpy(&orders_[order_count_], &item, sizeof(s_order_com));
     order_count_ ++;
+
+    // we just received an order, therefore we can request the next one right away if needed
+    request_next_order_at_timestamp_ = timer_.read();
 
     return 0;
 }
@@ -210,9 +213,9 @@ int OrdersFIFO::next_order_execute(void) {
 }
 
 bool OrdersFIFO::next_order_should_request(void) {
-    if ((ORDERS_COUNT - order_count_ > 0) && (timer_.read() - last_order_request_timestamp_ > 0.500))  // todo define
+    if ((ORDERS_COUNT - order_count_ > 0) && (timer_.read() > request_next_order_at_timestamp_))
     {
-        last_order_request_timestamp_ = timer_.read();
+        request_next_order_at_timestamp_ = timer_.read() + REQUEST_NEXT_ORDER_DELAY;
         return true;
     }
     return false;

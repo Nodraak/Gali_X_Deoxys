@@ -4,6 +4,9 @@
 #include "common/Debug.h"
 #include "common/utils.h"
 
+// delay not to flood the CAN bus requesting next order (if CQR does not have more orders)
+#define REQUEST_NEXT_ORDER_DELAY 0.500  // sec
+
 
 /*
     Orders that are transmitted through the CAN bus.
@@ -160,7 +163,7 @@ public:
 private:
     Timer timer_;
     float last_order_executed_timestamp_;   // sec
-    float last_order_request_timestamp_;    // sec
+    float request_next_order_at_timestamp_; // sec
 
 public:
     s_order_com *orders_;
