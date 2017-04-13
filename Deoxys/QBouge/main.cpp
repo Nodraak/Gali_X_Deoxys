@@ -32,6 +32,7 @@ int main(void)
     Ticker *asserv_ticker = NULL;
     Timer match;
     match.start();
+    bool cqes_finished = false;
 
     PwmOut *ml = new PwmOut(MOTOR_L_PWM);
     ml->period(0.001 * 0.05);
@@ -99,12 +100,18 @@ int main(void)
         loop->reset();
         debug->printf("[timer/match] %.3f\n", match.read());
 
-        com_handle_can(debug, messenger, orders, mc);
+        com_handle_can(debug, messenger, orders, &cqes_finished, mc);
 
         if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
             messenger->send_msg_CQB_finished();
             mc->is_current_order_executed_ = true;
+        }
+
+        if (cqes_finished && (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED))
+        {
+            mc->is_current_order_executed_ = true;
+            cqes_finished = false;
         }
 
         if (mc->is_current_order_executed_)

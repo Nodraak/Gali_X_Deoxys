@@ -9,7 +9,7 @@
 
 #include "QBouge/MotionController.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, MotionController *mc);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqes_finished, MotionController *mc);
 
 #endif
 
@@ -24,7 +24,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #include "QEntreQSort/RoboticArm.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished);
 
 #endif
 

@@ -85,13 +85,13 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #endif
 
 #ifdef IAM_QBOUGE
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, MotionController *mc)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqes_finished, MotionController *mc)
 #endif
 #ifdef IAM_QREFLECHI
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 #ifdef IAM_QENTRESORT
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished)
 #endif
 {
     Message rec_msg;
@@ -148,8 +148,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
                 break;
 
             case Message::MT_CQES_finished:
-                if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED)
-                    mc->is_current_order_executed_ = true;
+                *cqes_finished = true;
                 break;
 #endif
 
@@ -198,8 +197,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 
             case Message::MT_CQB_finished:
                 debug->printf("[CAN/rec] MT_CQB_finished\n");
-                if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
-                    orders->current_order_.type = ORDER_EXE_TYPE_NONE;
+                *cqb_finished = true;
                 break;
 #endif
 

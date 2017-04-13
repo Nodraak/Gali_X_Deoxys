@@ -307,6 +307,7 @@ int main(void)
     Timer *loop = NULL;
     Timer match;
     match.start();
+    bool cqb_finished = false;
 
     StatusLeds sl(A5, NC, A4, NC);
 
@@ -398,11 +399,17 @@ g_debug = debug;
 
         queue.dispatch(0);  // non blocking dispatch
 
-        com_handle_can(debug, messenger, orders);
+        com_handle_can(debug, messenger, orders, &cqb_finished);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order
         bool is_current_order_executed_ = main_update_cur_order(arms, orders, &match);
+
+        if (cqb_finished && (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED))
+        {
+            orders->current_order_.type = ORDER_EXE_TYPE_NONE;
+            cqb_finished = false;
+        }
 
         if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED)
         {
