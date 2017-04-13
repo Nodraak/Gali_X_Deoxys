@@ -16,7 +16,6 @@ void test_run_all(Debug *debug)
     test_mc_calcNewPos(debug);
     test_mc_calcDistThetaOrderPos(debug);
     test_mc_updateCurOrder(debug);
-    // test_motor_cap_pwm(debug);
 #endif
     debug->printf("[Tests] Done.\n");
 
@@ -45,7 +44,7 @@ void test_sizes(Debug *debug) {
     ft_assert(sizeof(int32_t) == 4);
     ft_assert(sizeof(int64_t) == 8);
 
-    ft_assert(sizeof(s_order_com) == 8); // todo test_(orders|messenger) ??
+    ft_assert(sizeof(s_order_com) == 8);
 }
 
 #else // #ifndef DISABLE_TESTS

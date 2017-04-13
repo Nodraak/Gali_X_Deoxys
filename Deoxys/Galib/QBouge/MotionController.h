@@ -35,10 +35,10 @@
 #define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10) // galiIX 7.2 deg - voir 5 ou meme 3.5 deg
 #define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec
 
-// Default PID settings
+// Max speed
 
 #define PID_DIST_MAX_OUPUT  0.9
-#define PID_ANGLE_MAX_OUPUT 0.7
+#define PID_ANGLE_MAX_OUPUT 0.6
 
 #define PID_DIST_KU         1.7
 #define PID_DIST_TU         0.7

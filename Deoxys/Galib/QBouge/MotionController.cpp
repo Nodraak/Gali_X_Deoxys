@@ -109,13 +109,32 @@ void MotionController::asserv(void) {
 
     t.stop();
 
-#define ASSERV_DURATION_LIMIT   2000    // us - should be smaller than ASSERV_DELAY
-    if (t.read_us() > ASSERV_DURATION_LIMIT)
+// todo Monitoring
+
+/*
+#define ASSERV_DURATION_LIMIT   2.000    // ms - should be smaller than ASSERV_DELAY
+    if (t.read_us() > 1000*ASSERV_DURATION_LIMIT)
     {
         // todo: we are in the shit :/
-        // motors /= 1.01; // minus 1%
-        // applyMotors
+        // too many interrupt ? then motors /= 1.01; -> minus 1% + applyMotors
     }
+
+    #define QEI_INT_DURATION        5.140   // us - avg v1.1-QB_QR_pid_can
+
+    f1 = mc->get_ticks_count()/1000.0;
+    f2 = t.read_us()/1000.0;
+
+    // todo same for main loop
+
+        struct s_loop_duration {
+            loop_duration
+            duration_limit
+            flag
+        }
+
+        s_loop_duration asserv
+        s_loop_duration main
+    */
 }
 
 

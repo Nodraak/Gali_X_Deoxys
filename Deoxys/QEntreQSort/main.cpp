@@ -243,7 +243,6 @@ bool main_update_cur_order(AX12_arm **arms, OrdersFIFO *orders, Timer *match)
             break;
 
         case ORDER_EXE_TYPE_DELAY:
-            // todo wait -> timer_.read()-last_order_executed_timestamp_
             if (time_since_last_order_finished > orders->current_order_.delay)
                 is_current_order_executed_ = true;
             break;

@@ -15,5 +15,4 @@
 
 #define ORDERS_COUNT        100
 
-
 #endif // CONFIG_H_INCLUDED

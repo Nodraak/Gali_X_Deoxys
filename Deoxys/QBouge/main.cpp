@@ -76,7 +76,7 @@ int main(void)
     mc = new MotionController;
 
     debug->printf("Ticker...\n");
-    asserv_ticker = new Ticker;
+    asserv_ticker = new Ticker;  // ISR. This uses the TIMER2 (TIM2_IRQn)
     asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
 
     debug->printf("interrupt_priorities...\n");
@@ -120,7 +120,7 @@ int main(void)
             while (orders->next_order_execute())
                 ;
 
-            // copy it to MC
+            // copy it to MC - WARNING: disable asserv interrupt for as little as possible
             NVIC_DisableIRQ(TIM2_IRQn);
             memcpy(&mc->current_order_, &orders->current_order_, sizeof(s_order_exe));
             NVIC_EnableIRQ(TIM2_IRQn);
