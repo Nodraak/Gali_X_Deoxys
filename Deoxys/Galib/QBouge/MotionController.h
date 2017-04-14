@@ -5,8 +5,10 @@
 
 /*
     The MotionController have the responsability to control the motors to move
-    the robot to the specified coordinates. The MotionController is uturly dumb,
-    all the smart path optimizations are made by the MotionPlaner.
+    the robot to the specified coordinates (it execute orders: position, angle,
+    delay, ...).
+    The MotionController is uturly dumb, all the smart path optimizations are
+    made by the MotionPlaner on CQR.
 */
 
 #include "PID.h"
@@ -19,40 +21,36 @@
 #include "QBouge/Qei.h"
 
 
-#define ENC_RADIUS          28.2                    // one enc radius
-#define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one enc perimeter
+#define ENC_RADIUS          28.2                    // one encoder radius
+#define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one encoder perimeter
 #define TICKS_PER_MM        16.5
 
-#define ENC_POS_RADIUS      87                      // distance from one enc to the center of the robot
+#define ENC_POS_RADIUS      87                      // distance from one encoder to the center of the robot
 
 #define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
 #define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
 
 // Execute next order conditions
 
-#define MC_TARGET_TOLERANCE_DIST        10.0        // galiIX 12 mm
-#define MC_TARGET_TOLERANCE_SPEED       5.0
-#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(10) // galiIX 7.2 deg - voir 5 ou meme 3.5 deg
-#define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec
+#define MC_TARGET_TOLERANCE_DIST        5.0         // unit: mm     - Gali IX 12 - ESEO 10
+#define MC_TARGET_TOLERANCE_SPEED       5.0         // unit: mm/sec              - ESEO  8
+#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(5)  // unit: rad    - Gali IX  7 - ESEO  2 deg
+#define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec             - ESEO  3 deg
 
 // Max speed
 
 #define PID_DIST_MAX_OUPUT  0.9
 #define PID_ANGLE_MAX_OUPUT 0.6
 
-#define PID_DIST_KU         1.7
-#define PID_DIST_TU         0.7
+// PID settings
 
-#define PID_ANGLE_KU        3.0
-#define PID_ANGLE_TU        0.1
-
+#define PID_DIST_P          5.0
 #define PID_DIST_I          0
 #define PID_DIST_D          0
-#define PID_DIST_P          6.0
 
+#define PID_ANGLE_P         2.0
 #define PID_ANGLE_I         0
 #define PID_ANGLE_D         0
-#define PID_ANGLE_P         3.0
 
 
 class MotionController {
@@ -72,6 +70,22 @@ public:
     void asserv(void);
 
     /*
+        Returns True if there is some place in the `OrdersFIFO *orders_` list
+        for a new order, else False.
+        It also checks for the last time it returned True, in order not to
+        request too often new orders (that would saturate the CAN bus).
+    */
+    bool should_request_next_order(Debug *debug);
+
+    /*
+        Print some information about the inputs, outputs and internal states,
+        over UART or CAN.
+    */
+    void debug(Debug *debug);
+    void debug(CanMessenger *cm);
+
+private:
+    /*
         Save the encoders value to a working variable so that the various
         computations and the debug are based on the same values within this
         loop.
@@ -86,33 +100,20 @@ public:
 
     /*
         Recompute the distance and angle correction to apply.
-        If the current order has been reached, it loads the next one by calling
-        updateGoalToNextOrder().
     */
     void updateCurOrder(void);
 
     /*
-        Returns True if there is some place in the `OrdersFIFO *orders_` list
-        for a new order, else False.
-    */
-    bool should_request_next_order(Debug *debug);
-
-    /*
         Compute the PIDs output based on the internal state of the
-        MotionController() computed by updateCurOrder().
+        MotionController() computed by updateCurOrder() (distance and angle
+        errors to correct).
     */
     void computePid(void);
 
     /*
-        Apply the PIDs output to the motors.
+        Apply the computed PIDs output to the motors.
     */
     void updateMotors(void);
-
-    /*
-        Print some information about the inputs, outputs and internal states.
-    */
-    void debug(Debug *debug);
-    void debug(CanMessenger *cm);
 
     /*
         Set the goal that the MotionController will make the robot move to.
@@ -120,27 +121,31 @@ public:
     void pidDistSetGoal(float goal);
     void pidAngleSetGoal(float goal);
 
-private:  // I/O
-    Motor motor_l_, motor_r_;  // io interfaces
-    Qei enc_l_, enc_r_;  // io interfaces
+private:
+    // IO interfaces
+    Qei enc_l_, enc_r_;
+    Motor motor_l_, motor_r_;
+
+    // Last value of the encoders. Used to determine speed. Unit: encoder ticks
+    int32_t enc_l_last_, enc_r_last_;
+
+    // PID related variables
     PID pid_dist_, pid_angle_;
-
-    int32_t enc_l_last_, enc_r_last_;  // last value of the encoders. Used to determine movement and speed. Unit: enc ticks
-
-    // pid
-    int32_t enc_l_val_, enc_r_val_;  // tmp variable used as a working var - use this instead of the raw value from the QEI objects. Unit: enc ticks
+    int32_t enc_l_val_, enc_r_val_;         // tmp variable used as a working var
+                                            //   use this instead of the raw value from the QEI objects.
+                                            //   unit: encoder ticks
     float pid_dist_goal_, pid_angle_goal_;  // units: mm and rad
-    float pid_dist_out_, pid_angle_out_;  // unit: between -1 and +1
+    float pid_dist_out_, pid_angle_out_;    // unit: between -1 and +1
 
     Timer timer_;
     float last_order_executed_timestamp_;
 
 public:
-    // robot infos
-    s_vector_float pos_;  // unit: mm
-    float angle_;  // unit: radians
-    float speed_;  // unit: mm/sec
-    float speed_ang_;  // unit: rad/sec
+    // Robot properties
+    s_vector_float pos_;    // unit: mm
+    float angle_;           // unit: radians
+    float speed_;           // unit: mm/sec
+    float speed_ang_;       // unit: rad/sec
 
     s_order_exe current_order_;
     bool is_current_order_executed_;

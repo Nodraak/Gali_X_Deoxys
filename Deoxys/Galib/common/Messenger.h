@@ -1,6 +1,20 @@
 #ifndef MESSENGER_H_INCLUDED
 #define MESSENGER_H_INCLUDED
 
+/*
+    Two classes are defined here: Message and CanMessenger.
+
+    Message is a (CAN compatible, ie. 8 Bytes max) payload. See the
+    e_message_type enum to have the list of all available messages.
+
+    CanMessenger is used to create, send and receive Message easily over a CAN
+    bus (the instanciation and sending/receiving of Message could (should?) be
+    decoupled).
+
+    To send a CAN message, use the CanMessenger::send_msg*() methods.
+    To receive a CAN message, use the CanMessenger::read_msg() method.
+*/
+
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
@@ -13,10 +27,12 @@
 */
 #define CAN_BUS_FREQUENCY               (500*1000)
 
-#define CAN_FRAME_BUS_OCCUPATION        (1.0/CAN_BUS_FREQUENCY * (44+64))  // time in sec that a frame requiert to be transmitted
+#define CAN_FRAME_SIZE                  (44+64)                                 // CAN message size in bits
+#define CAN_FRAME_BUS_OCCUPATION        (1.0/CAN_BUS_FREQUENCY*CAN_FRAME_SIZE)  // time length (in sec) requiered to transmit a frame
 #define CAN_MAX_MSG_PER_SEC             (1.0/CAN_FRAME_BUS_OCCUPATION)
 #define CAN_MAX_MSG_PER_200Hz_FRAME     (CAN_MAX_MSG_PER_SEC/200.0)
 
+// Size of the on_receive callbacks list
 #define ON_RECEIVE_SLOT_COUNT           20
 
 /*
@@ -29,7 +45,7 @@ class Message {
 public:
 
     /*
-        ** Message Type (ID) **
+        ** Message Type (ID ie. priority) **
 
         This list all possible messages that can be transmitted on the CAN bus.
         The value is used as the priority for the CAN message send: lower means
@@ -46,7 +62,7 @@ public:
             MC: class (motion controller)
             pos: info (most likely attribute of the class)
 
-        Note: e_message_type is encoded on 11 bits due to the CAN protocol.
+        Note: e_message_type is encoded on maximum 11 bits due to the CAN protocol.
     */
     typedef enum    _e_message_type {
         /*
@@ -94,7 +110,7 @@ public:
     }               e_message_type;
 
     /*
-        ** Payloads **
+        ** Payloads definition (max 8 Bytes per CAN standard) **
 
         CP = CAN Payload
     */
@@ -147,7 +163,7 @@ public:
     } CP_CQB_MC_encs;
 
     /*
-        ** CAN Message **
+        ** Actual CAN Message (payload) **
     */
 
     typedef union {
@@ -177,8 +193,8 @@ public:
         Class Methods
     */
 
-    Message(void);  // constructor for receiving msg
-    Message(e_message_type id_, unsigned int len_, u_payload payload_);  // constructor to send msg
+    Message(void);  // Receive. Fills the attributes with default placeholders.
+    Message(e_message_type id_, unsigned int len_, u_payload payload_);  // Send.
 
     /*
         Class Attributes
@@ -191,9 +207,13 @@ public:
 
 
 /*
-    The CanMessenger class is used to send messages over the CAN bus. The
-    methods are wrappers that create the proper Message instance and send it
-    using the CanMessenger::send_msg() private method.
+    The CanMessenger class is used to send and receive messages over the CAN bus.
+
+    The methods are wrappers that create the proper Message instance and send it
+    using the CanMessenger::send_msg() method.
+
+    The class could easily be splitted into methods to create a Message and
+    a Medium class (CanMedium, UartMedium) to send them.
 */
 class CanMessenger {
 public:
@@ -201,9 +221,14 @@ public:
 
     void set_silent(bool enable);
 
+    /*
+        Tries to read from the CAN receive buffers.
+        If a CAN message is available, fill msg and returns 1;
+        If no CAN message is available, returns 0 (msg might be overwritten with
+        garbage though).
+    */
     int read_msg(Message *msg);
 
-    // data can be NULL if not payload is to be send with the pin/pong message.
     int send_msg_ping(void);
     int send_msg_pong(void);
 
@@ -229,23 +254,28 @@ public:
 private:
     /*
         Returns:
-            0 Success
-            1 Error
+            0: Success
+            1: Error
     */
     int send_msg(Message msg);
 
 public:
+    /*
+        Specify a function to execute when a specific CAN message is received.
+        Returns:
+            0: The callback was successfully registered
+            1: An error happened (most probably the callback list is full)
+    */
     int on_receive_add(Message::e_message_type type, Callback<void(void*)> cb);
 
 private:
 
-    /*
-        On Receive a specific msg type, the corresponding function is callled.
-    */
+    // On Receive callbacks
     int                     or_count_;
     Message::e_message_type or_types_[ON_RECEIVE_SLOT_COUNT];
     Callback<void (void*)>  or_callbacks_[ON_RECEIVE_SLOT_COUNT];
 
+    // Medium
     CAN can_;
 };
 

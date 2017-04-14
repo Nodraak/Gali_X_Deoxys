@@ -8,6 +8,8 @@
     somewhere else.
     If you known that you are looking for this, keep reading.
 
+---
+
     When a fault occur (division by zero, segfault, ...), the processor calls an
     interrupt: HardFault, NMI, MemManage, MemMang, BusFault, UsageFault, etc.
 

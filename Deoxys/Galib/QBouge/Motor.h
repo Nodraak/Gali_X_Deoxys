@@ -5,17 +5,20 @@
 
 #include "mbed.h"
 
-#define PWM_MIN                 0.08                            // pwm value at which the robot start moving
-#define PWM_MAX                 1.00                            // should be 1.00 during matchs
-#define PWM_STEP                (1.0/(ASSERV_FPS*1.0))          // pwm goes from 0 to 1 over a X sec timespan
-#define PWM_ERROR_TOLERANCE     (PWM_STEP/2)
+#define PWM_MIN                 0.08                        // pwm value at which the robot starts moving
+#define PWM_MAX                 1.00                        // should always be 1. Maximum PWM should be set by MC
+#define PWM_STEP                (1.0/(ASSERV_FPS*1.0))      // pwm goes from 0 to 1 over a X sec timespan.
+                                                            //   this is used to increment slowly the speed, to prevent
+                                                            //   to wheels to slip
+#define PWM_IS_ALMOST_ZERO      (PWM_STEP/2)                // Pwm under this value are considered to be 0
 
 /*
     Forward and backward direction (value of the digital input `direction` of
     the H bridge) for each motor.
-    The code is symetric (MOTOR_DIR_LEFT_FORWARD == MOTOR_DIR_RIGHT_FORWARD),
-    but the physical motors are not. This is because the PCB is not symetric.
-    Mind the plug-to-motor symetricity also.
+
+    Wheels must turn in opposite directions to move the robot forward or backwards.
+    This can be set via the code (here, from code to H bridge), or in the PCB
+    routing (from H bridge to plug), or in the motor wiring (plug to motor).
 */
 #define MOTOR_DIR_LEFT_FORWARD      1
 #define MOTOR_DIR_LEFT_BACKWARD     0

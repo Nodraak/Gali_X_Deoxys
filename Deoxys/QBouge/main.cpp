@@ -34,13 +34,6 @@ int main(void)
     match.start();
     bool cqes_finished = false;
 
-    PwmOut *ml = new PwmOut(MOTOR_L_PWM);
-    ml->period(0.001 * 0.05);
-    ml->write(0);
-    PwmOut *mr = new PwmOut(MOTOR_R_PWM);
-    mr->period(0.001 * 0.05);
-    mr->write(0);
-
     /*
         Initializing
     */
@@ -68,9 +61,6 @@ int main(void)
     debug->printf("Timer...\n");
     loop = new Timer;
     loop->start();
-
-    delete ml;
-    delete mr;
 
     debug->printf("MotionController...\n");
     mc = new MotionController;
@@ -130,6 +120,8 @@ int main(void)
 
         if (orders->next_order_should_request())
             messenger->send_msg_CQB_next_order_request(1);
+
+        messenger->send_msg_I_am_doing(orders->current_order_.type);
 
         mc->debug(debug);
         mc->debug(messenger);

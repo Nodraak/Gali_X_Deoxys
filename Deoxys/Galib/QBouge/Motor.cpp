@@ -26,7 +26,7 @@ void Motor::setUPwm(float uPwm) {
 }
 
 void Motor::setSPwm(float sPwm) {
-    if (ABS(sPwm) < PWM_ERROR_TOLERANCE)
+    if (ABS(sPwm) < PWM_IS_ALMOST_ZERO)
     {
         sPwm = 0;
         last_sPwm_ = 0;
