@@ -6,19 +6,16 @@
 #include "common/OrdersFIFO.h"
 #include "common/StatusLeds.h"
 #include "common/com.h"
+#include "common/init.h"
 #include "common/main_sleep.h"
-#include "common/mem_stats.h"
 #include "common/utils.h"
-#include "common/sys.h"
 #include "QEntreQSort/Actuator.h"
 #include "QEntreQSort/RoboticArm.h"
-
-#include "common/test.h"
 
 #include "config.h"
 #include "pinout.h"
 
-Debug *g_debug = NULL;
+Debug *g_debug = NULL;  // todo remove this
 
 float last_order_executed_timestamp = -1;
 
@@ -301,108 +298,56 @@ bool main_update_cur_order(AX12_arm **arms, OrdersFIFO *orders, Timer *match)
 
 int main(void)
 {
+    Timer *main_timer = NULL;
+    StatusLeds *sl = NULL;
     Debug *debug = NULL;
     CanMessenger *messenger = NULL;
+    OrdersFIFO *orders = NULL;
+    EventQueue *queue = NULL;
     Timer *loop = NULL;
-    Timer match;
-    match.start();
+
+    AX12_arm *arms[3];
+
+    init_common(
+        &main_timer,
+        &sl,
+        &debug,
+        &messenger,
+        &orders,
+        &queue,
+        &loop
+    );
+    init_board_CQES(debug,
+        (AX12_arm***)&arms
+    );
+    init_finalize(debug, main_timer);
+
     bool cqb_finished = false;
 
-    StatusLeds sl(A5, NC, A4, NC);
-
-    /*
-        Initializing
-    */
-
-    debug = new Debug;
 g_debug = debug;
-    debug_pre_init(debug);
 
-    debug->printf("Initializing\n");
-
-    debug->printf("CanMessenger...\n");
-    messenger = new CanMessenger;
-
-    sl.init_half();
-    debug->printf("t=%f\n", match.read());
-
-    mem_stats_objects(debug);
-    mem_stats_settings(debug);
-    test_run_all(debug);
-    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
-    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
-    debug->printf("CAN_MAX_MSG_PER_200Hz_FRAME %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
-
-    debug->printf("Timer...\n");
-    loop = new Timer;
-    loop->start();
-
-    debug->printf("OrdersFIFO...\n");
-    OrdersFIFO *orders = new OrdersFIFO(ORDERS_COUNT);
-
-    debug->printf("EventQueue...\n");
-
-    EventQueue queue;
-
-    int led_id = queue.call_every(500, callback(&sl, &StatusLeds::running));  // 500 ms
-
-    messenger->on_receive_add(Message::MT_CQB_pong, callback(&sl, &StatusLeds::on_CQB_pong));
-    messenger->on_receive_add(Message::MT_CQES_pong, callback(&sl, &StatusLeds::on_CQES_pong));
-
-    debug->printf("AX12_arm...\n");
-
-    AX12 *ax12 = new AX12;
-    AX12_arm *arms[3] = {
-        NULL,
-        new AX12_arm(ax12, ACT_SIDE_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE),
-        new AX12_arm(ax12, ACT_SIDE_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE)
-    };
-    arms[ACT_SIDE_LEFT]->write_speed_all(500);
-    arms[ACT_SIDE_RIGHT]->write_speed_all(500);
-
-    debug->printf("interrupt_priorities...\n");
-    sys_interrupt_priorities_init();
-
-    mem_stats_dynamic(debug);
-
-    debug->printf("Initialisation done (%f).\n\n", match.read());
-    debug->set_current_level(Debug::DEBUG_DEBUG);
-
-    // todo
-    // while (true)
-    {
-        // if t > 1 sec
-            // send can ping
-
-        // if receive pong
-            // break
-    }
-
-    // todo wait for tirette (can msg)
-
-    // while (1)
-        // ;
+arms[ACT_SIDE_RIGHT]->seq_move_down();
 
     /*
         Go!
     */
 
-    match.reset();
+    main_timer->reset();
 
     while (true)
     {
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", match.read());
+        debug->printf("[timer/match] %.3f\n", main_timer->read());
 
         main_do_com(debug, arms);
 
-        queue.dispatch(0);  // non blocking dispatch
+        queue->dispatch(0);  // non blocking dispatch
 
         com_handle_can(debug, messenger, orders, &cqb_finished);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order
-        bool is_current_order_executed_ = main_update_cur_order(arms, orders, &match);
+        bool is_current_order_executed_ = main_update_cur_order(arms, orders, main_timer);
 
         if (cqb_finished && (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED))
         {
@@ -423,7 +368,7 @@ g_debug = debug;
                 ;
 
             is_current_order_executed_ = false;
-            last_order_executed_timestamp = match.read();
+            last_order_executed_timestamp = main_timer->read();
         }
 
 

@@ -5,90 +5,55 @@
 #include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #include "common/com.h"
+#include "common/init.h"
 #include "common/main_sleep.h"
-#include "common/mem_stats.h"
 #include "common/utils.h"
-#include "common/sys.h"
 #include "QBouge/MotionController.h"
-
-#include "common/test.h"
-#include "QBouge/test_mc.h"
 
 #include "config.h"
 #include "pinout.h"
 
 
-MotionController *mc = NULL;
-bool request_next_order = false;
-void asserv_main(void);
-
-
 int main(void)
 {
+    Timer *main_timer = NULL;
+    StatusLeds *sl = NULL;
     Debug *debug = NULL;
     CanMessenger *messenger = NULL;
     OrdersFIFO *orders = NULL;
+    EventQueue *queue = NULL;
     Timer *loop = NULL;
-    Ticker *asserv_ticker = NULL;
-    Timer match;
-    match.start();
+
+    MotionController *mc = NULL;
+
+    init_common(
+        &main_timer,
+        &sl,
+        &debug,
+        &messenger,
+        &orders,
+        &queue,
+        &loop
+    );
+    init_board_CQB(debug,
+        &mc
+    );
+    init_finalize(debug, main_timer);
+
     bool cqes_finished = false;
-
-    /*
-        Initializing
-    */
-
-    debug = new Debug;
-    debug_pre_init(debug);
-
-    debug->printf("Initializing\n");
-
-    debug->printf("CanMessenger...\n");
-    messenger = new CanMessenger;
-
-    debug->printf("t=%f\n", match.read());
-
-    mem_stats_objects(debug);
-    mem_stats_settings(debug);
-    test_run_all(debug);
-    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
-    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
-    debug->printf("CAN_MAX_MSG_PER_200Hz_FRAME %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
-
-    debug->printf("OrdersFIFO...\n");
-    orders = new OrdersFIFO(ORDERS_COUNT);
-
-    debug->printf("Timer...\n");
-    loop = new Timer;
-    loop->start();
-
-    debug->printf("MotionController...\n");
-    mc = new MotionController;
-
-    debug->printf("Ticker...\n");
-    asserv_ticker = new Ticker;  // ISR. This uses the TIMER2 (TIM2_IRQn)
-    asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
-
-    debug->printf("interrupt_priorities...\n");
-    sys_interrupt_priorities_init();
-
-    mem_stats_dynamic(debug);
-
-    debug->printf("Initialisation done. (%f)\n\n", match.read());
-    debug->set_current_level(Debug::DEBUG_DEBUG);
-
-    // todo wait for tirette (can msg)
 
     /*
         Go!
     */
 
-    match.reset();
+    main_timer->reset();
 
     while (true)
     {
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", match.read());
+        debug->printf("[timer/match] %.3f\n", main_timer->read());
+
+        queue->dispatch(0);  // non blocking dispatch
 
         com_handle_can(debug, messenger, orders, &cqes_finished, mc);
 
@@ -136,8 +101,6 @@ int main(void)
     debug->set_current_level(Debug::DEBUG_INITIALISATION);
     debug->printf("Cleaning...\n");
 
-    asserv_ticker->detach();
-    delete asserv_ticker;
     delete loop;
     delete messenger;
     delete mc;

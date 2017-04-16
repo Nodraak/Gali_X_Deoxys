@@ -289,21 +289,3 @@ int demo_load(s_order_com *demo, OrdersFIFO *dest)
 
     return e;
 }
-
-
-OrdersFIFO *demo_init(void)
-{
-    OrdersFIFO *orders = NULL;
-    int e = 0;
-
-    orders = new OrdersFIFO(ORDERS_COUNT);
-
-    // e += demo_load(demo_table, orders);
-    // e += demo_load(demo_test_enc_turn, orders);
-    e += demo_load(demo_table_arm, orders);
-
-    if (e != 0)
-        return NULL;
-    else
-        return orders;
-}

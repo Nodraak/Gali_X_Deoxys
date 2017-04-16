@@ -4,7 +4,6 @@
 #include "common/Debug.h"
 #include "common/OrdersFIFO.h"
 
-OrdersFIFO *demo_init(void);
 int demo_load(s_order_com *demo, OrdersFIFO *dest);
 void demo_print(s_order_com *demo, int demo_size);
 
