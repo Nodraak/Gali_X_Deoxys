@@ -42,11 +42,11 @@ int main(void)
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
 
+    loop->reset();
+
     Message rec_msg;
     while (true)
     {
-        debug->printf("[CAN] ping...\n");
-
         queue->dispatch(0);  // non blocking dispatch
 
         while (messenger->read_msg(&rec_msg))
@@ -54,25 +54,36 @@ int main(void)
             debug->printf("[CAN/rec] id=%d\n", rec_msg.id);
 
             if (rec_msg.id == Message::MT_CQB_pong)
+            {
                 last_ping_CQB = main_timer->read();
+                debug->printf("pong cqb\n");
+            }
             if (rec_msg.id == Message::MT_CQES_pong)
+            {
                 last_ping_CQES = main_timer->read();
+                debug->printf("pong cqb\n");
+            }
         }
 
         bool ping_CQB = (main_timer->read()-last_ping_CQB) < 1.000;
         bool ping_CQES = (main_timer->read()-last_ping_CQES) < 1.000;
 
-        if (ping_CQB && ping_CQES)
+        if (loop->read() > 0.500)
         {
-            debug->printf("[CAN/rec] pong from all, breaking\n");
-            break;
-        }
-        else
-        {
-            debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
+            if (ping_CQB && ping_CQES)
+            {
+                debug->printf("[CAN/rec] pong from all, breaking\n");
+                break;
+            }
+            else
+            {
+                debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
+            }
+
+            loop->reset();
         }
 
-        Thread::wait(100);  // ms - dont flood the can bus and wait a litle for the reply
+        Thread::wait(1000/100);  // ms
     }
 
     debug->printf("[CAN] sending reset + we_are_at\n");

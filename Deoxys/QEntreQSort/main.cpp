@@ -372,8 +372,7 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
         }
 
 
-        // main_sleep(debug, loop);
-        Thread::wait(100);  // ms
+        main_sleep(debug, loop);
     }
 
     /*
