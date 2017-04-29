@@ -51,10 +51,16 @@ MotionController::MotionController(void) :
     is_current_order_executed_ = false;
 
     this->reset();
+
+    asserv_ticker_ = new Ticker;
+    asserv_ticker_->attach(callback(this, &MotionController::asserv), ASSERV_DELAY);
 }
 
 
-void MotionController::we_are_at(int16_t x, int16_t y, float angle) {
+void MotionController::we_are_at(int16_t x, int16_t y, float angle, bool lock) {
+    if (lock)
+        this->lock();
+
     pos_.x = x;
     pos_.y = y;
     angle_ = angle;
@@ -62,10 +68,15 @@ void MotionController::we_are_at(int16_t x, int16_t y, float angle) {
     current_order_.pos.x = x;
     current_order_.pos.y = y;
     current_order_.angle = angle;
+
+    if (lock)
+        this->unlock();
 }
 
 
 void MotionController::reset(void) {
+    this->lock();
+
     enc_l_last_ = 0;
     enc_r_last_ = 0;
 
@@ -76,9 +87,18 @@ void MotionController::reset(void) {
     pid_dist_out_ = 0;
     pid_angle_out_ = 0;
 
-    this->we_are_at(0, 0, 0);
+    this->we_are_at(0, 0, 0, false);
     speed_ = 0;
     speed_ang_ = 0;
+
+    this->unlock();
+}
+
+
+void MotionController::update_current_order(s_order_exe *order) {
+    this->lock();
+    memcpy(&this->current_order_, order, sizeof(s_order_exe));
+    this->unlock();
 }
 
 
@@ -108,6 +128,16 @@ void MotionController::asserv(void) {
 
     if (g_mon != NULL)
         g_mon->asserv.stop_and_save();
+}
+
+
+void MotionController::lock(void) {
+    NVIC_DisableIRQ(TIM2_IRQn);
+}
+
+
+void MotionController::unlock(void) {
+    NVIC_EnableIRQ(TIM2_IRQn);
 }
 
 

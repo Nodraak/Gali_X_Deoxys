@@ -150,13 +150,9 @@ void init_board_CQB(Debug *debug,
 )
 {
     MotionController *mc = NULL;
-    Ticker *asserv_ticker = NULL;
 
     debug->printf("MotionController...\n");
     mc = new MotionController;
-    // move in MC ?
-    asserv_ticker = new Ticker;  // ISR. This uses the TIMER2 (TIM2_IRQn)
-    asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
     debug->printf("\tok.\n");
 
     debug->printf("Debug MotionController via EventQueue...\n");

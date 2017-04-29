@@ -77,11 +77,7 @@ int main(void)
             while (orders->next_order_execute())
                 ;
 
-            // copy it to MC - WARNING: disable asserv interrupt for as little as possible
-            NVIC_DisableIRQ(TIM2_IRQn);
-            memcpy(&mc->current_order_, &orders->current_order_, sizeof(s_order_exe));
-            NVIC_EnableIRQ(TIM2_IRQn);
-
+            mc->update_current_order(&orders->current_order_);
             mc->is_current_order_executed_ = false;
         }
 

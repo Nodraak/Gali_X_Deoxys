@@ -126,19 +126,15 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                     rec_msg.payload.CQR_we_are_at.pos.y,
                     rec_msg.payload.CQR_we_are_at.angle
                 );
-                NVIC_DisableIRQ(TIM2_IRQn);
                 mc->we_are_at(
                     rec_msg.payload.CQR_we_are_at.pos.x,
                     rec_msg.payload.CQR_we_are_at.pos.y,
                     rec_msg.payload.CQR_we_are_at.angle
                 );
-                NVIC_EnableIRQ(TIM2_IRQn);
                 break;
 
             case Message::MT_CQR_reset:
-                NVIC_DisableIRQ(TIM2_IRQn);
                 mc->reset();
-                NVIC_EnableIRQ(TIM2_IRQn);
                 break;
 
             case Message::MT_CQR_order:

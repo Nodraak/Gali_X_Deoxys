@@ -56,10 +56,20 @@
 class MotionController {
 public:
     MotionController(void);
-    void we_are_at(int16_t x, int16_t y, float angle);
-    void reset(void);
-    ~MotionController(void);
 
+    void reset(void);
+    void we_are_at(int16_t x, int16_t y, float angle, bool lock=true);
+    void update_current_order(s_order_exe *order);
+
+    /*
+        Print some information about the inputs, outputs and internal states,
+        over UART or CAN.
+    */
+    void debug_serial(Debug *debug);
+    void debug_can(CanMessenger *cm);
+
+// semi-private (call from interrupt/Ticker)
+private:
     /*
         Control function (asservissement in french).
         This is called via an interrupt every `ASSERV_DELAY` seconds.
@@ -69,14 +79,17 @@ public:
     */
     void asserv(void);
 
-    /*
-        Print some information about the inputs, outputs and internal states,
-        over UART or CAN.
-    */
-    void debug_serial(Debug *debug);
-    void debug_can(CanMessenger *cm);
-
+// really private
 private:
+    /*
+        Disable and enable the Interrupt TIM2 used by the Ticker to call asserv().
+        Theses functions must be used by every function that is called from the
+        main thread (non interrupt) and that modify private attributes. Otherwise
+        data corruption might happen.
+    */
+    void lock(void);
+    void unlock(void);
+
     /*
         Save the encoders value to a working variable so that the various
         computations and the debug are based on the same values within this
@@ -114,6 +127,12 @@ private:
     void pidAngleSetGoal(float goal);
 
 private:
+    /*
+        Timer that generate an interrupt used to call asserv().
+        Warning: This create an ISR. This uses the TIMER2 (TIM2_IRQn) interrupt.
+    */
+    Ticker *asserv_ticker_;
+
     // IO interfaces
     Qei enc_l_, enc_r_;
     Motor motor_l_, motor_r_;
