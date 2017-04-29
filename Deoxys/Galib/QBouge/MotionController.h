@@ -70,19 +70,11 @@ public:
     void asserv(void);
 
     /*
-        Returns True if there is some place in the `OrdersFIFO *orders_` list
-        for a new order, else False.
-        It also checks for the last time it returned True, in order not to
-        request too often new orders (that would saturate the CAN bus).
-    */
-    bool should_request_next_order(Debug *debug);
-
-    /*
         Print some information about the inputs, outputs and internal states,
         over UART or CAN.
     */
-    void debug(Debug *debug);
-    void debug(CanMessenger *cm);
+    void debug_serial(Debug *debug);
+    void debug_can(CanMessenger *cm);
 
 private:
     /*

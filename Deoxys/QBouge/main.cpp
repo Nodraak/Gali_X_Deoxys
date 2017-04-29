@@ -37,6 +37,8 @@ int main(void)
         &loop
     );
     init_board_CQB(debug,
+        queue,
+        messenger,
         &mc
     );
     init_finalize(debug, main_timer);

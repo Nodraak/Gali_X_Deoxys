@@ -143,6 +143,8 @@ void init_common(
 
 #ifdef IAM_QBOUGE
 void init_board_CQB(Debug *debug,
+    EventQueue *queue,
+    CanMessenger *messenger,
     MotionController **_mc
 )
 {
@@ -154,6 +156,11 @@ void init_board_CQB(Debug *debug,
     // move in MC ?
     asserv_ticker = new Ticker;  // ISR. This uses the TIMER2 (TIM2_IRQn)
     asserv_ticker->attach(callback(mc, &MotionController::asserv), ASSERV_DELAY);
+    debug->printf("\tok.\n");
+
+    debug->printf("Debug MotionController via EventQueue...\n");
+    queue->call_every(500, callback(mc, &MotionController::debug_serial), debug);
+    queue->call_every(500, callback(mc, &MotionController::debug_can), messenger);
     debug->printf("\tok.\n");
 
     *_mc = mc;

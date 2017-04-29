@@ -31,6 +31,8 @@ void init_common(
 
 #ifdef IAM_QBOUGE
 void init_board_CQB(Debug *debug,
+    EventQueue *queue,
+    CanMessenger *messenger,
     MotionController **_mc
 );
 #endif
