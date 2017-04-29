@@ -112,10 +112,11 @@ void init_common(
     debug->printf("EventQueue...\n");
     queue = new EventQueue;
     // todo define led blink + send ping (500 ms)
-    int led_id = queue->call_every(500, callback(sl, &StatusLeds::running));
+    queue->call_every(500, callback(sl, &StatusLeds::running));
 #ifdef IAM_QREFLECHI
     queue->call_every(500, callback(messenger, &CanMessenger::send_msg_CQR_ping));
 #endif
+    queue->call_every(500, callback(messenger, &CanMessenger::leave_the_bus_for_a_moment));
     debug->printf("\tok.\n");
 
     debug->printf("Timer loop...\n");
