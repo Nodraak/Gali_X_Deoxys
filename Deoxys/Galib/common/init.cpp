@@ -56,13 +56,13 @@ void init_common(
     main_timer->start();
 
 #ifdef IAM_QBOUGE
-    sl = new StatusLeds(NC, NC, NC, NC);
+    sl = new StatusLeds(NC, NC, NC, NC, NC);
 #endif
 #ifdef IAM_QREFLECHI
-    sl = new StatusLeds(A5, A4, NC, A3);
+    sl = new StatusLeds(A5, A4, NC, A3, A6);
 #endif
 #ifdef IAM_QENTRESORT
-    sl = new StatusLeds(A5, NC, A4, NC);
+    sl = new StatusLeds(A5, NC, A4, NC, A6);
 #endif
 
     debug = new Debug;
@@ -113,6 +113,7 @@ void init_common(
     queue = new EventQueue;
     // todo define led blink + send ping (500 ms)
     queue->call_every(500, callback(sl, &StatusLeds::running));
+    queue->call_every(1000/50, callback(sl, &StatusLeds::updateBO));
 #ifdef IAM_QREFLECHI
     queue->call_every(500, callback(messenger, &CanMessenger::send_msg_CQR_ping));
 #endif
