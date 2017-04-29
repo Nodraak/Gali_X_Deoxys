@@ -23,8 +23,8 @@ stats:
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 soft_re:
-	rm -r .build/NUCLEO_$(BOARD)/GCC_ARM/libs/Galib
-	rm .build/NUCLEO_$(BOARD)/GCC_ARM/main*
+	rm -rf .build/NUCLEO_$(BOARD)/GCC_ARM/libs/Galib
+	rm -f .build/NUCLEO_$(BOARD)/GCC_ARM/main*
 	mbed compile $(MBED_COMPILE_OPTIONS)
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
