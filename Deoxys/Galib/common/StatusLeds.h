@@ -2,7 +2,6 @@
 #define STATUSLEDS_H_INLCUDED
 
 #include "mbed.h"
-#include "common/Messenger.h"
 
 /*
     alive (green)

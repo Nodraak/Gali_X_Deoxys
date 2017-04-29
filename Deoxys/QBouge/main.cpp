@@ -84,7 +84,7 @@ int main(void)
         }
 
         if (orders->next_order_should_request())
-            messenger->send_msg_CQB_next_order_request(1);
+            messenger->send_msg_CQB_next_order_request();
 
         messenger->send_msg_I_am_doing(orders->current_order_.type);
 

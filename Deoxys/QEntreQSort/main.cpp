@@ -371,6 +371,7 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
             last_order_executed_timestamp = main_timer->read();
         }
 
+        messenger->send_msg_I_am_doing(orders->current_order_.type);
 
         main_sleep(debug, loop);
     }

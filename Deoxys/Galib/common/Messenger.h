@@ -15,6 +15,7 @@
     To receive a CAN message, use the CanMessenger::read_msg() method.
 */
 
+#include "mbed.h"
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
@@ -57,10 +58,9 @@ public:
             * low (debug infos that can be ignored without risk)
 
         Naming convention: example with MT_CQB_MC_pos
-            MT: message type
-            CQB: carte qui bouge
-            MC: class (motion controller)
-            pos: info (most likely attribute of the class)
+            MT (message type): it is a constant from the CAN frame id enum
+            CQB (carte qui bouge): sender. Only this board must send this frame, otherwise bad things will happen
+            MC_pos (position from motion controller): what is being sent
 
         Note: e_message_type is encoded on maximum 11 bits due to the CAN protocol.
     */
@@ -69,7 +69,7 @@ public:
             High (200-399)
         */
 
-        MT_ping                     = 210,
+        MT_CQR_ping                 = 210,
         MT_CQB_pong                 = 211,
         MT_CQR_pong                 = 212,
         MT_CQES_pong                = 213,
@@ -79,25 +79,26 @@ public:
 
 
         MT_CQR_reset                = 310,
-
-        MT_we_are_at                = 311,
+        MT_CQR_we_are_at            = 311,
 
         /*
             Medium (default) (400-599)
         */
 
-        MT_order                    = 500,
+        MT_CQR_order                = 500,
 
         MT_CQB_finished             = 510,
         MT_CQES_finished            = 511,
 
         MT_CQB_next_order_request   = 520,
+        MT_CQES_next_order_request  = 521,
 
         /*
             Low (debug) (600-799)
         */
 
-        MT_I_am_doing               = 650,  // current order
+        MT_CQB_I_am_doing           = 650,  // current order
+        MT_CQES_I_am_doing          = 651,  // current order
 
         MT_CQB_MC_pos_angle         = 701,
         MT_CQB_MC_speeds            = 702,
@@ -118,7 +119,7 @@ public:
     typedef struct {
     } s_no_payload;
 
-    typedef s_no_payload CP_ping;
+    typedef s_no_payload CP_CQR_ping;
     typedef s_no_payload CP_pong;
 
     typedef s_no_payload CP_CQR_match_start;
@@ -131,11 +132,10 @@ public:
 
     typedef s_no_payload CP_CQR_reset;
 
-    typedef s_order_com CP_order;
+    typedef s_order_com CP_CQR_order;
 
-    typedef struct {
-        uint8_t count;
-    } CP_CQB_next_order_request;
+    typedef s_no_payload CP_CQB_next_order_request;
+    typedef s_no_payload CP_CQES_next_order_request;
 
     typedef struct {
         char i_am[4];
@@ -169,7 +169,7 @@ public:
     typedef union {
         char raw_data[8];
 
-        CP_ping                     ping;
+        CP_CQR_ping                 CQR_ping;
         CP_pong                     pong;
 
         CP_CQR_match_start          CQR_match_start;
@@ -178,10 +178,12 @@ public:
         CP_CQR_reset                CQR_reset;
         CP_CQR_we_are_at            CQR_we_are_at;
 
-        CP_order                    order;
+        CP_CQR_order                CQR_order;
         CP_CQB_next_order_request   CQB_next_order_request;
+        CP_CQES_next_order_request  CQES_next_order_request;
 
         CP_I_am_doing               I_am_doing;
+
         CP_CQB_MC_pos_angle         CQB_MC_pos_angle;
         CP_CQB_MC_speeds            CQB_MC_speeds;
         CP_CQB_MC_pids              CQB_MC_pids;
@@ -229,27 +231,38 @@ public:
     */
     int read_msg(Message *msg);
 
-    int send_msg_ping(void);
+#ifdef IAM_QREFLECHI
+    int send_msg_CQR_ping(void);
+#endif
     int send_msg_pong(void);
 
+#ifdef IAM_QREFLECHI
     int send_msg_CQR_match_start(void);
     int send_msg_CQR_match_stop(void);
 
-    int send_msg_we_are_at(int16_t x, int16_t y, float angle);
+    int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
     int send_msg_CQR_reset(void);
 
-    int send_msg_order(s_order_com order);
+    int send_msg_CQR_order(s_order_com order);
+#endif
+#ifdef IAM_QBOUGE
     int send_msg_CQB_finished(void);
+    int send_msg_CQB_next_order_request(void);
+#endif
+#ifdef IAM_QENTRESORT
     int send_msg_CQES_finished(void);
-    int send_msg_CQB_next_order_request(uint8_t count);
+    int send_msg_CQES_next_order_request(void);
+#endif
 
     int send_msg_I_am_doing(e_order_exe_type order);
 
+#ifdef IAM_QBOUGE
     int send_msg_CQB_MC_pos_angle(float x, float y, float angle);
     int send_msg_CQB_MC_speeds(float speed, float speed_ang);
     int send_msg_CQB_MC_pids(float dist, float angle);
     int send_msg_CQB_MC_motors(float pwm_l, float pwm_r);
     int send_msg_CQB_MC_encs(int32_t enc_l, int32_t enc_r);
+#endif
 
 private:
     /*

@@ -88,9 +88,7 @@ int main(void)
 
     debug->printf("[CAN] sending reset + we_are_at\n");
     messenger->send_msg_CQR_reset();
-    messenger->send_msg_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
-
-    wait_ms(200);
+    messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     /*
         Ready, wait for tirette
