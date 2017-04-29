@@ -34,8 +34,14 @@ void sys_print_reset_source(Debug *debug)
 
 void sys_interrupt_priorities_init(void)
 {
-    NVIC_SetPriorityGrouping(0);
+    /*
+        There are 16 levels of priority (4 bits).
+        0 is highest, 15 is lowest priority.
+    */
 
+    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);  // 4 bits for pre-emption priority, 0 bit for subpriority
+
+#ifdef IAM_QBOUGE
     // encoders input (DigitalIn interrupt)
     NVIC_SetPriority(EXTI0_IRQn, 1);
     NVIC_SetPriority(EXTI1_IRQn, 1);
@@ -44,6 +50,7 @@ void sys_interrupt_priorities_init(void)
 
     // asserv (mbed ticker (ISR) via TIM2)
     NVIC_SetPriority(TIM2_IRQn, 3);
+#endif
 
     // pwm outputs (mbed PwmOut via TIM1)
     NVIC_SetPriority(TIM1_BRK_TIM15_IRQn, 5);
