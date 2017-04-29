@@ -1,5 +1,6 @@
 #ifdef IAM_QBOUGE
 
+#include "common/Monitoring.h"
 #include "QBouge/Qei.h"
 
 Qei::Qei(PinName channelA, PinName channelB): channelA_(channelA), channelB_(channelB) {
@@ -24,6 +25,9 @@ int Qei::getPulses(void) {
 void Qei::encode(void) {
     int change = 0;
 
+    if (g_mon != NULL)
+        g_mon->qei_interrupt.start_new();
+
     //2-bit state.
     currState_ = (channelA_.read() << 1) | (channelB_.read());
 
@@ -41,6 +45,9 @@ void Qei::encode(void) {
     }
 
     prevState_ = currState_;
+
+    if (g_mon != NULL)
+        g_mon->qei_interrupt.stop_and_save();
 }
 
 #endif // #ifdef IAM_QBOUGE

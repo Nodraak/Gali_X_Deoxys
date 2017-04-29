@@ -10,6 +10,9 @@
 #include "common/Debug.h"
 
 
+Debug *g_debug = NULL;
+
+
 void debug_pre_init(Debug *debug)
 {
 #ifdef IAM_QBOUGE

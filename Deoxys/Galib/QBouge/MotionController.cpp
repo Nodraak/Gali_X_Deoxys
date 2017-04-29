@@ -5,11 +5,13 @@
 
 #include "PID.h"
 
-#include "common/utils.h"
 #include "common/Messenger.h"
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
+#include "common/utils.h"
 #include "QBouge/Motor.h"
 #include "QBouge/Qei.h"
+
 #include "config.h"
 #include "pinout.h"
 
@@ -87,9 +89,8 @@ Warning:
     printf, malloc, while loop, etc.
 */
 void MotionController::asserv(void) {
-    Timer t;
-
-    t.start();
+    if (g_mon != NULL)
+        g_mon->asserv.start_new();
 
     // Input
 
@@ -105,36 +106,8 @@ void MotionController::asserv(void) {
 
     this->updateMotors();
 
-    // Timer stuff
-
-    t.stop();
-
-// todo Monitoring
-
-/*
-#define ASSERV_DURATION_LIMIT   2.000    // ms - should be smaller than ASSERV_DELAY
-    if (t.read_us() > 1000*ASSERV_DURATION_LIMIT)
-    {
-        // todo: we are in the shit :/
-        // too many interrupt ? then motors /= 1.01; -> minus 1% + applyMotors
-    }
-
-    #define QEI_INT_DURATION        5.140   // us - avg v1.1-QB_QR_pid_can
-
-    f1 = mc->get_ticks_count()/1000.0;
-    f2 = t.read_us()/1000.0;
-
-    // todo same for main loop
-
-        struct s_loop_duration {
-            loop_duration
-            duration_limit
-            flag
-        }
-
-        s_loop_duration asserv
-        s_loop_duration main
-    */
+    if (g_mon != NULL)
+        g_mon->asserv.stop_and_save();
 }
 
 

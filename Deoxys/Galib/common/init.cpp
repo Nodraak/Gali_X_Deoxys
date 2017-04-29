@@ -4,6 +4,7 @@
 #include "common/StatusLeds.h"
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
 #include "common/mem_stats.h"
 #include "common/sys.h"
@@ -66,6 +67,7 @@ void init_common(
 #endif
 
     debug = new Debug;
+    g_debug = debug;
     debug_pre_init(debug);
 
     debug->printf("Initializing basic subsystems.\n");
@@ -119,6 +121,11 @@ void init_common(
     debug->printf("Timer loop...\n");
     loop = new Timer;
     loop->start();
+    debug->printf("\tok.\n");
+
+    debug->printf("Monitoring...\n");
+    g_mon = new Monitoring;
+    queue->call_every(1000, callback(g_mon, &Monitoring::reset));
     debug->printf("\tok.\n");
 
     debug->printf("Remaining subsystems initialized successfully.\n");

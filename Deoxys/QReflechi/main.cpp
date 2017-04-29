@@ -3,6 +3,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
 #include "common/StatusLeds.h"
 #include "common/com.h"
@@ -107,8 +108,8 @@ int main(void)
 
     while (true)  // todo main_timer->read() < 90
     {
+        g_mon->main_loop.start_new();
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", main_timer->read());
 
         // todo ping/pong each board -> if no response since XX, then do something
 
@@ -119,6 +120,8 @@ int main(void)
 
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
+
+        g_mon->main_loop.stop_and_save();
 
         main_sleep(debug, loop);
     }

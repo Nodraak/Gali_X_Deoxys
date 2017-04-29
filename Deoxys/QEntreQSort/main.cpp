@@ -3,6 +3,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
 #include "common/StatusLeds.h"
 #include "common/com.h"
@@ -15,7 +16,6 @@
 #include "config.h"
 #include "pinout.h"
 
-Debug *g_debug = NULL;  // todo remove this
 
 float last_order_executed_timestamp = -1;
 
@@ -324,8 +324,6 @@ int main(void)
 
     bool cqb_finished = false;
 
-g_debug = debug;
-
 arms[ACT_SIDE_RIGHT]->seq_move_down();
 
     /*
@@ -336,8 +334,8 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
 
     while (true)
     {
+        g_mon->main_loop.start_new();
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", main_timer->read());
 
         main_do_com(debug, arms);
 
@@ -372,6 +370,8 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
         }
 
         messenger->send_msg_I_am_doing(orders->current_order_.type);
+
+        g_mon->main_loop.stop_and_save();
 
         main_sleep(debug, loop);
     }

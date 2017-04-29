@@ -2,6 +2,7 @@
 #include <cstring>
 #include "mbed.h"
 
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/MotionController.h"
@@ -39,9 +40,18 @@ CanMessenger::CanMessenger(void) : can_(CAN_RX, CAN_TX) {
 int CanMessenger::send_msg(Message msg) {
     // Can::write               returns 1 if success 0 if error.
     // CanMessenger.send_msg    returns 0 if success, 1 if error.
-    return !can_.write(
+    int ret = !can_.write(
         CANMessage(msg.id, msg.payload.raw_data, msg.len)
     );
+
+    if (g_mon != NULL)
+    {
+        g_mon->can_usage.inc();
+        if (ret)
+            g_mon->can_send_errors.inc();
+    }
+
+    return ret;
 }
 
 int CanMessenger::read_msg(Message *dest) {
@@ -55,6 +65,9 @@ int CanMessenger::read_msg(Message *dest) {
         dest->len = msg.len;
         memset(dest->payload.raw_data, 0, 8);
         memcpy(dest->payload.raw_data, msg.data, msg.len);
+
+        if (g_mon != NULL)
+            g_mon->can_usage.inc();
 
         for (i = 0; i < or_count_; ++i)
         {

@@ -63,4 +63,6 @@ protected:
 
 void debug_pre_init(Debug *debug);
 
+extern Debug *g_debug;
+
 #endif

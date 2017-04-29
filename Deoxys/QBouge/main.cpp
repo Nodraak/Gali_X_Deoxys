@@ -3,6 +3,7 @@
 
 #include "common/Debug.h"
 #include "common/Messenger.h"
+#include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
 #include "common/com.h"
 #include "common/init.h"
@@ -50,8 +51,9 @@ int main(void)
 
     while (true)
     {
+        g_mon->main_loop.start_new();
         loop->reset();
-        debug->printf("[timer/match] %.3f\n", main_timer->read());
+        // debug->printf("[timer/match] %.3f\n", main_timer->read());
 
         queue->dispatch(0);  // non blocking dispatch
 
@@ -88,8 +90,7 @@ int main(void)
 
         messenger->send_msg_I_am_doing(orders->current_order_.type);
 
-        mc->debug(debug);
-        mc->debug(messenger);
+        g_mon->main_loop.stop_and_save();
 
         main_sleep(debug, loop);
     }
