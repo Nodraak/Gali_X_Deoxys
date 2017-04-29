@@ -19,6 +19,7 @@
 
 float last_order_executed_timestamp = -1;
 
+
 void main_do_com(Debug *debug, AX12_arm **arms)
 {
     char buffer[BUFFER_SIZE] = "";
@@ -340,7 +341,6 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
         main_do_com(debug, arms);
 
         queue->dispatch(0);  // non blocking dispatch
-
         com_handle_can(debug, messenger, orders, &cqb_finished);
 
         // equiv MC::updateCurOrder
@@ -372,7 +372,6 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
         messenger->send_msg_I_am_doing(orders->current_order_.type);
 
         g_mon->main_loop.stop_and_save();
-
         main_sleep(debug, loop);
     }
 

@@ -15,8 +15,18 @@
 #include "QBouge/RoboticArm.h"
 #endif
 
+#define INIT_DELAY_LED_RUNNING          500         // ms
+#define INIT_DELAY_LED_UPDATE_BO        (1000/100)  // ms
 
-#define INIT_FINALIZE_WAIT_UNTIL 1.500  // sec
+#define INIT_DELAY_CQR_PING             500         // ms
+#define INIT_DELAY_LEAVE_THE_BUS        1000        // ms
+
+#define INIT_DELAY_PRINT_TIME           250         // ms
+#define INIT_DELAY_MONITORING_RESET     1000        // ms
+#define INIT_DELAY_DEBUG_MC_SERIAL      1000        // ms
+#define INIT_DELAY_DEBUG_MC_CAN         1000        // ms
+
+#define INIT_FINALIZE_WAIT_UNTIL        1.500       // sec
 
 
 void init_common(

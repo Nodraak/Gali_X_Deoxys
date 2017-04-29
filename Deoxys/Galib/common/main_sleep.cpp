@@ -5,6 +5,14 @@
 
 #include "config.h"
 
+#include "common/main_sleep.h"
+
+
+void main_print_time(Debug *debug, Timer *main_timer)
+{
+    debug->printf("[timer/match] %.3f\n", main_timer->read());
+}
+
 
 void main_sleep(Debug *debug, Timer *loop)
 {

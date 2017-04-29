@@ -6,6 +6,7 @@
 #include "common/Messenger.h"
 #include "common/Monitoring.h"
 #include "common/OrdersFIFO.h"
+#include "common/main_sleep.h"
 #include "common/mem_stats.h"
 #include "common/sys.h"
 #include "common/test.h"
@@ -109,13 +110,13 @@ void init_common(
 
     debug->printf("EventQueue...\n");
     queue = new EventQueue;
-    // todo define led blink + send ping (500 ms)
-    queue->call_every(500, callback(sl, &StatusLeds::running));
-    queue->call_every(1000/50, callback(sl, &StatusLeds::updateBO));
+    queue->call_every(INIT_DELAY_PRINT_TIME, callback(main_print_time), debug, main_timer);
+    queue->call_every(INIT_DELAY_LED_RUNNING, callback(sl, &StatusLeds::running));
+    queue->call_every(INIT_DELAY_LED_UPDATE_BO, callback(sl, &StatusLeds::updateBO));
 #ifdef IAM_QREFLECHI
-    queue->call_every(500, callback(messenger, &CanMessenger::send_msg_CQR_ping));
+    queue->call_every(INIT_DELAY_CQR_PING, callback(messenger, &CanMessenger::send_msg_CQR_ping));
 #endif
-    queue->call_every(500, callback(messenger, &CanMessenger::leave_the_bus_for_a_moment));
+    queue->call_every(INIT_DELAY_LEAVE_THE_BUS, callback(messenger, &CanMessenger::leave_the_bus_for_a_moment));
     debug->printf("\tok.\n");
 
     debug->printf("Timer loop...\n");
@@ -125,7 +126,7 @@ void init_common(
 
     debug->printf("Monitoring...\n");
     g_mon = new Monitoring;
-    queue->call_every(1000, callback(g_mon, &Monitoring::reset));
+    queue->call_every(INIT_DELAY_MONITORING_RESET, callback(g_mon, &Monitoring::reset));
     debug->printf("\tok.\n");
 
     debug->printf("Remaining subsystems initialized successfully.\n");
@@ -159,8 +160,8 @@ void init_board_CQB(Debug *debug,
     debug->printf("\tok.\n");
 
     debug->printf("Debug MotionController via EventQueue...\n");
-    queue->call_every(500, callback(mc, &MotionController::debug_serial), debug);
-    queue->call_every(500, callback(mc, &MotionController::debug_can), messenger);
+    queue->call_every(INIT_DELAY_DEBUG_MC_SERIAL, callback(mc, &MotionController::debug_serial), debug);
+    queue->call_every(INIT_DELAY_DEBUG_MC_CAN, callback(mc, &MotionController::debug_can), messenger);
     debug->printf("\tok.\n");
 
     *_mc = mc;

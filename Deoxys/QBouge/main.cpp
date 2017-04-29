@@ -55,10 +55,8 @@ int main(void)
     {
         g_mon->main_loop.start_new();
         loop->reset();
-        // debug->printf("[timer/match] %.3f\n", main_timer->read());
 
         queue->dispatch(0);  // non blocking dispatch
-
         com_handle_can(debug, messenger, orders, &cqes_finished, mc);
 
         if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
@@ -93,7 +91,6 @@ int main(void)
         messenger->send_msg_I_am_doing(orders->current_order_.type);
 
         g_mon->main_loop.stop_and_save();
-
         main_sleep(debug, loop);
     }
 

@@ -84,7 +84,7 @@ int main(void)
             loop->reset();
         }
 
-        Thread::wait(1000/100);  // ms
+        main_sleep(debug, loop);
     }
 
     debug->printf("[CAN] sending reset + we_are_at\n");
@@ -111,21 +111,15 @@ int main(void)
         g_mon->main_loop.start_new();
         loop->reset();
 
-        // todo ping/pong each board -> if no response since XX, then do something
-
-        // if (main_timer->read_ms() > 90*1000)  // todo define
-        //     messenger->send_msg_CQR_match_stop();
-
         queue->dispatch(0);  // non blocking dispatch
-
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
 
         g_mon->main_loop.stop_and_save();
-
         main_sleep(debug, loop);
     }
 
+    // messenger->send_msg_CQR_match_stop();
     // todo stop motors over can
     // todo funny action
 
