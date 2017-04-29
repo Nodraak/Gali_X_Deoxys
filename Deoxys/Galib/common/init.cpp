@@ -95,10 +95,6 @@ void init_common(
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
-    // todo move in settings
-    debug->printf("CAN_FRAME_BUS_OCCUPATION %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
-    debug->printf("CAN_MAX_MSG_PER_SEC %.1f\n", CAN_MAX_MSG_PER_SEC);
-    debug->printf("CAN_MAX_MSG_PER_200Hz_FRAME %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
     test_run_all(debug);
 
     debug->printf("Interrupt Priorities...\n");
@@ -209,6 +205,12 @@ void init_finalize(Debug *debug, Timer *main_timer)
 
     debug->printf("Initialization successfull.\n");
     debug->printf("t5=%.3f\n", main_timer->read());
+
+    debug->printf("Waiting until %.3f sec...\n", INIT_FINALIZE_WAIT_UNTIL);
+    while (main_timer->read() < INIT_FINALIZE_WAIT_UNTIL)
+        wait_ms(1);
+    debug->printf("\tok.\n");
+    debug->printf("t6=%.3f\n", main_timer->read());
 
     debug->set_current_level(Debug::DEBUG_DEBUG);
 }

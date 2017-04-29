@@ -101,19 +101,22 @@ void mem_stats_settings(Debug *debug)
 {
     debug->printf("----- settings\n");
 
+    debug->printf("\nGlobal\n");
+    debug->printf("\tMAIN_LOOP_FPS                  %d\n", MAIN_LOOP_FPS);
+    debug->printf("\tORDERS_COUNT                   %d\n", ORDERS_COUNT);
 #ifdef IAM_QBOUGE
-    debug->printf("\tMAIN_LOOP_FPS    %d\n", MAIN_LOOP_FPS);
     debug->printf("\tASSERV_FPS       %d\n", ASSERV_FPS);
-    debug->printf("\tORDERS_COUNT     %d\n", ORDERS_COUNT);
-#endif
-#ifdef IAM_QREFLECHI
-    debug->printf("\tMAIN_LOOP_FPS    %d\n", MAIN_LOOP_FPS);
-    debug->printf("\tORDERS_COUNT     %d\n", ORDERS_COUNT);
 #endif
 
+    debug->printf("\nCAN\n");
+    debug->printf("\tCAN_FRAME_BUS_OCCUPATION       %.3f ms\n", CAN_FRAME_BUS_OCCUPATION*1000);
+    debug->printf("\tCAN_MAX_MSG_PER_SEC            %.1f\n", CAN_MAX_MSG_PER_SEC);
+    debug->printf("\tCAN_MAX_MSG_PER_200Hz_FRAME    %.1f\n", CAN_MAX_MSG_PER_200Hz_FRAME);
+
 #ifdef IAM_QBOUGE
-    debug->printf("\t[PID] dist  %.2f %.2f %.2f\n", PID_DIST_P, PID_DIST_I, PID_DIST_D);
-    debug->printf("\t[PID] angle %.2f %.2f %.2f\n", PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D);
+    debug->printf("\nPID\n");
+    debug->printf("\tdist  %.2f %.2f %.2f\n", PID_DIST_P, PID_DIST_I, PID_DIST_D);
+    debug->printf("\tangle %.2f %.2f %.2f\n", PID_ANGLE_P, PID_ANGLE_I, PID_ANGLE_D);
 #endif
 
     debug->printf("\n");

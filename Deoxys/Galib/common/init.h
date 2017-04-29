@@ -15,6 +15,10 @@
 #include "QBouge/RoboticArm.h"
 #endif
 
+
+#define INIT_FINALIZE_WAIT_UNTIL 1.500  // sec
+
+
 void init_common(
     Timer **_main_timer,
     StatusLeds **_sl,
