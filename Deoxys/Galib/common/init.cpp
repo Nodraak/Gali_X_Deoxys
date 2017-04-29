@@ -192,15 +192,18 @@ void init_board_CQES(
 )
 {
     AX12 *ax12 = NULL;
-    AX12_arm *arms[3] = {NULL, NULL, NULL};
+    AX12_arm **arms = NULL;
 
     debug->printf("AX12_arm...\n");
     ax12 = new AX12;
+    arms = new AX12_arm*[ACT_SIDE_ALL];
     arms[0] = NULL;
-    arms[1] = new AX12_arm(ax12, ACT_SIDE_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE);
-    arms[2] = new AX12_arm(ax12, ACT_SIDE_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE);
-    arms[ACT_SIDE_LEFT]->write_speed_all(500);
-    arms[ACT_SIDE_RIGHT]->write_speed_all(500);
+    arms[ACT_SIDE_LEFT] = new AX12_arm(ax12, ACT_SIDE_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE);
+    arms[ACT_SIDE_RIGHT] = new AX12_arm(ax12, ACT_SIDE_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE);
+
+    arms[ACT_SIDE_LEFT]->write_speed_all(AX12_MOVING_SPEED);
+    arms[ACT_SIDE_RIGHT]->write_speed_all(AX12_MOVING_SPEED);
+
     debug->printf("\tok.\n");
 
     *_arms = arms;

@@ -307,7 +307,7 @@ int main(void)
     EventQueue *queue = NULL;
     Timer *loop = NULL;
 
-    AX12_arm *arms[3];
+    AX12_arm **arms;
 
     init_common(
         &main_timer,
@@ -319,7 +319,7 @@ int main(void)
         &loop
     );
     init_board_CQES(debug,
-        (AX12_arm***)&arms
+        &arms
     );
     init_finalize(debug, main_timer);
 

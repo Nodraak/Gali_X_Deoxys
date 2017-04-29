@@ -17,6 +17,9 @@
 #define SLEEP_MOVE                      1.000  // time for the arm to move
 #define SLEEP_RELEASE                   0.250  // time for the arm to release the cylinder
 
+#define AX12_MOVING_SPEED               500
+
+
 /*
     Commands and their lengths
 */
