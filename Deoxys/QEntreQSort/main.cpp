@@ -10,8 +10,8 @@
 #include "common/init.h"
 #include "common/main_sleep.h"
 #include "common/utils.h"
+#include "QEntreQSort/Ax12Driver.h"
 #include "QEntreQSort/Actuators.h"
-#include "QEntreQSort/RoboticArm.h"
 
 #include "config.h"
 #include "pinout.h"
@@ -20,14 +20,10 @@
 float last_order_executed_timestamp = -1;
 
 
-void main_do_com(Debug *debug, AX12_arm **arms)
+void main_do_com(Debug *debug, Actuators *actuators)
 {
     char buffer[BUFFER_SIZE] = "";
 
-    static int posL[] = {500, 500, 500};
-    static int posR[] = {500, 500, 500};
-
-#if 1
     if (debug->get_line(buffer, BUFFER_SIZE) != -1)
     {
         /*
@@ -35,143 +31,38 @@ void main_do_com(Debug *debug, AX12_arm **arms)
             ls: left seq
             rs: right seq
             aws: a write speed
-            lwp: left write pos
-            rwp: right write pos
             arp: all read pos
+            act: actuator
         */
-
-#if 0
-        if (strncmp(buffer, "pingid", 6) == 0)
-        {
-            char *ptr = buffer+6+1;
-            int a = 0;
-
-            a = atoi(ptr);
-
-            debug->printf("ping id %d\n", a);
-            // ax12.send_ping(a);
-        }
-        else if (strncmp(buffer, "setid", 5) == 0)
-        {
-            char *ptr = buffer+5+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-
-            debug->printf("set id %d -> %d\n", a, b);
-            // ax12.write_id(a, b);
-        }
-        else if (strncmp(buffer, "testid", 6) == 0)
-        {
-            char *ptr = buffer+6+1;
-            int a = 0;
-
-            a = atoi(ptr);
-
-            debug->printf("test id %d\n", a);
-            // ax12.write_pos(a, 500);
-            wait_ms(500);
-            // ax12.write_pos(a, 100);
-            wait_ms(500);
-            // ax12.write_pos(a, 1000);
-            wait_ms(500);
-        }
-        else if (strncmp(buffer, "writebaud", 9) == 0)
-        {
-            char *ptr = buffer+9+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-
-            debug->printf("write baud %d -> %d\n", a, b);
-            // ax12.write_baud_rate(a, b);
-        }
-        else if (strncmp(buffer, "setbaud", 7) == 0)
-        {
-            char *ptr = buffer+7+1;
-            int a = 0;
-
-            a = atoi(ptr);
-
-            debug->printf("set baud %d\n", a);
-            // ax12.set_baud(a);
-        }
-        else if (strncmp(buffer, "writepos", 8) == 0)
-        {
-            char *ptr = buffer+8+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-
-            debug->printf("write pos %d -> %d\n", a, b);
-            // ax12.write_pos(a, b);
-        }
-        else if (strncmp(buffer, "rd", 2) == 0)
-        {
-            char *ptr = buffer+2+1;
-            int a = 0;
-
-            a = atoi(ptr);
-
-            debug->printf("read delay %d\n", a);
-            // debug->printf("-> %d\n", ax12.read_delay(a));
-        }
-        else if (strncmp(buffer, "wd", 2) == 0)
-        {
-            char *ptr = buffer+2+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-            debug->printf("write delay %d -> %d\n", a, b);
-            // ax12.write_delay(a, b);
-        }
-        else
-#endif
         if (strncmp(buffer, "p", 1) == 0)
         {
-            arms[ACT_SIDE_LEFT]->ping_all();
-            arms[ACT_SIDE_RIGHT]->ping_all();
+            actuators->left_.arm_.ping_all();
+            actuators->right_.arm_.ping_all();
         }
         else if (strncmp(buffer, "ls", 2) == 0)
         {
-            arms[ACT_SIDE_LEFT]->seq_init();
+            actuators->left_.arm_.init();
             wait(SLEEP_INIT);
-            arms[ACT_SIDE_LEFT]->seq_grab();
+            actuators->left_.arm_.grab();
             wait(SLEEP_GRAB);
-            arms[ACT_SIDE_LEFT]->seq_move_up();
+            actuators->left_.arm_.move_up();
             wait(SLEEP_MOVE);
-            arms[ACT_SIDE_LEFT]->seq_release();
+            actuators->left_.arm_.release();
             wait(SLEEP_RELEASE);
-            arms[ACT_SIDE_LEFT]->seq_move_down();
+            actuators->left_.arm_.move_down();
             wait(SLEEP_MOVE);
         }
         else if (strncmp(buffer, "rs", 2) == 0)
         {
-            arms[ACT_SIDE_RIGHT]->seq_init();
+            actuators->right_.arm_.init();
             wait(SLEEP_INIT);
-            arms[ACT_SIDE_RIGHT]->seq_grab();
+            actuators->right_.arm_.grab();
             wait(SLEEP_GRAB);
-            arms[ACT_SIDE_RIGHT]->seq_move_up();
+            actuators->right_.arm_.move_up();
             wait(SLEEP_MOVE);
-            arms[ACT_SIDE_RIGHT]->seq_release();
+            actuators->right_.arm_.release();
             wait(SLEEP_RELEASE);
-            arms[ACT_SIDE_RIGHT]->seq_move_down();
+            actuators->right_.arm_.move_down();
             wait(SLEEP_MOVE);
         }
         else if (strncmp(buffer, "aws", 3) == 0)
@@ -182,53 +73,75 @@ void main_do_com(Debug *debug, AX12_arm **arms)
             a = atoi(ptr);
 
             debug->printf("set speed %d\n", a);
-            arms[ACT_SIDE_LEFT]->write_speed_all(a);
-            arms[ACT_SIDE_RIGHT]->write_speed_all(a);
-        }
-        else if (strncmp(buffer, "lwp", 3) == 0)
-        {
-            char *ptr = buffer+3+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-
-            posL[a] = b;
-            debug->printf("have pos L %d %d %d\n", posL[0], posL[1], posL[2]);
-
-            arms[ACT_SIDE_LEFT]->write_pos_all(posL[0], posL[1], posL[2]);
-        }
-        else if (strncmp(buffer, "rwp", 3) == 0)
-        {
-            char *ptr = buffer+3+1;
-            int a = 0, b = 0;
-
-            a = atoi(ptr);
-            while (*ptr != ' ')
-                ++ptr;
-            ++ptr;
-            b = atoi(ptr);
-
-            posR[a] = b;
-            debug->printf("have pos R %d %d %d\n", posR[0], posR[1], posR[2]);
-
-            arms[ACT_SIDE_RIGHT]->write_pos_all(posR[0], posR[1], posR[2]);
+            actuators->left_.arm_.write_speed_all(a);
+            actuators->right_.arm_.write_speed_all(a);
         }
         else if (strncmp(buffer, "arp", 3) == 0)
         {
-            arms[ACT_SIDE_LEFT]->read_pos_all();
-            arms[ACT_SIDE_RIGHT]->read_pos_all();
+            actuators->left_.arm_.read_pos_all(debug);
+            actuators->right_.arm_.read_pos_all(debug);
+        }
+        else if (strncmp(buffer, "act", 3) == 0)
+        {
+            char *ptr = buffer;
+
+            while (ptr[0] != ' ')
+                ptr += 1;
+            ptr += 1;
+
+            // parse
+
+            t_act act = 0;
+
+            if (strncmp(ptr, "l", 1) == 0)
+                act |= ACT_SIDE_LEFT;
+            else if (strncmp(ptr, "r", 1) == 0)
+                act |= ACT_SIDE_RIGHT;
+
+            while (ptr[0] != ' ')
+                ptr += 1;
+            ptr += 1;
+
+            if (strncmp(ptr, "height", 6) == 0)
+                act |= ACT_ACTUATOR_HEIGHT;
+            else if (strncmp(ptr, "vert", 4) == 0)
+                act |= ACT_ACTUATOR_VERT;
+            else if (strncmp(ptr, "horiz", 5) == 0)
+                act |= ACT_ACTUATOR_HORIZ;
+            else if (strncmp(ptr, "clamp", 5) == 0)
+                act |= ACT_ACTUATOR_CLAMP;
+            else if (strncmp(ptr, "pump", 4) == 0)
+                act |= ACT_ACTUATOR_PUMP;
+            else if (strncmp(ptr, "flap", 4) == 0)
+                act |= ACT_ACTUATOR_FLAP;
+            else if (strncmp(ptr, "prog", 4) == 0)
+                act |= ACT_ACTUATOR_PROG;
+
+            while (ptr[0] != ' ')
+                ptr += 1;
+            ptr += 1;
+
+            if (strncmp(ptr, "e", 1) == 0)
+                act |= ACT_CONF_EXTENDED;
+            else if (strncmp(ptr, "r", 1) == 0)
+                act |= ACT_CONF_RETRACTED;
+
+            while (ptr[0] != ' ')
+                ptr += 1;
+            ptr += 1;
+
+            // exe
+
+            actuators->set(act, ptr);
+            actuators->print(debug, 0);
         }
         else
             debug->printf("unknown cmd\n");
+
     }
-#endif
 }
 
-bool main_update_cur_order(AX12_arm **arms, OrdersFIFO *orders, Timer *match)
+bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, Timer *match)
 {
     bool is_current_order_executed_ = false;
     int time_since_last_order_finished = match->read() - last_order_executed_timestamp;
@@ -253,35 +166,35 @@ bool main_update_cur_order(AX12_arm **arms, OrdersFIFO *orders, Timer *match)
             break;
 
         case ORDER_EXE_TYPE_ARM_INIT:
-            arms[orders->current_order_.which_arm]->seq_init();
+            actuators->side(orders->current_order_.which_arm)->arm_.init();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_INIT;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
         case ORDER_EXE_TYPE_ARM_GRAB:
-            arms[orders->current_order_.which_arm]->seq_grab();
+            actuators->side(orders->current_order_.which_arm)->arm_.grab();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_GRAB;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
         case ORDER_EXE_TYPE_ARM_MOVE_UP:
-            arms[orders->current_order_.which_arm]->seq_move_up();
+            actuators->side(orders->current_order_.which_arm)->arm_.move_up();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_MOVE;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
         case ORDER_EXE_TYPE_ARM_RELEASE:
-            arms[orders->current_order_.which_arm]->seq_release();
+            actuators->side(orders->current_order_.which_arm)->arm_.release();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_RELEASE;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
         case ORDER_EXE_TYPE_ARM_MOVE_DOWN:
-            arms[orders->current_order_.which_arm]->seq_move_down();
+            actuators->side(orders->current_order_.which_arm)->arm_.move_down();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_MOVE;
             last_order_executed_timestamp = match->read();
@@ -307,7 +220,7 @@ int main(void)
     EventQueue *queue = NULL;
     Timer *loop = NULL;
 
-    AX12_arm **arms;
+    Actuators *actuators;
 
     init_common(
         &main_timer,
@@ -319,13 +232,12 @@ int main(void)
         &loop
     );
     init_board_CQES(debug,
-        &arms
+        &actuators
     );
     init_finalize(debug, main_timer);
 
     bool cqb_finished = false;
 
-arms[ACT_SIDE_RIGHT]->seq_move_down();
 
     /*
         Go!
@@ -338,14 +250,14 @@ arms[ACT_SIDE_RIGHT]->seq_move_down();
         g_mon->main_loop.start_new();
         loop->reset();
 
-        main_do_com(debug, arms);
+        main_do_com(debug, actuators);
 
         queue->dispatch(0);  // non blocking dispatch
         com_handle_can(debug, messenger, orders, &cqb_finished);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order
-        bool is_current_order_executed_ = main_update_cur_order(arms, orders, main_timer);
+        bool is_current_order_executed_ = main_update_cur_order(actuators, orders, main_timer);
 
         if (cqb_finished && (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED))
         {

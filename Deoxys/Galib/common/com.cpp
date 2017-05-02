@@ -9,10 +9,6 @@
 #include "QBouge/MotionController.h"
 #endif
 
-#ifdef IAM_QENTRESORT
-#include "QEntreQSort/RoboticArm.h"
-#endif
-
 
 #ifdef IAM_QREFLECHI
 

@@ -20,7 +20,6 @@
 #endif
 #ifdef IAM_QENTRESORT
 #include "QEntreQSort/Actuators.h"
-#include "QEntreQSort/RoboticArm.h"
 #endif
 
 #include "config.h"
@@ -186,27 +185,58 @@ void init_board_CQR(Debug *debug,
 #endif
 
 #ifdef IAM_QENTRESORT
-void init_board_CQES(
-    Debug *debug,
-    AX12_arm ***_arms
+void init_board_CQES(Debug *debug,
+    Actuators **_actuators
 )
 {
-    AX12 *ax12 = NULL;
-    AX12_arm **arms = NULL;
+    Ax12Driver *ax12 = NULL;
+    Actuators *actuators = NULL;
 
     debug->printf("AX12_arm...\n");
-    ax12 = new AX12;
-    arms = new AX12_arm*[ACT_SIDE_ALL];
-    arms[0] = NULL;
-    arms[ACT_SIDE_LEFT] = new AX12_arm(ax12, ACT_SIDE_LEFT, 1, 8, 9, AX12_L_PIN_SERVO, AX12_L_PIN_VALVE);
-    arms[ACT_SIDE_RIGHT] = new AX12_arm(ax12, ACT_SIDE_RIGHT, 6, 16, 5, AX12_R_PIN_SERVO, AX12_R_PIN_VALVE);
+    ax12 = new Ax12Driver;
 
-    arms[ACT_SIDE_LEFT]->write_speed_all(AX12_MOVING_SPEED);
-    arms[ACT_SIDE_RIGHT]->write_speed_all(AX12_MOVING_SPEED);
+    actuators = new Actuators(
+        // left
+        OneSideCylindersActuators("left",
+            ArmActuator(
+                // height
+                Ax12Actuator("height", ax12, 1, 360, 450),
+                // vert
+                Ax12Actuator("vert", ax12, 8, 740, 160),
+                // horiz
+                Ax12Actuator("horiz", ax12, 9, 640, 330),
+                // clamp
+                ServoActuator("clamp", PwmOut(ACT_L_CLAMP), 0.05, 0.12),
+                // pump
+                BooleanActuator("pump", DigitalOut(ACT_L_PUMP), true, false)
+            ),
+            // flap
+            ServoActuator("flap", PwmOut(ACT_L_FLAP), 0.05, 0.10)
+        ),
+        // right
+        OneSideCylindersActuators("right",
+            ArmActuator(
+                // height
+                Ax12Actuator("height", ax12, 6, 430, 370),
+                // vert
+                Ax12Actuator("vert", ax12, 16, 750, 160),
+                // horiz
+                Ax12Actuator("horiz", ax12, 5, 330, 640),
+                // clamp
+                ServoActuator("clamp", PwmOut(ACT_R_CLAMP), 0.14, 0.07),
+                // pump
+                BooleanActuator("pump", DigitalOut(ACT_R_PUMP), true, false)
+            ),
+            // flap
+            ServoActuator("flap", PwmOut(ACT_R_FLAP), 0.10, 0.05)
+        ),
+        // prograde_dispenser
+        ServoActuator("prog_disp", PwmOut(ACT_PROGRADE_DISPENSER), 0.06, 0.10)
+    );
 
     debug->printf("\tok.\n");
 
-    *_arms = arms;
+    *_actuators = actuators;
 }
 #endif
 

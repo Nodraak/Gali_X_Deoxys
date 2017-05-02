@@ -10,10 +10,15 @@
     #define AX12_PIN_TX         D1
     #define AX12_PIN_RX         D0
 
-    #define AX12_L_PIN_SERVO    D5
-    #define AX12_L_PIN_VALVE    D12
-    #define AX12_R_PIN_SERVO    D6
-    #define AX12_R_PIN_VALVE    D11
+    #define ACT_L_CLAMP         D6
+    #define ACT_L_PUMP          D12
+    #define ACT_L_FLAP          A1
+
+    #define ACT_R_CLAMP         D5
+    #define ACT_R_PUMP          D11
+    #define ACT_R_FLAP          A2
+
+    #define ACT_PROGRADE_DISPENSER  D3
 
 #else  // #ifndef SIMULATION
 

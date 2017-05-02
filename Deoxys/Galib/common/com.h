@@ -22,8 +22,6 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #ifdef IAM_QENTRESORT
 
-#include "QEntreQSort/RoboticArm.h"
-
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished);
 
 #endif

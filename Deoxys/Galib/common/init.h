@@ -11,8 +11,8 @@
 #ifdef IAM_QBOUGE
 #include "QBouge/MotionController.h"
 #endif
-#ifdef IAM_QENTREQSORT
-#include "QBouge/RoboticArm.h"
+#ifdef IAM_QENTRESORT
+#include "QEntreQSort/Actuators.h"
 #endif
 
 #define INIT_DELAY_LED_RUNNING          500         // ms
@@ -53,7 +53,7 @@ void init_board_CQR(Debug *debug, OrdersFIFO *orders);
 
 #ifdef IAM_QENTRESORT
 void init_board_CQES(Debug *debug,
-    AX12_arm ***_arms
+    Actuators **_actuators
 );
 #endif
 

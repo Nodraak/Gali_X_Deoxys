@@ -1,7 +1,7 @@
 #ifdef IAM_QENTRESORT
 
-#ifndef ROBOTIC_ARM_H_INCLUDED
-#define ROBOTIC_ARM_H_INCLUDED
+#ifndef AX12DRIVER_H_INCLUDED
+#define AX12DRIVER_H_INCLUDED
 
 #include "common/OrdersFIFO.h"
 #include "pinout.h"
@@ -77,11 +77,13 @@
 #endif
 
 
-class AX12 {
+class Ax12Driver {
 public:
-    AX12(void);
+    Ax12Driver(void);
 
-private:
+    void set_baud(int b);
+
+// private:
     void txrx_set_rx(void);
     void txrx_set_tx(void);
 
@@ -128,38 +130,5 @@ private:
     DigitalOut txrx_select_;
 };
 
-
-class AX12_arm {
-public:
-    AX12_arm(AX12 *ax12_com, uint8_t which_arm, int id_base, int id_vert, int id_horiz, PinName pin_pwm, PinName valve);
-
-    void ping_all(void);
-
-    void read_pos_all(void);
-    void write_pos_all(int pos1, int pos2, int pos3);
-
-    void read_speed_all(void);
-    void write_speed_all(uint16_t speed);
-
-    void set_servo_on(void);
-    void set_servo_off(void);
-
-    void set_valve_on(void);
-    void set_valve_off(void);
-
-    void seq_init(void);
-    void seq_grab(void);
-    void seq_move_up(void);
-    void seq_release(void);
-    void seq_move_down(void);
-
-private:
-    AX12 *ax12_;
-    uint8_t which_arm_;
-    int id_base_, id_vert_, id_horiz_;
-    PwmOut servo_;
-    DigitalOut valve_;
-};
-
-#endif // #ifndef ROBOTIC_ARM_H_INCLUDED
+#endif // #ifndef AX12DRIVER_H_INCLUDED
 #endif // #ifdef IAM_QENTRESORT
