@@ -1,7 +1,7 @@
 
 #include "common/Debug.h"
 #include "common/OrdersFIFO.h"
-#include "QEntreQSort/Actuator.h"
+#include "QEntreQSort/Actuators.h"
 
 #include "config.h"
 

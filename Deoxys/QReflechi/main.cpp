@@ -43,11 +43,14 @@ int main(void)
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
 
-    loop->reset();
-
     Message rec_msg;
+
+    main_timer->reset();
     while (true)
     {
+        g_mon->main_loop.start_new();
+        loop->reset();
+
         queue->dispatch(0);  // non blocking dispatch
 
         while (messenger->read_msg(&rec_msg))
@@ -69,7 +72,7 @@ int main(void)
         bool ping_CQB = (main_timer->read()-last_ping_CQB) < 1.000;
         bool ping_CQES = (main_timer->read()-last_ping_CQES) < 1.000;
 
-        if (loop->read() > 0.500)
+        if (main_timer->read() > 0.500)
         {
             if (ping_CQB && ping_CQES)
             {
@@ -81,9 +84,10 @@ int main(void)
                 debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
             }
 
-            loop->reset();
+            main_timer->reset();
         }
 
+        g_mon->main_loop.stop_and_save();
         main_sleep(debug, loop);
     }
 
@@ -103,9 +107,9 @@ int main(void)
 
     debug->printf("\nGo!\n");
 
-    main_timer->reset();
     messenger->send_msg_CQR_match_start();
 
+    main_timer->reset();
     while (true)  // todo main_timer->read() < 90
     {
         g_mon->main_loop.start_new();

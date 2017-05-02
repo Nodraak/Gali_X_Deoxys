@@ -16,7 +16,7 @@
 #include "common/utils.h"
 
 // delay not to flood the CAN bus requesting next order (if CQR does not have more orders)
-#define REQUEST_NEXT_ORDER_DELAY 0.500  // sec
+#define REQUEST_NEXT_ORDER_DELAY 0.050  // sec
 
 
 /*

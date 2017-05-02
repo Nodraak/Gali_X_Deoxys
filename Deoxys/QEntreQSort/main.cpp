@@ -10,7 +10,7 @@
 #include "common/init.h"
 #include "common/main_sleep.h"
 #include "common/utils.h"
-#include "QEntreQSort/Actuator.h"
+#include "QEntreQSort/Actuators.h"
 #include "QEntreQSort/RoboticArm.h"
 
 #include "config.h"

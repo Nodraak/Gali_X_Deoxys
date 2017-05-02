@@ -2,7 +2,7 @@
 #include <cstring>  // memset, memmove
 
 #include "common/Debug.h"
-#include "QEntreQSort/Actuator.h"
+#include "QEntreQSort/Actuators.h"
 
 #include "config.h"
 

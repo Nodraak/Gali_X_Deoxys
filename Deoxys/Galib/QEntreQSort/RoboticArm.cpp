@@ -10,7 +10,7 @@ void BufferedSerial::clear(void) {
 #include "BufferedSerial.h"
 
 #include "common/Debug.h"
-#include "QEntreQSort/Actuator.h"
+#include "QEntreQSort/Actuators.h"
 
 #include "config.h"
 
