@@ -287,7 +287,7 @@ int mc_updateCurOrder(
             }
             break;
 
-        case ORDER_EXE_TYPE_POS:
+        case ORDER_EXE_TYPE_MOV_POS:
             // position order
 
             dx = cur_order->pos.x - cur_pos.x;
@@ -305,7 +305,7 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_EXE_TYPE_ANGLE:
+        case ORDER_EXE_TYPE_MOV_ANGLE:
             // angle order while holding position
 
             dx = cur_order->pos.x - cur_pos.x;
@@ -319,11 +319,13 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_EXE_TYPE_ARM_INIT:
-        case ORDER_EXE_TYPE_ARM_GRAB:
-        case ORDER_EXE_TYPE_ARM_MOVE_UP:
-        case ORDER_EXE_TYPE_ARM_RELEASE:
-        case ORDER_EXE_TYPE_ARM_MOVE_DOWN:
+        case ORDER_EXE_TYPE_ACT_ARM_INIT:
+        case ORDER_EXE_TYPE_ACT_ARM_GRAB:
+        case ORDER_EXE_TYPE_ACT_ARM_MOVE_UP:
+        case ORDER_EXE_TYPE_ACT_ARM_RELEASE:
+        case ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN:
+        case ORDER_EXE_TYPE_ACT_FLAP:
+        case ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER:
             // ignore on CQB
             break;
 

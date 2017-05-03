@@ -94,25 +94,21 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
     while (messenger->read_msg(&rec_msg))
     {
-        debug->printf("[CAN/rec] id %d\n", rec_msg.id);
+#ifdef PRINT_COM_CAN_REC
+        debug->printf("[CAN/rec] %d %s\n", rec_msg.id, e2s_message_type(rec_msg.id));
+#endif
         switch (rec_msg.id)
         {
             case Message::MT_CQR_ping:
-                debug->printf("[CAN/rec] ping. replying pong\n");
+                debug->printf("\t-> Replying pong\n");
                 if (messenger->send_msg_pong())
-                    debug->printf("[CAN] send_msg_pong() failed\n");
+                    debug->printf("\t-> Error: send_msg_pong()\n");
                 break;
 
             case Message::MT_CQB_pong:
-                debug->printf("[CAN/rec] pong (CQB)\n");
-                break;
-
             case Message::MT_CQR_pong:
-                debug->printf("[CAN/rec] pong (CQR)\n");
-                break;
-
             case Message::MT_CQES_pong:
-                debug->printf("[CAN/rec] pong (CQES)\n");
+                // nothing to do
                 break;
 
 #ifdef IAM_QBOUGE
@@ -136,7 +132,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
             case Message::MT_CQR_order:
                 // todo ack if ok, else send error
                 // todo sync with CQES
-                debug->printf("[CAN] rec MT_order (%d)\n", orders->push(rec_msg.payload.CQR_order));
+                debug->printf("\t-> MT_CQR_order %d\n", orders->push(rec_msg.payload.CQR_order));
                 break;
 
             case Message::MT_CQES_finished:
@@ -150,15 +146,15 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
 #ifdef IAM_QREFLECHI
             case Message::MT_CQB_next_order_request:
-                debug->printf("[CAN] MT_CQB_next_order_request\n");
+                debug->printf("\t-> MT_CQB_next_order_request\n");
                 if (orders->size() == 0)
-                    debug->printf("-> orders->size() == 0\n");
+                    debug->printf("\t-> orders->size() == 0\n");
                 // todo send a shut up order
                 else
                 {
-                    debug->printf("[CAN/send] send order %s\n", e2s_order_com_type[orders->front()->type]);
+                    debug->printf("\t-> sending order %s\n", e2s_order_com_type[orders->front()->type]);
                     if (messenger->send_msg_CQR_order(*orders->front()))
-                        debug->printf("[CAN] send_msg_order() failed\n");
+                        debug->printf("\t-> Error: send_msg_order()\n");
                     else
                         orders->pop(); // todo wait for ack before poping
                 }
@@ -167,7 +163,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
             case Message::MT_CQB_I_am_doing:
             case Message::MT_CQES_I_am_doing:
                 debug->printf(
-                    "[CAN] \t\t\t I am doing %s %s\n",
+                    "\t-> I am doing %s %s\n",
                     rec_msg.payload.I_am_doing.i_am,
                     e2s_order_exe_type[rec_msg.payload.I_am_doing.order]
                 );
@@ -175,7 +171,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
             case Message::MT_CQB_MC_pos_angle:
                 debug->printf(
-                    "[CAN/CQB] pos angle %d %d %.0f\n",
+                    "\t-> pos angle %d %d %.0f\n",
                     rec_msg.payload.CQB_MC_pos_angle.pos.x,
                     rec_msg.payload.CQB_MC_pos_angle.pos.y,
                     RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
@@ -194,7 +190,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
             case Message::MT_CQR_order:
                 debug->printf(
-                    "[CAN] rec MT_order (%d) (%s)\n",
+                    "\t-> MT_order (%d) (%s)\n",
                     orders->push(rec_msg.payload.CQR_order),
                     e2s_order_com_type[rec_msg.payload.CQR_order.type]
                 );
@@ -202,7 +198,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                 break;
 
             case Message::MT_CQB_finished:
-                debug->printf("[CAN/rec] MT_CQB_finished\n");
+                debug->printf("\t-> MT_CQB_finished\n");
                 *cqb_finished = true;
                 break;
 
@@ -212,7 +208,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 #endif
 
             default:
-                debug->printf("[CAN] Unhandled msg (id=%d)\n", rec_msg.id);
+                debug->printf("\t-> Unhandled msg (id=%d)\n", rec_msg.id);
                 break;
         }
     }

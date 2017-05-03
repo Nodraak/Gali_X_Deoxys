@@ -208,6 +208,9 @@ public:
 };
 
 
+const char *e2s_message_type(Message::e_message_type msg);
+
+
 /*
     The CanMessenger class is used to send and receive messages over the CAN bus.
 

@@ -15,11 +15,55 @@
 #include "common/Debug.h"
 #include "common/utils.h"
 
+
 // delay not to flood the CAN bus requesting next order (if CQR does not have more orders)
 #define REQUEST_NEXT_ORDER_DELAY 0.050  // sec
 
 
 /*
+    Actuator parameters
+*/
+
+// conf: 8 bits
+#define ACT_CONF_NONE           ((0x1 << 0) << 0)
+#define ACT_CONF_EXTENDED       ((0x1 << 1) << 0)
+#define ACT_CONF_RETRACTED      ((0x1 << 2) << 0)
+#define ACT_CONF_LAST           ((0x1 << 3) << 0)
+
+// alternate API
+#define ACT_CONF_OPEN           ACT_CONF_EXTENDED
+#define ACT_CONF_CLOSED         ACT_CONF_RETRACTED
+#define ACT_CONF_ON             ACT_CONF_EXTENDED
+#define ACT_CONF_OFF            ACT_CONF_RETRACTED
+
+// actuator: 16 bits
+#define ACT_ACTUATOR_NONE       ((0x1 << 0) << 8)
+#define ACT_ACTUATOR_HEIGHT     ((0x1 << 1) << 8)
+#define ACT_ACTUATOR_VERT       ((0x1 << 2) << 8)
+#define ACT_ACTUATOR_HORIZ      ((0x1 << 3) << 8)
+#define ACT_ACTUATOR_CLAMP      ((0x1 << 4) << 8)
+#define ACT_ACTUATOR_PUMP       ((0x1 << 5) << 8)
+#define ACT_ACTUATOR_FLAP       ((0x1 << 6) << 8)
+#define ACT_ACTUATOR_PROG       ((0x1 << 7) << 8)
+#define ACT_ACTUATOR_LAST       ((0x1 << 8) << 8)
+
+// side: 8 bits
+#define ACT_SIDE_NONE           ((0x1 << 0) << 16)
+#define ACT_SIDE_LEFT           ((0x1 << 1) << 16)
+#define ACT_SIDE_RIGHT          ((0x1 << 2) << 16)
+#define ACT_SIDE_LAST           ((0x1 << 3) << 16)
+
+// Mask
+#define ACT_CONF_MASK           0x000F
+#define ACT_ACTUATOR_MASK       0x0FF0
+#define ACT_SIDE_MASK           0xF000
+
+typedef uint32_t t_act;  // Warning: 64 bits max, this is transmitted as a CAN payload
+
+
+/*
+    Order com
+
     Orders that are transmitted through the CAN bus.
     They are not directly usable, as they are optimized for size. They can be of
     various types (abs pos or rel pos, angle, delay, ...).
@@ -28,28 +72,34 @@
     s_order_com should be exactly 8 bytes (it can be smaller, but best is to
     keep it 8 bytes), because of the CAN protocol.
     Therefore e_order_com_type is stored in a uint8_t to keep the size fixed.
+
+    Note: they are common to all boards.
 */
 
 typedef enum    _e_order_com_type {
     ORDER_COM_TYPE_NONE,
 
-    ORDER_COM_TYPE_DELAY,
+    ORDER_COM_TYPE_DELAY,                   // param: delay
 
+// Synchronization orders
     ORDER_COM_TYPE_WAIT_CQB_FINISHED,
     ORDER_COM_TYPE_WAIT_CQES_FINISHED,
 
-// movement orders (CQB)
-    ORDER_COM_TYPE_ABS_POS,
-    ORDER_COM_TYPE_ABS_ANGLE,
-    ORDER_COM_TYPE_REL_DIST,
-    ORDER_COM_TYPE_REL_ANGLE,
+// Movement orders (CQB)
+    ORDER_COM_TYPE_MOV_ABS_POS,             // param: x, y
+    ORDER_COM_TYPE_MOV_ABS_ANGLE,           // param: angle
+    ORDER_COM_TYPE_MOV_REL_DIST,            // param: dist
+    ORDER_COM_TYPE_MOV_REL_ANGLE,           // param: angle
+    // todo rel pos ?
 
-// robotic arm orders (CQES)
-    ORDER_COM_TYPE_ARM_INIT,
-    ORDER_COM_TYPE_ARM_GRAB,
-    ORDER_COM_TYPE_ARM_MOVE_UP,
-    ORDER_COM_TYPE_ARM_RELEASE,
-    ORDER_COM_TYPE_ARM_MOVE_DOWN,
+// Actuators orders (CQES)
+    ORDER_COM_TYPE_ACT_ARM_INIT,            // param: side
+    ORDER_COM_TYPE_ACT_ARM_GRAB,            // param: side
+    ORDER_COM_TYPE_ACT_ARM_MOVE_UP,         // param: side
+    ORDER_COM_TYPE_ACT_ARM_RELEASE,         // param: side
+    ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN,       // param: side
+    ORDER_COM_TYPE_ACT_FLAP,                // param: side
+    ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER,  // param: side
 
     ORDER_COM_TYPE_LAST
 }               e_order_com_type;
@@ -69,31 +119,40 @@ typedef struct  _s_order_com {
         int32_t         rel_dist;   // mm
         float           rel_angle;  // rad
 
-        uint8_t         which_arm;  // cf. enum e_act_side in Actuator.h
+        t_act           act_param;
     } order_data;
 }               s_order_com;
 
 /*
+    Order exe
+
     Order that are ready for direct use.
     They are ready to be executed and can be of a limited types.
+
+    Note: they are board-specific.
 */
 
 typedef enum    _e_order_exe_type {
     ORDER_EXE_TYPE_NONE,
 
-    ORDER_EXE_TYPE_DELAY,
+    ORDER_EXE_TYPE_DELAY,                   // param: delay
 
+// Synchronization orders
     ORDER_EXE_TYPE_WAIT_CQB_FINISHED,
     ORDER_EXE_TYPE_WAIT_CQES_FINISHED,
 
-    ORDER_EXE_TYPE_POS,
-    ORDER_EXE_TYPE_ANGLE,
+// Movement orders (CQB)
+    ORDER_EXE_TYPE_MOV_POS,                 // param: x, y
+    ORDER_EXE_TYPE_MOV_ANGLE,               // param: angle
 
-    ORDER_EXE_TYPE_ARM_INIT,
-    ORDER_EXE_TYPE_ARM_GRAB,
-    ORDER_EXE_TYPE_ARM_MOVE_UP,
-    ORDER_EXE_TYPE_ARM_RELEASE,
-    ORDER_EXE_TYPE_ARM_MOVE_DOWN,
+// Actuators orders (CQES)
+    ORDER_EXE_TYPE_ACT_ARM_INIT,            // param: side
+    ORDER_EXE_TYPE_ACT_ARM_GRAB,            // param: side
+    ORDER_EXE_TYPE_ACT_ARM_MOVE_UP,         // param: side
+    ORDER_EXE_TYPE_ACT_ARM_RELEASE,         // param: side
+    ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN,       // param: side
+    ORDER_EXE_TYPE_ACT_FLAP,                // param: side
+    ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER,  // param: side
 
     ORDER_EXE_TYPE_LAST
 }               e_order_exe_type;
@@ -111,7 +170,7 @@ typedef struct  _s_order_exe {
 #endif
 
 #ifdef IAM_QENTRESORT
-    uint8_t which_arm;  // cf. enum e_act_side in Actuator.h
+    t_act act_param;
 #endif
 }               s_order_exe;
 
@@ -134,12 +193,13 @@ public:
     void we_are_at(int16_t x, int16_t y, float angle);
 
     /*
-        Append a new order to the list of orders to execute.
+        Add a new order to the list of orders to execute.
         Returns
             0 if success
             1 if error (most probably the list is full)
     */
-    int push(s_order_com item);
+    int push(s_order_com item);     // todo rename append
+    int prepend(s_order_com item);
 
     /*
         Pop (remove) the first an order of the FIFO list and use it to overwrite
@@ -209,10 +269,12 @@ s_order_com OrderCom_makeAbsAngle(float angle);
 s_order_com OrderCom_makeRelDist(int32_t dist);
 s_order_com OrderCom_makeRelAngle(float angle);
 
-s_order_com OrderCom_makeArmInit(uint8_t which_arm);
-s_order_com OrderCom_makeArmGrab(uint8_t which_arm);
-s_order_com OrderCom_makeArmMoveUp(uint8_t which_arm);
-s_order_com OrderCom_makeArmRelease(uint8_t which_arm);
-s_order_com OrderCom_makeArmMoveDown(uint8_t which_arm);
+s_order_com OrderCom_makeArmInit(t_act act_param);
+s_order_com OrderCom_makeArmGrab(t_act act_param);
+s_order_com OrderCom_makeArmMoveUp(t_act act_param);
+s_order_com OrderCom_makeArmRelease(t_act act_param);
+s_order_com OrderCom_makeArmMoveDown(t_act act_param);
+s_order_com OrderCom_makeFlap(t_act act_param);
+s_order_com OrderCom_makeProgradeDispenser(t_act act_param);
 
 #endif // #ifndef ORDER_H_INCLUDED

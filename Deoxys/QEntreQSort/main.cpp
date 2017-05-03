@@ -159,46 +159,85 @@ bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, Timer *matc
             break;
 
         case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
-        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:
-        case ORDER_EXE_TYPE_POS:
-        case ORDER_EXE_TYPE_ANGLE:
+        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:  // todo send send_msg_CQES_finished and remove it from main()
+        case ORDER_EXE_TYPE_MOV_POS:
+        case ORDER_EXE_TYPE_MOV_ANGLE:
             // ignore on CQES
             break;
 
-        case ORDER_EXE_TYPE_ARM_INIT:
-            actuators->side(orders->current_order_.which_arm)->arm_.init();
+        case ORDER_EXE_TYPE_ACT_ARM_INIT:
+            actuators->side(orders->current_order_.act_param)->arm_.init();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_INIT;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
-        case ORDER_EXE_TYPE_ARM_GRAB:
-            actuators->side(orders->current_order_.which_arm)->arm_.grab();
+
+        case ORDER_EXE_TYPE_ACT_ARM_GRAB:
+            actuators->side(orders->current_order_.act_param)->arm_.grab();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_GRAB;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
-        case ORDER_EXE_TYPE_ARM_MOVE_UP:
-            actuators->side(orders->current_order_.which_arm)->arm_.move_up();
+
+        case ORDER_EXE_TYPE_ACT_ARM_MOVE_UP:
+            actuators->side(orders->current_order_.act_param)->arm_.move_up();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_MOVE;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
-        case ORDER_EXE_TYPE_ARM_RELEASE:
-            actuators->side(orders->current_order_.which_arm)->arm_.release();
+
+        case ORDER_EXE_TYPE_ACT_ARM_RELEASE:
+            actuators->side(orders->current_order_.act_param)->arm_.release();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_RELEASE;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
             break;
-        case ORDER_EXE_TYPE_ARM_MOVE_DOWN:
-            actuators->side(orders->current_order_.which_arm)->arm_.move_down();
+
+        case ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN:
+            actuators->side(orders->current_order_.act_param)->arm_.move_down();
             orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
             orders->current_order_.delay = SLEEP_MOVE;
             last_order_executed_timestamp = match->read();
             // is_current_order_executed_ = true;
+            break;
+
+        case ORDER_EXE_TYPE_ACT_FLAP:
+            if (orders->current_order_.act_param & ACT_CONF_OPEN)
+            {
+                actuators->side(orders->current_order_.act_param)->flap_.open();
+
+                orders->prepend(OrderCom_makeFlap(
+                    (orders->current_order_.act_param & ACT_SIDE_MASK) | ACT_CONF_CLOSED
+                ));
+            }
+            if (orders->current_order_.act_param & ACT_CONF_CLOSED)
+                actuators->side(orders->current_order_.act_param)->flap_.close();
+            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+            orders->current_order_.delay = 0.500;  // todo define
+            last_order_executed_timestamp = match->read();
+            // is_current_order_executed_ = true;
+
+            break;
+
+        case ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER:
+            if (orders->current_order_.act_param & ACT_CONF_OPEN)
+            {
+                actuators->prograde_dispenser_.open();
+                orders->prepend(OrderCom_makeProgradeDispenser(
+                    ACT_CONF_CLOSED
+                ));
+            }
+            if (orders->current_order_.act_param & ACT_CONF_CLOSED)
+                actuators->prograde_dispenser_.close();
+            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
+            orders->current_order_.delay = 1.000;  // todo define
+            last_order_executed_timestamp = match->read();
+            // is_current_order_executed_ = true;
+
             break;
 
         case ORDER_EXE_TYPE_LAST:

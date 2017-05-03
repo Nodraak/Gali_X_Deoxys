@@ -67,7 +67,9 @@ Monitoring::Monitoring(void) {
 }
 
 void Monitoring::reset(void) {
+#ifdef PRINT_MONITORING_RESET
     this->debug();
+#endif
 
     qei_interrupt.reset_stats();
     asserv.reset_stats();

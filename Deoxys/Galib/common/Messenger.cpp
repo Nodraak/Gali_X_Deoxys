@@ -11,6 +11,53 @@
 #include "common/Messenger.h"
 
 
+const char *e2s_message_type(Message::e_message_type msg)
+{
+    typedef struct _t_e2s_message_type {
+        Message::e_message_type msg;
+        const char *str;
+    } t_e2s_message_type;
+
+    t_e2s_message_type _e2s_message_type[] = {
+        {Message::MT_CQR_ping, "MT_CQR_ping"},
+        {Message::MT_CQB_pong, "MT_CQB_pong"},
+        {Message::MT_CQR_pong, "MT_CQR_pong"},
+        {Message::MT_CQES_pong, "MT_CQES_pong"},
+        {Message::MT_CQR_match_start, "MT_CQR_match_start"},
+        {Message::MT_CQR_match_stop, "MT_CQR_match_stop"},
+        {Message::MT_CQR_reset, "MT_CQR_reset"},
+        {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
+        {Message::MT_CQR_order, "MT_CQR_order"},
+        {Message::MT_CQB_finished, "MT_CQB_finished"},
+        {Message::MT_CQES_finished, "MT_CQES_finished"},
+        {Message::MT_CQB_next_order_request, "MT_CQB_next_order_request"},
+        {Message::MT_CQES_next_order_request, "MT_CQES_next_order_request"},
+        {Message::MT_CQB_I_am_doing, "MT_CQB_I_am_doing"},
+        {Message::MT_CQES_I_am_doing, "MT_CQES_I_am_doing"},
+        {Message::MT_CQB_MC_pos_angle, "MT_CQB_MC_pos_angle"},
+        {Message::MT_CQB_MC_speeds, "MT_CQB_MC_speeds"},
+        {Message::MT_CQB_MC_pids, "MT_CQB_MC_pids"},
+        {Message::MT_CQB_MC_motors, "MT_CQB_MC_motors"},
+        {Message::MT_CQB_MC_encs, "MT_CQB_MC_encs"},
+        {Message::MT_empty, "MT_empty"},
+        {Message::MT_last, "MT_last"}
+    };
+
+    int i = 0;
+
+    while (1)
+    {
+        if (msg == _e2s_message_type[i].msg)
+            return _e2s_message_type[i].str;
+        if (_e2s_message_type[i].msg == Message::MT_last)
+            break;
+        i ++;
+    }
+
+    return "NONE";
+}
+
+
 /*
     Message (payload send via CAN)
 */

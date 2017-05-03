@@ -1,57 +1,3 @@
-#ifndef ACTUATORS_ALL_H_INCLUDED
-#define ACTUATORS_ALL_H_INCLUDED
-
-// conf: 8 bits
-#define ACT_CONF_NONE           ((0x1 << 0) << 0)
-#define ACT_CONF_EXTENDED       ((0x1 << 1) << 0)
-#define ACT_CONF_RETRACTED      ((0x1 << 2) << 0)
-#define ACT_CONF_LAST           ((0x1 << 3) << 0)
-
-// alternate API
-#define ACT_CONF_OPEN           ACT_CONF_EXTENDED
-#define ACT_CONF_CLOSED         ACT_CONF_RETRACTED
-#define ACT_CONF_ON             ACT_CONF_EXTENDED
-#define ACT_CONF_OFF            ACT_CONF_RETRACTED
-
-// actuator: 16 bits
-#define ACT_ACTUATOR_NONE       ((0x1 << 0) << 8)
-#define ACT_ACTUATOR_HEIGHT     ((0x1 << 1) << 8)
-#define ACT_ACTUATOR_VERT       ((0x1 << 2) << 8)
-#define ACT_ACTUATOR_HORIZ      ((0x1 << 3) << 8)
-#define ACT_ACTUATOR_CLAMP      ((0x1 << 4) << 8)
-#define ACT_ACTUATOR_PUMP       ((0x1 << 5) << 8)
-#define ACT_ACTUATOR_FLAP       ((0x1 << 6) << 8)
-#define ACT_ACTUATOR_PROG       ((0x1 << 7) << 8)
-#define ACT_ACTUATOR_LAST       ((0x1 << 8) << 8)
-
-// side: 8 bits
-#define ACT_SIDE_NONE           ((0x1 << 0) << 16)
-#define ACT_SIDE_LEFT           ((0x1 << 1) << 16)
-#define ACT_SIDE_RIGHT          ((0x1 << 2) << 16)
-#define ACT_SIDE_LAST           ((0x1 << 3) << 16)
-
-// Mask
-#define ACT_CONF_MASK           0x000F
-#define ACT_ACTUATOR_MASK       0x0FF0
-#define ACT_SIDE_MASK           0xF000
-
-typedef uint32_t t_act;
-
-/*
-
-Gui ?
-
-serial to CAN (CQR)
-send CAN (CQR)
-
-rec CAN (CQES)
-handle actuators (global struct with conf, ...) (CQES)
-
-*/
-
-#endif
-
-
 #ifdef IAM_QENTRESORT
 
 #ifndef ACTUATORS_H_INCLUDED
@@ -59,6 +5,7 @@ handle actuators (global struct with conf, ...) (CQES)
 
 #include "mbed.h"
 #include "common/Debug.h"
+#include "common/OrdersFIFO.h"
 #include "QEntreQSort/Ax12Driver.h"
 
 /*
@@ -256,3 +203,15 @@ public:
 
 #endif // #ifndef ACTUATORS_H_INCLUDED
 #endif // #ifdef IAM_QENTRESORT
+
+/*
+
+Gui ?
+
+serial to CAN (CQR)
+send CAN (CQR)
+
+rec CAN (CQES)
+handle actuators (global struct with conf, ...) (CQES)
+
+*/
