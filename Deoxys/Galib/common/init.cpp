@@ -200,11 +200,11 @@ void init_board_CQES(Debug *debug,
         OneSideCylindersActuators("left",
             ArmActuator(
                 // height
-                Ax12Actuator("height", ax12, 1, 360, 450),
+                Ax12Actuator("height", ax12, 6, 450, 360),
                 // vert
-                Ax12Actuator("vert", ax12, 8, 740, 160),
+                Ax12Actuator("vert", ax12, 16, 740, 160),
                 // horiz
-                Ax12Actuator("horiz", ax12, 9, 640, 330),
+                Ax12Actuator("horiz", ax12, 5, 330, 20),
                 // clamp
                 ServoActuator("clamp", PwmOut(ACT_L_CLAMP), 0.05, 0.12),
                 // pump
@@ -217,11 +217,11 @@ void init_board_CQES(Debug *debug,
         OneSideCylindersActuators("right",
             ArmActuator(
                 // height
-                Ax12Actuator("height", ax12, 6, 430, 370),
+                Ax12Actuator("height", ax12, 1, 370, 430),
                 // vert
-                Ax12Actuator("vert", ax12, 16, 750, 160),
+                Ax12Actuator("vert", ax12, 8, 750, 160),
                 // horiz
-                Ax12Actuator("horiz", ax12, 5, 330, 640),
+                Ax12Actuator("horiz", ax12, 9, 640, 950),
                 // clamp
                 ServoActuator("clamp", PwmOut(ACT_R_CLAMP), 0.14, 0.07),
                 // pump

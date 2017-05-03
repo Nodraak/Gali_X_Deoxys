@@ -160,11 +160,24 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeArmInit(ACT_SIDE_LEFT),
     OrderCom_makeArmInit(ACT_SIDE_RIGHT),
+
     OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
+    OrderCom_makeArmGrab(ACT_SIDE_LEFT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_LEFT),
+    OrderCom_makeArmRelease(ACT_SIDE_LEFT),
+    OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
+
+    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+    OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
+    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
+    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
     OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
 
     OrderCom_makeFlap(ACT_SIDE_LEFT | ACT_CONF_OPEN),
     OrderCom_makeProgradeDispenser(ACT_SIDE_LEFT | ACT_CONF_OPEN),
+
+    OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+    OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
 
     OrderCom_makeWaitCQESFinished(),
 
