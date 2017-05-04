@@ -47,6 +47,13 @@ void ServoActuator::set(t_act act, char *val) {
     }
 }
 
+void ServoActuator::activate(t_act act) {
+    if (act & ACT_CONF_EXTENDED)
+        this->extend();
+    if (act & ACT_CONF_RETRACTED)
+        this->retract();
+}
+
 void ServoActuator::extend(void) {
     servo_.write(extended_);
 }
@@ -66,8 +73,8 @@ void ServoActuator::close(void) {
     ## Ax12
 */
 
-Ax12Actuator::Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t extended) :
-    name_(name), ax12_(ax12), id_(id), retracted_(retracted), extended_(extended)
+Ax12Actuator::Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t neutral, uint16_t extended) :
+    name_(name), ax12_(ax12), id_(id), retracted_(retracted), neutral_(neutral), extended_(extended)
 {
     this->retract();
 }
@@ -87,6 +94,11 @@ void Ax12Actuator::set(t_act act, char *val) {
         extended_ = atoi(val);
         this->extend();
     }
+    if (act & ACT_CONF_NEUTRAL)
+    {
+        extended_ = atoi(val);
+        this->neutral();
+    }
     if (act & ACT_CONF_RETRACTED)
     {
         retracted_ = atoi(val);
@@ -94,8 +106,21 @@ void Ax12Actuator::set(t_act act, char *val) {
     }
 }
 
+void Ax12Actuator::activate(t_act act) {
+    if (act & ACT_CONF_EXTENDED)
+        this->extend();
+    if (act & ACT_CONF_NEUTRAL)
+        this->neutral();
+    if (act & ACT_CONF_RETRACTED)
+        this->retract();
+}
+
 void Ax12Actuator::extend(void) {
     ax12_->write_pos(id_, extended_);
+}
+
+void Ax12Actuator::neutral(void) {
+    ax12_->write_pos(id_, neutral_);
 }
 
 void Ax12Actuator::retract(void) {
@@ -152,6 +177,13 @@ void BooleanActuator::set(t_act act, char *val) {
         retracted_ = bool(atoi(val));
         this->extend();
     }
+}
+
+void BooleanActuator::activate(t_act act) {
+    if (act & ACT_CONF_EXTENDED)
+        this->extend();
+    if (act & ACT_CONF_RETRACTED)
+        this->extend();
 }
 
 void BooleanActuator::extend(void) {
@@ -216,6 +248,19 @@ void ArmActuator::set(t_act act, char *val) {
         pump_.set(act, val);
 }
 
+void ArmActuator::activate(t_act act) {
+    if (act & ACT_ACTUATOR_HEIGHT)
+        height_.activate(act);
+    if (act & ACT_ACTUATOR_VERT)
+        vert_.activate(act);
+    if (act & ACT_ACTUATOR_HORIZ)
+        horiz_.activate(act);
+    if (act & ACT_ACTUATOR_CLAMP)
+        clamp_.activate(act);
+    if (act & ACT_ACTUATOR_PUMP)
+        pump_.activate(act);
+}
+
 void ArmActuator::ping_all(void) {
     height_.ping();
     vert_.ping();
@@ -252,7 +297,10 @@ void ArmActuator::write_speed_all(uint16_t speed) {
 }
 
 void ArmActuator::init(void) {
-    this->move_down();
+    height_.extend();
+    vert_.extend();
+    horiz_.extend();
+
     this->release();
 }
 
@@ -263,8 +311,10 @@ void ArmActuator::grab(void) {
 
 void ArmActuator::move_up(void) {
     height_.retract();
-    vert_.retract();
+    vert_.neutral();
     horiz_.retract();
+wait_ms(500);  // !!! todo todo todo
+    vert_.retract();
 }
 
 void ArmActuator::release(void) {
@@ -273,6 +323,8 @@ void ArmActuator::release(void) {
 }
 
 void ArmActuator::move_down(void) {
+    vert_.neutral();
+wait_ms(500);  // !!! todo todo todo
     height_.extend();
     vert_.extend();
     horiz_.extend();
@@ -315,6 +367,19 @@ void OneSideCylindersActuators::set(t_act act, char *val) {
         flap_.set(act, val);
 }
 
+void OneSideCylindersActuators::activate(t_act act) {
+    if (
+        (act & ACT_ACTUATOR_HEIGHT)
+        || (act & ACT_ACTUATOR_VERT)
+        || (act & ACT_ACTUATOR_HORIZ)
+        || (act & ACT_ACTUATOR_CLAMP)
+        || (act & ACT_ACTUATOR_PUMP)
+    )
+        arm_.activate(act);
+    if (act & ACT_ACTUATOR_FLAP)
+        flap_.activate(act);
+}
+
 /*
     # High level
 */
@@ -351,6 +416,15 @@ void Actuators::set(t_act act, char *val) {
         right_.set(act, val);
     if (act & ACT_ACTUATOR_PROG)
         prograde_dispenser_.set(act, val);
+}
+
+void Actuators::activate(t_act act) {
+    if (act & ACT_SIDE_LEFT)
+        left_.activate(act);
+    if (act & ACT_SIDE_RIGHT)
+        right_.activate(act);
+    if (act & ACT_ACTUATOR_PROG)
+        prograde_dispenser_.activate(act);
 }
 
 OneSideCylindersActuators *Actuators::side(t_act side) {

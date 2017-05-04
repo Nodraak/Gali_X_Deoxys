@@ -20,6 +20,33 @@
 float last_order_executed_timestamp = -1;
 
 
+int split_by_spaces(const char *raw_data, char **dst, int s) {
+    int raw_data_i = 0, dst_i = 0, dst_char_i = 0;
+
+    while (raw_data[raw_data_i] != '\0')
+    {
+        if (dst_i == s)
+            break;
+
+        if (raw_data[raw_data_i] == ' ')
+        {
+            dst[dst_i][dst_char_i] = '\0';
+            dst_i ++;
+            dst_char_i = 0;
+        }
+        else
+        {
+            dst[dst_i][dst_char_i] = raw_data[raw_data_i];
+            dst_char_i ++;
+        }
+
+        raw_data_i ++;
+    }
+
+    return dst_i+1;
+}
+
+
 void main_do_com(Debug *debug, Actuators *actuators)
 {
     char buffer[BUFFER_SIZE] = "";
@@ -83,60 +110,73 @@ void main_do_com(Debug *debug, Actuators *actuators)
         }
         else if (strncmp(buffer, "act", 3) == 0)
         {
-            char *ptr = buffer;
+            char *ptr = buffer+3+1;
+/*
+    act l flap e 0.10
+    act l flap e
+*/
 
-            while (ptr[0] != ' ')
-                ptr += 1;
-            ptr += 1;
+            char dst_side[20], dst_act[20], dst_conf[20], dst_val[20];
+            char *dst[4] = {dst_side, dst_act, dst_conf, dst_val};
+            int ret = 0;
+
+            ret = split_by_spaces(ptr, dst, 4);
+
+            if ((ret != 3) && (ret != 4))
+            {
+                debug->printf("Error: expected 3 or 4 param (%d)\n", ret);
+                return;
+            }
 
             // parse
 
             t_act act = 0;
 
-            if (strncmp(ptr, "l", 1) == 0)
+            if (strncmp(dst_side, "l", 1) == 0)
                 act |= ACT_SIDE_LEFT;
-            else if (strncmp(ptr, "r", 1) == 0)
+            else if (strncmp(dst_side, "r", 1) == 0)
                 act |= ACT_SIDE_RIGHT;
+            else
+                debug->printf("Error: unknown side (%s)\n", dst_side);
 
-            while (ptr[0] != ' ')
-                ptr += 1;
-            ptr += 1;
-
-            if (strncmp(ptr, "height", 6) == 0)
+            if (strncmp(dst_act, "height", 6) == 0)
                 act |= ACT_ACTUATOR_HEIGHT;
-            else if (strncmp(ptr, "vert", 4) == 0)
+            else if (strncmp(dst_act, "vert", 4) == 0)
                 act |= ACT_ACTUATOR_VERT;
-            else if (strncmp(ptr, "horiz", 5) == 0)
+            else if (strncmp(dst_act, "horiz", 5) == 0)
                 act |= ACT_ACTUATOR_HORIZ;
-            else if (strncmp(ptr, "clamp", 5) == 0)
+            else if (strncmp(dst_act, "clamp", 5) == 0)
                 act |= ACT_ACTUATOR_CLAMP;
-            else if (strncmp(ptr, "pump", 4) == 0)
+            else if (strncmp(dst_act, "pump", 4) == 0)
                 act |= ACT_ACTUATOR_PUMP;
-            else if (strncmp(ptr, "flap", 4) == 0)
+            else if (strncmp(dst_act, "flap", 4) == 0)
                 act |= ACT_ACTUATOR_FLAP;
-            else if (strncmp(ptr, "prog", 4) == 0)
+            else if (strncmp(dst_act, "prog", 4) == 0)
                 act |= ACT_ACTUATOR_PROG;
+            else
+                debug->printf("Error: unknown actuator (%s)\n", dst_act);
 
-            while (ptr[0] != ' ')
-                ptr += 1;
-            ptr += 1;
-
-            if (strncmp(ptr, "e", 1) == 0)
+            if (strncmp(dst_conf, "e", 1) == 0)
                 act |= ACT_CONF_EXTENDED;
-            else if (strncmp(ptr, "r", 1) == 0)
+            else if (strncmp(dst_conf, "n", 1) == 0)
+                act |= ACT_CONF_NEUTRAL;
+            else if (strncmp(dst_conf, "r", 1) == 0)
                 act |= ACT_CONF_RETRACTED;
-
-            while (ptr[0] != ' ')
-                ptr += 1;
-            ptr += 1;
+            else
+                debug->printf("Error: unknown conf (%s)\n", dst_conf);
 
             // exe
 
-            actuators->set(act, ptr);
-            actuators->print(debug, 0);
+            if (ret == 3)
+                actuators->activate(act);
+            else if (ret == 4)
+            {
+                actuators->set(act, dst_val);
+                actuators->print(debug, 0);
+            }
         }
         else
-            debug->printf("unknown cmd\n");
+            debug->printf("Unknown cmd\n");
 
     }
 }

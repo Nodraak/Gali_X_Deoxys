@@ -35,6 +35,7 @@ public:
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
     void extend(void);
     void retract(void);
@@ -57,12 +58,14 @@ private:
 
 class Ax12Actuator {
 public:
-    Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t extended);
+    Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t neutral, uint16_t extended);
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
     void extend(void);
+    void neutral(void);
     void retract(void);
 
     void ping(void);
@@ -80,6 +83,7 @@ private:
     uint8_t id_;
 
     uint16_t retracted_;
+    uint16_t neutral_;
     uint16_t extended_;
 
     // uint16_t speed_;
@@ -95,6 +99,7 @@ public:
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
     void extend(void);
     void retract(void);
@@ -131,6 +136,7 @@ public:
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
     void ping_all(void);
 
@@ -168,6 +174,7 @@ public:
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
 public:
     const char *name_;
@@ -190,6 +197,7 @@ public:
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);
+    void activate(t_act act);
 
     OneSideCylindersActuators *side(t_act side);
 
