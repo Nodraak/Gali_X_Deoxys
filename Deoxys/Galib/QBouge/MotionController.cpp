@@ -319,18 +319,14 @@ int mc_updateCurOrder(
 
             break;
 
-        case ORDER_EXE_TYPE_ACT_ARM_INIT:
-        case ORDER_EXE_TYPE_ACT_ARM_GRAB:
-        case ORDER_EXE_TYPE_ACT_ARM_MOVE_UP:
-        case ORDER_EXE_TYPE_ACT_ARM_RELEASE:
-        case ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN:
-        case ORDER_EXE_TYPE_ACT_FLAP:
-        case ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER:
+        case ORDER_EXE_TYPE_ACTUATOR:
             // ignore on CQB
+            ret = 1;
             break;
 
         case ORDER_EXE_TYPE_LAST:
             // nothing to do
+            ret = 1;
             break;
     }
 

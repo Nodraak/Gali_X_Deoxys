@@ -158,8 +158,8 @@ s_order_com demo_test_enc_turn[] = {
 
 s_order_com demo_table_arm[] = {
 
-    OrderCom_makeArmInit(ACT_SIDE_LEFT),
-    OrderCom_makeArmInit(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_INIT, ACT_SIDE_LEFT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_INIT, ACT_SIDE_RIGHT),
 
 /*
     OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
@@ -179,9 +179,10 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
     OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+*/
 
     OrderCom_makeWaitCQESFinished(),
-*/
+
 
 /*
     1) Cylinder starting zone
@@ -196,7 +197,7 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeAbsAngle(DEG2RAD(180-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_GRAB, ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -205,9 +206,9 @@ s_order_com demo_table_arm[] = {
     // load it
 
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
-    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
-    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_UP, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_RELEASE, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN, ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -221,22 +222,22 @@ s_order_com demo_table_arm[] = {
     OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1100, 500+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
-    OrderCom_makeAbsPos(1100, 500+(D+10)-10),
+    OrderCom_makeAbsPos(1100, 500+(D+10)),
 
     // take
 
     OrderCom_makeAbsAngle(DEG2RAD(90-theta_deg)),  // left (back-side)
     OrderCom_makeWaitCQBFinished(),
-    OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_GRAB, ACT_SIDE_RIGHT),
 
     // OrderCom_makeWaitCQESFinished(),
 
     // load it
 
 // todo: optimize angle/pos to move to next
-    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
-    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
-    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_UP, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_RELEASE, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN, ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -249,11 +250,8 @@ s_order_com demo_table_arm[] = {
 
 // todo move in position
 
-    OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
-    OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
-
-    OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
-    OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_FLAP, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER, ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -283,9 +281,9 @@ s_order_com demo_table_arm[] = {
     OrderCom_makeWaitCQBFinished(),
 
     // OrderCom_makeArmGrab(ACT_SIDE_LEFT),
-    OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
-    OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
-    OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_UP, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_RELEASE, ACT_SIDE_RIGHT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN, ACT_SIDE_RIGHT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -296,9 +294,9 @@ s_order_com demo_table_arm[] = {
     OrderCom_makeWaitCQBFinished(),
 
     // OrderCom_makeArmGrab(ACT_SIDE_RIGHT),
-    OrderCom_makeArmMoveUp(ACT_SIDE_LEFT),
-    OrderCom_makeArmRelease(ACT_SIDE_LEFT),
-    OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_UP, ACT_SIDE_LEFT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_RELEASE, ACT_SIDE_LEFT),
+    OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN, ACT_SIDE_LEFT),
 
     OrderCom_makeWaitCQESFinished(),
 
@@ -317,7 +315,7 @@ int demo_load(s_order_com *demo, OrdersFIFO *dest)
 
     while (ptr->type != ORDER_COM_TYPE_NONE)
     {
-        e += dest->push(*ptr);
+        e += dest->append(*ptr);
         ++ptr;
     }
 

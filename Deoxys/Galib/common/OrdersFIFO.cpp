@@ -2,6 +2,9 @@
 #include <cstring>  // memset, memmove
 
 #include "common/Debug.h"
+#ifdef IAM_QENTRESORT
+#include "QEntreQSort/Actuators.h"
+#endif
 #include "config.h"
 
 #include "common/OrdersFIFO.h"
@@ -20,13 +23,15 @@ const char *e2s_order_com_type[ORDER_COM_TYPE_LAST] = {
     "MOV_REL_DIST",
     "MOV_REL_ANGLE",
 
-    "ACT_ORDER_COM_TYPE_ARM_INIT",
-    "ACT_ORDER_COM_TYPE_ARM_GRAB",
-    "ACT_ORDER_COM_TYPE_ARM_MOVE_UP",
-    "ACT_ORDER_COM_TYPE_ARM_RELEASE",
-    "ACT_ORDER_COM_TYPE_ARM_MOVE_DOWN",
-    "ACT_ORDER_COM_TYPE_ACT_FLAP",
-    "ACT_ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER"
+    "ORDER_COM_TYPE_ACTUATOR",
+
+    "ACT_ORDER_COM_TYPE_SEQ_ARM_INIT",
+    "ACT_ORDER_COM_TYPE_SEQ_ARM_GRAB",
+    "ACT_ORDER_COM_TYPE_SEQ_ARM_MOVE_UP",
+    "ACT_ORDER_COM_TYPE_SEQ_ARM_RELEASE",
+    "ACT_ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN",
+    "ACT_ORDER_COM_TYPE_SEQ_FLAP",
+    "ACT_ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER"
 };
 
 
@@ -41,13 +46,7 @@ const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
     "MOV_POS",
     "MOV_ANGLE",
 
-    "ACT_ORDER_EXE_TYPE_ARM_INIT",
-    "ACT_ORDER_EXE_TYPE_ARM_GRAB",
-    "ACT_ORDER_EXE_TYPE_ARM_MOVE_UP",
-    "ACT_ORDER_EXE_TYPE_ARM_RELEASE",
-    "ACT_ORDER_EXE_TYPE_ARM_MOVE_DOWN",
-    "ACT_ORDER_EXE_TYPE_ACT_FLAP",
-    "ACT_ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER"
+    "ORDER_EXE_TYPE_ACTUATOR"
 };
 
 
@@ -84,12 +83,9 @@ void OrdersFIFO::we_are_at(int16_t x, int16_t y, float angle) {
     current_order_.pos.y = y;
     current_order_.angle = angle;
 #endif
-#ifdef IAM_QENTRESORT
-    current_order_.act_param = ACT_SIDE_NONE;
-#endif
 }
 
-int OrdersFIFO::push(s_order_com item) {
+int OrdersFIFO::append(s_order_com item) {
     if (order_count_ == fifo_size_)
         return 1;
 
@@ -123,6 +119,7 @@ int OrdersFIFO::prepend(s_order_com item) {
 
 int OrdersFIFO::next_order_execute(void) {
     int ret = 0;
+    s_order_com next;
 
     // if no other orders in the queue, hold angle and position
     if (order_count_ == 0)
@@ -133,9 +130,10 @@ int OrdersFIFO::next_order_execute(void) {
     // else, consume the next order
     else
     {
-        s_order_com *next = this->front();
+        memcpy(&next, this->front(), sizeof(s_order_com));
+        this->pop();
 
-        switch (next->type)
+        switch (next.type)
         {
             case ORDER_COM_TYPE_NONE:
                 current_order_.type = ORDER_EXE_TYPE_NONE;
@@ -143,7 +141,7 @@ int OrdersFIFO::next_order_execute(void) {
 
             case ORDER_COM_TYPE_DELAY:
                 current_order_.type = ORDER_EXE_TYPE_DELAY;
-                current_order_.delay = next->order_data.delay;
+                current_order_.delay = next.order_data.delay;
                 break;
 
             case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
@@ -157,24 +155,24 @@ int OrdersFIFO::next_order_execute(void) {
 #ifdef IAM_QBOUGE
             case ORDER_COM_TYPE_MOV_ABS_POS:
                 current_order_.type = ORDER_EXE_TYPE_MOV_POS;
-                current_order_.pos.x = next->order_data.abs_pos.x;
-                current_order_.pos.y = next->order_data.abs_pos.y;
+                current_order_.pos.x = next.order_data.abs_pos.x;
+                current_order_.pos.y = next.order_data.abs_pos.y;
                 break;
 
             case ORDER_COM_TYPE_MOV_ABS_ANGLE:
                 current_order_.type = ORDER_EXE_TYPE_MOV_ANGLE;
-                current_order_.angle = next->order_data.abs_angle;
+                current_order_.angle = next.order_data.abs_angle;
                 break;
 
             case ORDER_COM_TYPE_MOV_REL_DIST:
                 current_order_.type = ORDER_EXE_TYPE_MOV_POS;
-                current_order_.pos.x += next->order_data.rel_dist * cos(current_order_.angle);
-                current_order_.pos.y += next->order_data.rel_dist * sin(current_order_.angle);
+                current_order_.pos.x += next.order_data.rel_dist * cos(current_order_.angle);
+                current_order_.pos.y += next.order_data.rel_dist * sin(current_order_.angle);
                 break;
 
             case ORDER_COM_TYPE_MOV_REL_ANGLE:
                 current_order_.type = ORDER_EXE_TYPE_MOV_ANGLE;
-                current_order_.angle += next->order_data.rel_angle;
+                current_order_.angle += next.order_data.rel_angle;
                 break;
 #else
             case ORDER_COM_TYPE_MOV_ABS_POS:
@@ -186,49 +184,30 @@ int OrdersFIFO::next_order_execute(void) {
 #endif
 
 #ifdef IAM_QENTRESORT
-            case ORDER_COM_TYPE_ACT_ARM_INIT:
-                current_order_.type = ORDER_EXE_TYPE_ACT_ARM_INIT;
-                current_order_.act_param = next->order_data.act_param;
+            case ORDER_COM_TYPE_ACTUATOR:
+                current_order_.type = ORDER_EXE_TYPE_ACTUATOR;
+                current_order_.act_param = next.order_data.act_param;
                 break;
 
-            case ORDER_COM_TYPE_ACT_ARM_GRAB:
-                current_order_.type = ORDER_EXE_TYPE_ACT_ARM_GRAB;
-                current_order_.act_param = next->order_data.act_param;
-                break;
-
-            case ORDER_COM_TYPE_ACT_ARM_MOVE_UP:
-                current_order_.type = ORDER_EXE_TYPE_ACT_ARM_MOVE_UP;
-                current_order_.act_param = next->order_data.act_param;
-                break;
-
-            case ORDER_COM_TYPE_ACT_ARM_RELEASE:
-                current_order_.type = ORDER_EXE_TYPE_ACT_ARM_RELEASE;
-                current_order_.act_param = next->order_data.act_param;
-                break;
-
-            case ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN:
-                current_order_.type = ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN;
-                current_order_.act_param = next->order_data.act_param;
-                break;
-
-            case ORDER_COM_TYPE_ACT_FLAP:
-                current_order_.type = ORDER_EXE_TYPE_ACT_FLAP;
-                current_order_.act_param = next->order_data.act_param;
-                break;
-
-            case ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER:
-                current_order_.type = ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER;
-                current_order_.act_param = next->order_data.act_param;
+            case ORDER_COM_TYPE_SEQ_ARM_INIT:
+            case ORDER_COM_TYPE_SEQ_ARM_GRAB:
+            case ORDER_COM_TYPE_SEQ_ARM_MOVE_UP:
+            case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
+            case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
+            case ORDER_COM_TYPE_SEQ_FLAP:
+            case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
+                Actuators::order_decode_sequence(this, (e_order_com_type)next.type, next.order_data.act_param);
                 break;
 
 #else
-            case ORDER_COM_TYPE_ACT_ARM_INIT:
-            case ORDER_COM_TYPE_ACT_ARM_GRAB:
-            case ORDER_COM_TYPE_ACT_ARM_MOVE_UP:
-            case ORDER_COM_TYPE_ACT_ARM_RELEASE:
-            case ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN:
-            case ORDER_COM_TYPE_ACT_FLAP:
-            case ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER:
+            case ORDER_COM_TYPE_ACTUATOR:
+            case ORDER_COM_TYPE_SEQ_ARM_INIT:
+            case ORDER_COM_TYPE_SEQ_ARM_GRAB:
+            case ORDER_COM_TYPE_SEQ_ARM_MOVE_UP:
+            case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
+            case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
+            case ORDER_COM_TYPE_SEQ_FLAP:
+            case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
                 // ignore if not on CQES
                 ret = 1;
                 break;
@@ -239,7 +218,6 @@ int OrdersFIFO::next_order_execute(void) {
                 break;
         }
 
-        this->pop();
         last_order_executed_timestamp_ = timer_.read();
     }
 
@@ -286,20 +264,28 @@ int OrdersFIFO::size(void) {
 void OrdersFIFO::debug(Debug *debug) {
     int i = 0;
 
+    debug->printf("[OrdersFIFO/debug] cur -> %s\n", e2s_order_exe_type[current_order_.type]);
+
     if (this->size() == 0)
-        debug->printf("[MC/orders] empty\n");
+        debug->printf("[OrdersFIFO/debug] empty\n");
     else
     {
         for (i = 0; i < this->size(); ++i)
         {
             s_order_com *cur = &orders_[i];
+            e_order_com_type type = (e_order_com_type)cur->type;
 
-            debug->printf("[MC/orders] %d/%d -> %s ", i, this->size(), e2s_order_com_type[cur->type]);
+            debug->printf("[OrdersFIFO/debug] %d/%d -> %s ", i, this->size(), e2s_order_com_type[type]);
 
-            switch (cur->type)
+            switch (type)
             {
                 case ORDER_COM_TYPE_NONE:
                     // nothing to do
+                    break;
+
+                case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
+                case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
+                    // ignore
                     break;
 
                 case ORDER_COM_TYPE_DELAY:
@@ -322,18 +308,43 @@ void OrdersFIFO::debug(Debug *debug) {
                     debug->printf("%d", (int)RAD2DEG(cur->order_data.rel_angle));
                     break;
 
-                case ORDER_COM_TYPE_ACT_ARM_INIT:
-                case ORDER_COM_TYPE_ACT_ARM_GRAB:
-                case ORDER_COM_TYPE_ACT_ARM_MOVE_UP:
-                case ORDER_COM_TYPE_ACT_ARM_RELEASE:
-                case ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN:
-                case ORDER_COM_TYPE_ACT_FLAP:
-                case ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER:
+                case ORDER_COM_TYPE_ACTUATOR:
+
                     debug->printf(
-                        "%d %d",
-                        cur->order_data.act_param & ACT_SIDE_LEFT,
-                        cur->order_data.act_param & ACT_SIDE_RIGHT
+                        "%d%d%d %d%d%d%d%d%d%d %d%d",
+                        bool(cur->order_data.act_param & ACT_STATE_EXTENDED),
+                        bool(cur->order_data.act_param & ACT_STATE_NEUTRAL),
+                        bool(cur->order_data.act_param & ACT_STATE_RETRACTED),
+
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_HEIGHT),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_VERT),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_HORIZ),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_CLAMP),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_PUMP),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_FLAP),
+                        bool(cur->order_data.act_param & ACT_ACTUATOR_PROG),
+
+                        bool(cur->order_data.act_param & ACT_SIDE_LEFT),
+                        bool(cur->order_data.act_param & ACT_SIDE_RIGHT)
                     );
+                    break;
+
+                case ORDER_COM_TYPE_SEQ_ARM_INIT:
+                case ORDER_COM_TYPE_SEQ_ARM_GRAB:
+                case ORDER_COM_TYPE_SEQ_ARM_MOVE_UP:
+                case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
+                case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
+                case ORDER_COM_TYPE_SEQ_FLAP:
+                case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
+                    debug->printf(
+                        "side l=%d r=%d",
+                        bool(cur->order_data.act_param & ACT_SIDE_LEFT),
+                        bool(cur->order_data.act_param & ACT_SIDE_RIGHT)
+                    );
+                    break;
+
+                case ORDER_COM_TYPE_LAST:
+                    // nothing to do
                     break;
             }
 
@@ -404,51 +415,16 @@ s_order_com OrderCom_makeRelAngle(float angle) {
     return tmp;
 }
 
-s_order_com OrderCom_makeArmInit(t_act act_param) {
+s_order_com OrderCom_makeActuator(t_act act_param) {
     s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_ARM_INIT;
+    tmp.type = ORDER_COM_TYPE_ACTUATOR;
     tmp.order_data.act_param = act_param;
     return tmp;
 }
 
-s_order_com OrderCom_makeArmGrab(t_act act_param) {
+s_order_com OrderCom_makeSequence(e_order_com_type seq, t_act act_param) {
     s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_ARM_GRAB;
-    tmp.order_data.act_param = act_param;
-    return tmp;
-}
-
-s_order_com OrderCom_makeArmMoveUp(t_act act_param) {
-    s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_ARM_MOVE_UP;
-    tmp.order_data.act_param = act_param;
-    return tmp;
-}
-
-s_order_com OrderCom_makeArmRelease(t_act act_param) {
-    s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_ARM_RELEASE;
-    tmp.order_data.act_param = act_param;
-    return tmp;
-}
-
-s_order_com OrderCom_makeArmMoveDown(t_act act_param) {
-    s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN;
-    tmp.order_data.act_param = act_param;
-    return tmp;
-}
-
-s_order_com OrderCom_makeFlap(t_act act_param) {
-    s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_FLAP;
-    tmp.order_data.act_param = act_param;
-    return tmp;
-}
-
-s_order_com OrderCom_makeProgradeDispenser(t_act act_param) {
-    s_order_com tmp;
-    tmp.type = ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER;
+    tmp.type = seq;
     tmp.order_data.act_param = act_param;
     return tmp;
 }

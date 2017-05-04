@@ -35,12 +35,12 @@ void ServoActuator::print(Debug *debug, int depth) {
 }
 
 void ServoActuator::set(t_act act, char *val) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
     {
         extended_ = atof(val);
         this->extend();
     }
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
     {
         retracted_ = atof(val);
         this->retract();
@@ -48,9 +48,9 @@ void ServoActuator::set(t_act act, char *val) {
 }
 
 void ServoActuator::activate(t_act act) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
         this->extend();
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
         this->retract();
 }
 
@@ -89,17 +89,17 @@ void Ax12Actuator::print(Debug *debug, int depth) {
 }
 
 void Ax12Actuator::set(t_act act, char *val) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
     {
         extended_ = atoi(val);
         this->extend();
     }
-    if (act & ACT_CONF_NEUTRAL)
+    if (act & ACT_STATE_NEUTRAL)
     {
         extended_ = atoi(val);
         this->neutral();
     }
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
     {
         retracted_ = atoi(val);
         this->retract();
@@ -107,11 +107,11 @@ void Ax12Actuator::set(t_act act, char *val) {
 }
 
 void Ax12Actuator::activate(t_act act) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
         this->extend();
-    if (act & ACT_CONF_NEUTRAL)
+    if (act & ACT_STATE_NEUTRAL)
         this->neutral();
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
         this->retract();
 }
 
@@ -167,12 +167,12 @@ void BooleanActuator::print(Debug *debug, int depth) {
 }
 
 void BooleanActuator::set(t_act act, char *val) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
     {
         extended_ = bool(atoi(val));
         this->extend();
     }
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
     {
         retracted_ = bool(atoi(val));
         this->extend();
@@ -180,9 +180,9 @@ void BooleanActuator::set(t_act act, char *val) {
 }
 
 void BooleanActuator::activate(t_act act) {
-    if (act & ACT_CONF_EXTENDED)
+    if (act & ACT_STATE_EXTENDED)
         this->extend();
-    if (act & ACT_CONF_RETRACTED)
+    if (act & ACT_STATE_RETRACTED)
         this->extend();
 }
 
@@ -218,7 +218,11 @@ ArmActuator::ArmActuator(
     ServoActuator clamp,
     BooleanActuator pump
 ) : height_(height), vert_(vert), horiz_(horiz), clamp_(clamp), pump_(pump) {
-    this->init();
+    height_.extend();
+    vert_.extend();
+    horiz_.extend();
+    clamp_.open();
+    pump_.off();
 }
 
 void ArmActuator::print(Debug *debug, int depth) {
@@ -296,39 +300,6 @@ void ArmActuator::write_speed_all(uint16_t speed) {
     horiz_.write_speed(speed);
 }
 
-void ArmActuator::init(void) {
-    height_.extend();
-    vert_.extend();
-    horiz_.extend();
-
-    this->release();
-}
-
-void ArmActuator::grab(void) {
-    pump_.on();
-    clamp_.close();
-}
-
-void ArmActuator::move_up(void) {
-    height_.retract();
-    vert_.neutral();
-    horiz_.retract();
-wait_ms(500);  // !!! todo todo todo
-    vert_.retract();
-}
-
-void ArmActuator::release(void) {
-    clamp_.open();
-    pump_.off();
-}
-
-void ArmActuator::move_down(void) {
-    vert_.neutral();
-wait_ms(500);  // !!! todo todo todo
-    height_.extend();
-    vert_.extend();
-    horiz_.extend();
-}
 
 /*
     ## OneSide
@@ -395,6 +366,77 @@ Actuators::Actuators(
 ) : left_(left), right_(right), prograde_dispenser_(prograde_dispenser)
 {
     prograde_dispenser_.close();
+}
+
+/* static */ void Actuators::order_decode_sequence(OrdersFIFO *orders, e_order_com_type type, t_act act_param) {
+    switch (type)
+    {
+        case ORDER_COM_TYPE_NONE:
+        case ORDER_COM_TYPE_DELAY:
+        case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
+        case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
+        case ORDER_COM_TYPE_MOV_ABS_POS:
+        case ORDER_COM_TYPE_MOV_ABS_ANGLE:
+        case ORDER_COM_TYPE_MOV_REL_DIST:
+        case ORDER_COM_TYPE_MOV_REL_ANGLE:
+        case ORDER_COM_TYPE_ACTUATOR:
+        case ORDER_COM_TYPE_LAST:
+            // ignore on CQES
+            break;
+
+        case ORDER_COM_TYPE_SEQ_ARM_INIT:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_INIT));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_ARM_GRAB:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_CLOSED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_ON));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_GRAB));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_ARM_MOVE_UP:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_RETRACTED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_RETRACTED));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_HALF));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_RETRACTED));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_FULL));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_RELEASE));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_HALF));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_FULL));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_FLAP:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_OPEN));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_OPEN));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_CLOSED));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_CLOSE));
+            break;
+
+        case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_OPEN));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_OPEN));
+            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_CLOSED));
+            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_CLOSE));
+            break;
+    }
 }
 
 void Actuators::print(Debug *debug, int depth) {

@@ -17,174 +17,10 @@
 #include "pinout.h"
 
 
-float last_order_executed_timestamp = -1;
-
-
-int split_by_spaces(const char *raw_data, char **dst, int s) {
-    int raw_data_i = 0, dst_i = 0, dst_char_i = 0;
-
-    while (raw_data[raw_data_i] != '\0')
-    {
-        if (dst_i == s)
-            break;
-
-        if (raw_data[raw_data_i] == ' ')
-        {
-            dst[dst_i][dst_char_i] = '\0';
-            dst_i ++;
-            dst_char_i = 0;
-        }
-        else
-        {
-            dst[dst_i][dst_char_i] = raw_data[raw_data_i];
-            dst_char_i ++;
-        }
-
-        raw_data_i ++;
-    }
-
-    return dst_i+1;
-}
-
-
-void main_do_com(Debug *debug, Actuators *actuators)
-{
-    char buffer[BUFFER_SIZE] = "";
-
-    if (debug->get_line(buffer, BUFFER_SIZE) != -1)
-    {
-        /*
-            p: ping
-            ls: left seq
-            rs: right seq
-            aws: a write speed
-            arp: all read pos
-            act: actuator
-        */
-        if (strncmp(buffer, "p", 1) == 0)
-        {
-            actuators->left_.arm_.ping_all();
-            actuators->right_.arm_.ping_all();
-        }
-        else if (strncmp(buffer, "ls", 2) == 0)
-        {
-            actuators->left_.arm_.init();
-            wait(SLEEP_INIT);
-            actuators->left_.arm_.grab();
-            wait(SLEEP_GRAB);
-            actuators->left_.arm_.move_up();
-            wait(SLEEP_MOVE);
-            actuators->left_.arm_.release();
-            wait(SLEEP_RELEASE);
-            actuators->left_.arm_.move_down();
-            wait(SLEEP_MOVE);
-        }
-        else if (strncmp(buffer, "rs", 2) == 0)
-        {
-            actuators->right_.arm_.init();
-            wait(SLEEP_INIT);
-            actuators->right_.arm_.grab();
-            wait(SLEEP_GRAB);
-            actuators->right_.arm_.move_up();
-            wait(SLEEP_MOVE);
-            actuators->right_.arm_.release();
-            wait(SLEEP_RELEASE);
-            actuators->right_.arm_.move_down();
-            wait(SLEEP_MOVE);
-        }
-        else if (strncmp(buffer, "aws", 3) == 0)
-        {
-            char *ptr = buffer+3+1;
-            int a = 0;
-
-            a = atoi(ptr);
-
-            debug->printf("set speed %d\n", a);
-            actuators->left_.arm_.write_speed_all(a);
-            actuators->right_.arm_.write_speed_all(a);
-        }
-        else if (strncmp(buffer, "arp", 3) == 0)
-        {
-            actuators->left_.arm_.read_pos_all(debug);
-            actuators->right_.arm_.read_pos_all(debug);
-        }
-        else if (strncmp(buffer, "act", 3) == 0)
-        {
-            char *ptr = buffer+3+1;
-/*
-    act l flap e 0.10
-    act l flap e
-*/
-
-            char dst_side[20], dst_act[20], dst_conf[20], dst_val[20];
-            char *dst[4] = {dst_side, dst_act, dst_conf, dst_val};
-            int ret = 0;
-
-            ret = split_by_spaces(ptr, dst, 4);
-
-            if ((ret != 3) && (ret != 4))
-            {
-                debug->printf("Error: expected 3 or 4 param (%d)\n", ret);
-                return;
-            }
-
-            // parse
-
-            t_act act = 0;
-
-            if (strncmp(dst_side, "l", 1) == 0)
-                act |= ACT_SIDE_LEFT;
-            else if (strncmp(dst_side, "r", 1) == 0)
-                act |= ACT_SIDE_RIGHT;
-            else
-                debug->printf("Error: unknown side (%s)\n", dst_side);
-
-            if (strncmp(dst_act, "height", 6) == 0)
-                act |= ACT_ACTUATOR_HEIGHT;
-            else if (strncmp(dst_act, "vert", 4) == 0)
-                act |= ACT_ACTUATOR_VERT;
-            else if (strncmp(dst_act, "horiz", 5) == 0)
-                act |= ACT_ACTUATOR_HORIZ;
-            else if (strncmp(dst_act, "clamp", 5) == 0)
-                act |= ACT_ACTUATOR_CLAMP;
-            else if (strncmp(dst_act, "pump", 4) == 0)
-                act |= ACT_ACTUATOR_PUMP;
-            else if (strncmp(dst_act, "flap", 4) == 0)
-                act |= ACT_ACTUATOR_FLAP;
-            else if (strncmp(dst_act, "prog", 4) == 0)
-                act |= ACT_ACTUATOR_PROG;
-            else
-                debug->printf("Error: unknown actuator (%s)\n", dst_act);
-
-            if (strncmp(dst_conf, "e", 1) == 0)
-                act |= ACT_CONF_EXTENDED;
-            else if (strncmp(dst_conf, "n", 1) == 0)
-                act |= ACT_CONF_NEUTRAL;
-            else if (strncmp(dst_conf, "r", 1) == 0)
-                act |= ACT_CONF_RETRACTED;
-            else
-                debug->printf("Error: unknown conf (%s)\n", dst_conf);
-
-            // exe
-
-            if (ret == 3)
-                actuators->activate(act);
-            else if (ret == 4)
-            {
-                actuators->set(act, dst_val);
-                actuators->print(debug, 0);
-            }
-        }
-        else
-            debug->printf("Unknown cmd\n");
-
-    }
-}
-
-bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, Timer *match)
+// move in Actuators ?? or OrdersFIFO ??
+bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, float time_since_last_order_finished)
 {
     bool is_current_order_executed_ = false;
-    int time_since_last_order_finished = match->read() - last_order_executed_timestamp;
 
     switch (orders->current_order_.type)
     {
@@ -199,85 +35,15 @@ bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, Timer *matc
             break;
 
         case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
-        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:  // todo send send_msg_CQES_finished and remove it from main()
+        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:  // todo send send_msg_CQES_finished and remove it from main() ??
         case ORDER_EXE_TYPE_MOV_POS:
         case ORDER_EXE_TYPE_MOV_ANGLE:
             // ignore on CQES
             break;
 
-        case ORDER_EXE_TYPE_ACT_ARM_INIT:
-            actuators->side(orders->current_order_.act_param)->arm_.init();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = SLEEP_INIT;
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-            break;
-
-        case ORDER_EXE_TYPE_ACT_ARM_GRAB:
-            actuators->side(orders->current_order_.act_param)->arm_.grab();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = SLEEP_GRAB;
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-            break;
-
-        case ORDER_EXE_TYPE_ACT_ARM_MOVE_UP:
-            actuators->side(orders->current_order_.act_param)->arm_.move_up();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = SLEEP_MOVE;
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-            break;
-
-        case ORDER_EXE_TYPE_ACT_ARM_RELEASE:
-            actuators->side(orders->current_order_.act_param)->arm_.release();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = SLEEP_RELEASE;
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-            break;
-
-        case ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN:
-            actuators->side(orders->current_order_.act_param)->arm_.move_down();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = SLEEP_MOVE;
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-            break;
-
-        case ORDER_EXE_TYPE_ACT_FLAP:
-            if (orders->current_order_.act_param & ACT_CONF_OPEN)
-            {
-                actuators->side(orders->current_order_.act_param)->flap_.open();
-
-                orders->prepend(OrderCom_makeFlap(
-                    (orders->current_order_.act_param & ACT_SIDE_MASK) | ACT_CONF_CLOSED
-                ));
-            }
-            if (orders->current_order_.act_param & ACT_CONF_CLOSED)
-                actuators->side(orders->current_order_.act_param)->flap_.close();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = 0.500;  // todo define
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-
-            break;
-
-        case ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER:
-            if (orders->current_order_.act_param & ACT_CONF_OPEN)
-            {
-                actuators->prograde_dispenser_.open();
-                orders->prepend(OrderCom_makeProgradeDispenser(
-                    ACT_CONF_CLOSED
-                ));
-            }
-            if (orders->current_order_.act_param & ACT_CONF_CLOSED)
-                actuators->prograde_dispenser_.close();
-            orders->current_order_.type = ORDER_EXE_TYPE_DELAY;
-            orders->current_order_.delay = 1.000;  // todo define
-            last_order_executed_timestamp = match->read();
-            // is_current_order_executed_ = true;
-
+        case ORDER_EXE_TYPE_ACTUATOR:
+            actuators->activate(orders->current_order_.act_param);
+            is_current_order_executed_ = true;
             break;
 
         case ORDER_EXE_TYPE_LAST:
@@ -300,6 +66,7 @@ int main(void)
     Timer *loop = NULL;
 
     Actuators *actuators;
+    float last_order_executed_timestamp = -1;
 
     init_common(
         &main_timer,
@@ -329,14 +96,12 @@ int main(void)
         g_mon->main_loop.start_new();
         loop->reset();
 
-        main_do_com(debug, actuators);
-
         queue->dispatch(0);  // non blocking dispatch
         com_handle_can(debug, messenger, orders, &cqb_finished);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order
-        bool is_current_order_executed_ = main_update_cur_order(actuators, orders, main_timer);
+        bool is_current_order_executed_ = main_update_cur_order(actuators, orders, main_timer->read()-last_order_executed_timestamp);
 
         if (cqb_finished && (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED))
         {

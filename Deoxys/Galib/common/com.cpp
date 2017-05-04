@@ -132,7 +132,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
             case Message::MT_CQR_order:
                 // todo ack if ok, else send error
                 // todo sync with CQES
-                debug->printf("\t-> MT_CQR_order %d\n", orders->push(rec_msg.payload.CQR_order));
+                debug->printf("\t-> MT_CQR_order %d\n", orders->append(rec_msg.payload.CQR_order));
                 break;
 
             case Message::MT_CQES_finished:
@@ -191,7 +191,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
             case Message::MT_CQR_order:
                 debug->printf(
                     "\t-> MT_order (%d) (%s)\n",
-                    orders->push(rec_msg.payload.CQR_order),
+                    orders->append(rec_msg.payload.CQR_order),
                     e2s_order_com_type[rec_msg.payload.CQR_order.type]
                 );
                 // todo sync with CQB

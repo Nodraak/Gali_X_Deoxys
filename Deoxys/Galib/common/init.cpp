@@ -199,39 +199,27 @@ void init_board_CQES(Debug *debug,
         // left
         OneSideCylindersActuators("left",
             ArmActuator(
-                // height
-                Ax12Actuator("height", ax12, 6, 450, 360),
-                // vert
-                Ax12Actuator("vert", ax12, 16, 740, 160),
-                // horiz
-                Ax12Actuator("horiz", ax12, 5, 330, 20),
-                // clamp
-                ServoActuator("clamp", PwmOut(ACT_L_CLAMP), 0.05, 0.12),
-                // pump
-                BooleanActuator("pump", DigitalOut(ACT_L_PUMP), true, false)
+                Ax12Actuator("height", ax12,  6, ACT_L_ARM_HEIGHT_R, ACT_L_ARM_HEIGHT_N, ACT_L_ARM_HEIGHT_E),
+                Ax12Actuator("vert",   ax12, 16, ACT_L_ARM_VERT_R,   ACT_L_ARM_VERT_N,   ACT_L_ARM_VERT_E),
+                Ax12Actuator("horiz",  ax12,  5, ACT_L_ARM_HORIZ_R,  ACT_L_ARM_HORIZ_N,  ACT_L_ARM_HORIZ_E),
+                ServoActuator("clamp",  PwmOut(ACT_L_CLAMP),    ACT_L_ARM_CLAMP_R, ACT_L_ARM_CLAMP_E),
+                BooleanActuator("pump", DigitalOut(ACT_L_PUMP), ACT_L_ARM_PUMP_R,  ACT_L_ARM_PUMP_E)
             ),
-            // flap
-            ServoActuator("flap", PwmOut(ACT_L_FLAP), 0.05, 0.10)
+            ServoActuator("flap", PwmOut(ACT_L_FLAP), ACT_L_FLAP_R, ACT_L_FLAP_E)
         ),
         // right
         OneSideCylindersActuators("right",
             ArmActuator(
-                // height
-                Ax12Actuator("height", ax12, 1, 370, 430),
-                // vert
-                Ax12Actuator("vert", ax12, 8, 750, 160),
-                // horiz
-                Ax12Actuator("horiz", ax12, 9, 640, 950),
-                // clamp
-                ServoActuator("clamp", PwmOut(ACT_R_CLAMP), 0.14, 0.07),
-                // pump
-                BooleanActuator("pump", DigitalOut(ACT_R_PUMP), true, false)
+                Ax12Actuator("height", ax12, 1, ACT_R_ARM_HEIGHT_R, ACT_R_ARM_HEIGHT_N, ACT_R_ARM_HEIGHT_E),
+                Ax12Actuator("vert",   ax12, 8, ACT_R_ARM_VERT_R,   ACT_R_ARM_VERT_N,   ACT_R_ARM_VERT_E),
+                Ax12Actuator("horiz",  ax12, 9, ACT_R_ARM_HORIZ_R,  ACT_R_ARM_HORIZ_N,  ACT_R_ARM_HORIZ_E),
+                ServoActuator("clamp",  PwmOut(ACT_R_CLAMP),    ACT_R_ARM_CLAMP_R, ACT_R_ARM_CLAMP_E),
+                BooleanActuator("pump", DigitalOut(ACT_R_PUMP), ACT_R_ARM_PUMP_R,  ACT_R_ARM_PUMP_E)
             ),
-            // flap
-            ServoActuator("flap", PwmOut(ACT_R_FLAP), 0.10, 0.05)
+            ServoActuator("flap", PwmOut(ACT_R_FLAP), ACT_R_FLAP_R, ACT_R_FLAP_E)
         ),
         // prograde_dispenser
-        ServoActuator("prog_disp", PwmOut(ACT_PROGRADE_DISPENSER), 0.06, 0.10)
+        ServoActuator("prog_disp", PwmOut(ACT_PROGRADE_DISPENSER), ACT_PROG_R, ACT_PROG_E)
     );
 
     debug->printf("\tok.\n");

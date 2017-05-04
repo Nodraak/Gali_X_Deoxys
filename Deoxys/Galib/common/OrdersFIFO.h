@@ -22,43 +22,40 @@
 
 /*
     Actuator parameters
+
+    All these define can be OR'ed to build a complete configuration
+
+    32 bits:
+        state (8 bits): what to do
+        actuator (16 bits): which actuator to move
+        side (8 bits): which side (actuator group) are we talking about
 */
 
-// conf: 8 bits
-#define ACT_CONF_NONE           ((0x1 << 0) << 0)
-#define ACT_CONF_EXTENDED       ((0x1 << 1) << 0)
-#define ACT_CONF_RETRACTED      ((0x1 << 2) << 0)
-#define ACT_CONF_LAST           ((0x1 << 3) << 0)
+// state: 8 bits
+#define ACT_STATE_EXTENDED       (0x1 << 0)
+#define ACT_STATE_NEUTRAL        (0x1 << 1)
+#define ACT_STATE_RETRACTED      (0x1 << 2)
 
 // alternate API
-#define ACT_CONF_OPEN           ACT_CONF_EXTENDED
-#define ACT_CONF_CLOSED         ACT_CONF_RETRACTED
-#define ACT_CONF_ON             ACT_CONF_EXTENDED
-#define ACT_CONF_OFF            ACT_CONF_RETRACTED
+#define ACT_STATE_OPEN           ACT_STATE_EXTENDED
+#define ACT_STATE_CLOSED         ACT_STATE_RETRACTED
+#define ACT_STATE_ON             ACT_STATE_EXTENDED
+#define ACT_STATE_OFF            ACT_STATE_RETRACTED
 
 // actuator: 16 bits
-#define ACT_ACTUATOR_NONE       ((0x1 << 0) << 8)
-#define ACT_ACTUATOR_HEIGHT     ((0x1 << 1) << 8)
-#define ACT_ACTUATOR_VERT       ((0x1 << 2) << 8)
-#define ACT_ACTUATOR_HORIZ      ((0x1 << 3) << 8)
-#define ACT_ACTUATOR_CLAMP      ((0x1 << 4) << 8)
-#define ACT_ACTUATOR_PUMP       ((0x1 << 5) << 8)
-#define ACT_ACTUATOR_FLAP       ((0x1 << 6) << 8)
-#define ACT_ACTUATOR_PROG       ((0x1 << 7) << 8)
-#define ACT_ACTUATOR_LAST       ((0x1 << 8) << 8)
+#define ACT_ACTUATOR_HEIGHT     (0x1 << 8)
+#define ACT_ACTUATOR_VERT       (0x1 << 9)
+#define ACT_ACTUATOR_HORIZ      (0x1 << 10)
+#define ACT_ACTUATOR_CLAMP      (0x1 << 11)
+#define ACT_ACTUATOR_PUMP       (0x1 << 12)
+#define ACT_ACTUATOR_FLAP       (0x1 << 13)
+#define ACT_ACTUATOR_PROG       (0x1 << 14)
 
 // side: 8 bits
-#define ACT_SIDE_NONE           ((0x1 << 0) << 16)
-#define ACT_SIDE_LEFT           ((0x1 << 1) << 16)
-#define ACT_SIDE_RIGHT          ((0x1 << 2) << 16)
-#define ACT_SIDE_LAST           ((0x1 << 3) << 16)
+#define ACT_SIDE_LEFT           (0x1 << 24)
+#define ACT_SIDE_RIGHT          (0x1 << 25)
 
-// Mask
-#define ACT_CONF_MASK           0x000F
-#define ACT_ACTUATOR_MASK       0x0FF0
-#define ACT_SIDE_MASK           0xF000
-
-typedef uint32_t t_act;  // Warning: 64 bits max, this is transmitted as a CAN payload
+typedef uint32_t t_act;  // Warning: 32 bits max, this is transmitted as a CAN payload with other things
 
 
 /*
@@ -84,6 +81,8 @@ typedef enum    _e_order_com_type {
 // Synchronization orders
     ORDER_COM_TYPE_WAIT_CQB_FINISHED,
     ORDER_COM_TYPE_WAIT_CQES_FINISHED,
+// wait_CQB_im_finished (what: move order, reach spec pos, ... ?)
+// wait_CQES_im_finished (idem) (what: taking cylinder, loading cylinder, ..., valve, ... ?)
 
 // Movement orders (CQB)
     ORDER_COM_TYPE_MOV_ABS_POS,             // param: x, y
@@ -93,13 +92,16 @@ typedef enum    _e_order_com_type {
     // todo rel pos ?
 
 // Actuators orders (CQES)
-    ORDER_COM_TYPE_ACT_ARM_INIT,            // param: side
-    ORDER_COM_TYPE_ACT_ARM_GRAB,            // param: side
-    ORDER_COM_TYPE_ACT_ARM_MOVE_UP,         // param: side
-    ORDER_COM_TYPE_ACT_ARM_RELEASE,         // param: side
-    ORDER_COM_TYPE_ACT_ARM_MOVE_DOWN,       // param: side
-    ORDER_COM_TYPE_ACT_FLAP,                // param: side
-    ORDER_COM_TYPE_ACT_PROGRADE_DISPENSER,  // param: side
+    ORDER_COM_TYPE_ACTUATOR,                // param: full t_act configuration
+
+    ORDER_COM_TYPE_SEQ_ARM_INIT,            // param: side
+    ORDER_COM_TYPE_SEQ_ARM_GRAB,            // param: side
+    ORDER_COM_TYPE_SEQ_ARM_MOVE_UP,         // param: side
+    ORDER_COM_TYPE_SEQ_ARM_RELEASE,         // param: side
+    ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN,       // param: side
+    ORDER_COM_TYPE_SEQ_FLAP,                // param: side
+    ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER,  // param: side
+// todo order radial_dispenser
 
     ORDER_COM_TYPE_LAST
 }               e_order_com_type;
@@ -107,8 +109,8 @@ typedef enum    _e_order_com_type {
 extern const char *e2s_order_com_type[ORDER_COM_TYPE_LAST];
 
 typedef struct  _s_order_com {
-    uint8_t type;
-    char padding[3];
+    uint8_t type;                   // type is e_order_com_type but we force it to 8 bits
+    char padding[3];  // todo uint16_t order_id (auto increment)
     union {
         char            raw[4];
 
@@ -120,7 +122,7 @@ typedef struct  _s_order_com {
         float           rel_angle;  // rad
 
         t_act           act_param;
-    } order_data;
+    } order_data;  // Warning: 32 bits max
 }               s_order_com;
 
 /*
@@ -146,13 +148,7 @@ typedef enum    _e_order_exe_type {
     ORDER_EXE_TYPE_MOV_ANGLE,               // param: angle
 
 // Actuators orders (CQES)
-    ORDER_EXE_TYPE_ACT_ARM_INIT,            // param: side
-    ORDER_EXE_TYPE_ACT_ARM_GRAB,            // param: side
-    ORDER_EXE_TYPE_ACT_ARM_MOVE_UP,         // param: side
-    ORDER_EXE_TYPE_ACT_ARM_RELEASE,         // param: side
-    ORDER_EXE_TYPE_ACT_ARM_MOVE_DOWN,       // param: side
-    ORDER_EXE_TYPE_ACT_FLAP,                // param: side
-    ORDER_EXE_TYPE_ACT_PROGRADE_DISPENSER,  // param: side
+    ORDER_EXE_TYPE_ACTUATOR,
 
     ORDER_EXE_TYPE_LAST
 }               e_order_exe_type;
@@ -198,7 +194,7 @@ public:
             0 if success
             1 if error (most probably the list is full)
     */
-    int push(s_order_com item);     // todo rename append
+    int append(s_order_com item);
     int prepend(s_order_com item);
 
     /*
@@ -266,15 +262,11 @@ s_order_com OrderCom_makeWaitCQESFinished(void);
 s_order_com OrderCom_makeAbsPos(s_vector_int16 pos);
 s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y);
 s_order_com OrderCom_makeAbsAngle(float angle);
+// todo s_order_com OrderCom_makeAngleToPos(s_vector_int16 pos);
 s_order_com OrderCom_makeRelDist(int32_t dist);
 s_order_com OrderCom_makeRelAngle(float angle);
 
-s_order_com OrderCom_makeArmInit(t_act act_param);
-s_order_com OrderCom_makeArmGrab(t_act act_param);
-s_order_com OrderCom_makeArmMoveUp(t_act act_param);
-s_order_com OrderCom_makeArmRelease(t_act act_param);
-s_order_com OrderCom_makeArmMoveDown(t_act act_param);
-s_order_com OrderCom_makeFlap(t_act act_param);
-s_order_com OrderCom_makeProgradeDispenser(t_act act_param);
+s_order_com OrderCom_makeActuator(t_act act_param);
+s_order_com OrderCom_makeSequence(e_order_com_type seq, t_act act_param);
 
 #endif // #ifndef ORDER_H_INCLUDED

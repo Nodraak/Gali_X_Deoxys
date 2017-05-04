@@ -23,5 +23,5 @@ void main_sleep(Debug *debug, Timer *loop)
     if (to_sleep > 0)
         Thread::wait(to_sleep);  // ms
     else
-        debug->printf("Warn: main_sleep() %d > %d\n", loop->read_ms(), (int)1000*MAIN_LOOP_DELAY);
+        debug->printf("Warn: main_sleep() %d > %d\n", loop->read_ms(), (int)(1000*MAIN_LOOP_DELAY));
 }

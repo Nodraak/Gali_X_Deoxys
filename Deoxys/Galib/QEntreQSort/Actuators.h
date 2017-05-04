@@ -3,11 +3,6 @@
 #ifndef ACTUATORS_H_INCLUDED
 #define ACTUATORS_H_INCLUDED
 
-#include "mbed.h"
-#include "common/Debug.h"
-#include "common/OrdersFIFO.h"
-#include "QEntreQSort/Ax12Driver.h"
-
 /*
     What:
         Actuators wraps all the low level actuators drivers with settings such
@@ -20,6 +15,30 @@
         a->left.flap_.set_extended(xx)
         //a->dist_pid.set_kp(xx)
 */
+
+
+#include "mbed.h"
+#include "common/Debug.h"
+#include "common/OrdersFIFO.h"
+#include "QEntreQSort/Ax12Driver.h"
+
+
+/*
+    Actions sleeps
+*/
+
+#define ACT_DELAY_SEQ_INIT                  0.500
+#define ACT_DELAY_SEQ_GRAB                  1.250
+#define ACT_DELAY_SEQ_MOVE_UP_HALF          0.500
+#define ACT_DELAY_SEQ_MOVE_UP_FULL          0.500
+#define ACT_DELAY_SEQ_RELEASE               0.250
+#define ACT_DELAY_SEQ_MOVE_DOWN_HALF        0.500
+#define ACT_DELAY_SEQ_MOVE_DOWN_FULL        0.500
+#define ACT_DELAY_SEQ_FLAP_OPEN             0.500
+#define ACT_DELAY_SEQ_FLAP_CLOSE            0.500
+#define ACT_DELAY_SEQ_PROG_OPEN             1.000
+#define ACT_DELAY_SEQ_PROG_CLOSE            1.000
+
 
 /*
     # Low level drivers
@@ -146,12 +165,6 @@ public:
     void read_speed_all(Debug *debug);
     void write_speed_all(uint16_t speed);
 
-    void init(void);
-    void grab(void);
-    void move_up(void);
-    void release(void);
-    void move_down(void);
-
 public:
     Ax12Actuator height_;
     Ax12Actuator vert_;
@@ -194,6 +207,8 @@ public:
 class Actuators {
 public:
     Actuators(OneSideCylindersActuators left, OneSideCylindersActuators right, ServoActuator prograde_dispenser);
+
+    static void order_decode_sequence(OrdersFIFO *orders, e_order_com_type type, t_act act_param);
 
     void print(Debug *debug, int depth);
     void set(t_act act, char *val);

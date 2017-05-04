@@ -12,11 +12,6 @@
 #define AX12_MAX_RETRIES                3
 #define AX12_SLEEP_TIME_BETWEEN_RETRIES 5  // ms
 
-#define SLEEP_INIT                      0.500  // time for the arm to move in ready pos (should already be ready)
-#define SLEEP_GRAB                      1.250  // time for the servo to move (to catch the cylinder)
-#define SLEEP_MOVE                      1.000  // time for the arm to move
-#define SLEEP_RELEASE                   0.250  // time for the arm to release the cylinder
-
 #define AX12_MOVING_SPEED               500
 
 

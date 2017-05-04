@@ -9,6 +9,7 @@
 #include "common/com.h"
 #include "common/init.h"
 #include "common/main_sleep.h"
+#include "common/parse_cmd.h"
 #include "common/sys.h"
 #include "common/utils.h"
 
@@ -54,6 +55,8 @@ int main(void)
         g_mon->main_loop.start_new();
         loop->reset();
 
+        parse_cmd(debug, messenger, queue);
+
         queue->dispatch(0);  // non blocking dispatch
 
         while (messenger->read_msg(&rec_msg))
@@ -95,13 +98,14 @@ int main(void)
         main_sleep(debug, loop);
     }
 
-    debug->printf("[CAN] sending reset + we_are_at\n");
-    messenger->send_msg_CQR_reset();
+    debug->printf("[CAN] sending we_are_at\n");
     messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     /*
         Ready, wait for tirette
     */
+
+    wait_ms(100);
 
     // todo wait for tirette
 
@@ -118,6 +122,8 @@ int main(void)
     {
         g_mon->main_loop.start_new();
         loop->reset();
+
+        parse_cmd(debug, messenger, queue);
 
         queue->dispatch(0);  // non blocking dispatch
         com_handle_serial(debug, messenger);
