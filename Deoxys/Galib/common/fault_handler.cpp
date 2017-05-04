@@ -104,6 +104,7 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
         forced_hard_fault
     );
 
+    printf(buf);
     error(buf);
 
     while (1)

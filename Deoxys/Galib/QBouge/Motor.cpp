@@ -12,7 +12,7 @@ Motor::Motor(PinName pwm_pin, PinName dir_pin, bool forward_dir) : pwm_(pwm_pin)
     forward_dir_ = forward_dir;
     last_sPwm_ = 0;
 
-    pwm_.period(0.001 * 0.05);      // 0.00005 == 20K Hz (value from Gali IX)
+    pwm_.period(0.001 * 0.1);      // 0.0001 == 10K Hz (Gali IX : 20KHz) todo define
 
     this->setSPwm(0);
 }

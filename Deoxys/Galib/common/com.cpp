@@ -197,6 +197,10 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                 // todo sync with CQB
                 break;
 
+            case Message::MT_CQB_next_order_request:
+                // ignore on CQES
+                break;
+
             case Message::MT_CQB_finished:
                 debug->printf("\t-> MT_CQB_finished\n");
                 *cqb_finished = true;

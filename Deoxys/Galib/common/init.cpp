@@ -63,7 +63,7 @@ void init_common(
     sl = new StatusLeds(A5, A4, NC, A3, A6);
 #endif
 #ifdef IAM_QENTRESORT
-    sl = new StatusLeds(A5, NC, A4, NC, A6);
+    sl = new StatusLeds(A3, NC, A4, NC, A6);
 #endif
 
     debug = new Debug;

@@ -133,7 +133,7 @@ s_order_com demo_test_enc_turn[] = {
 
 
 #define Rc          32          // cylinder radius
-#define Lra         120         // robotic arm length
+#define Lra         100         // robotic arm length
 #define Hr2         (260/2)     // half robot height
 #define Pra         (150-40)    // pos from center to robotic arm
 
@@ -161,6 +161,7 @@ s_order_com demo_table_arm[] = {
     OrderCom_makeArmInit(ACT_SIDE_LEFT),
     OrderCom_makeArmInit(ACT_SIDE_RIGHT),
 
+/*
     OrderCom_makeArmMoveDown(ACT_SIDE_LEFT),
     OrderCom_makeArmGrab(ACT_SIDE_LEFT),
     OrderCom_makeArmMoveUp(ACT_SIDE_LEFT),
@@ -180,13 +181,12 @@ s_order_com demo_table_arm[] = {
     OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
 
     OrderCom_makeWaitCQESFinished(),
+*/
 
 /*
     1) Cylinder starting zone
 */
     // go in pos
-
-OrderCom_makeAbsPos((s_vector_int16){.x=(int16_t)600-((int16_t)D+(int16_t)50), .y=1000}),
 
     OrderCom_makeAbsPos(600-(D+50), 1000),
     OrderCom_makeAbsAngle(DEG2RAD(180)),
@@ -237,6 +237,23 @@ OrderCom_makeAbsPos((s_vector_int16){.x=(int16_t)600-((int16_t)D+(int16_t)50), .
     OrderCom_makeArmMoveUp(ACT_SIDE_RIGHT),
     OrderCom_makeArmRelease(ACT_SIDE_RIGHT),
     OrderCom_makeArmMoveDown(ACT_SIDE_RIGHT),
+
+    OrderCom_makeWaitCQESFinished(),
+
+/*
+    Unload the two cylinders
+*/
+
+    OrderCom_makeRelAngle(DEG2RAD(180)),
+    OrderCom_makeWaitCQBFinished(),
+
+// todo move in position
+
+    OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+    OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+
+    OrderCom_makeFlap(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
+    OrderCom_makeProgradeDispenser(ACT_SIDE_RIGHT | ACT_CONF_OPEN),
 
     OrderCom_makeWaitCQESFinished(),
 

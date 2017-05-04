@@ -1,6 +1,7 @@
 
 #include "mbed.h"
 #include "common/Debug.h"
+#include "config.h"
 #include "common/Monitoring.h"
 
 

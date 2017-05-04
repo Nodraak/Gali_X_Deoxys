@@ -11,38 +11,39 @@
 #include "common/Messenger.h"
 
 
+typedef struct _t_e2s_message_type {
+    Message::e_message_type msg;
+    const char *str;
+} t_e2s_message_type;
+
+t_e2s_message_type _e2s_message_type[] = {
+    {Message::MT_CQR_ping, "MT_CQR_ping"},
+    {Message::MT_CQB_pong, "MT_CQB_pong"},
+    {Message::MT_CQR_pong, "MT_CQR_pong"},
+    {Message::MT_CQES_pong, "MT_CQES_pong"},
+    {Message::MT_CQR_match_start, "MT_CQR_match_start"},
+    {Message::MT_CQR_match_stop, "MT_CQR_match_stop"},
+    {Message::MT_CQR_reset, "MT_CQR_reset"},
+    {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
+    {Message::MT_CQR_order, "MT_CQR_order"},
+    {Message::MT_CQB_finished, "MT_CQB_finished"},
+    {Message::MT_CQES_finished, "MT_CQES_finished"},
+    {Message::MT_CQB_next_order_request, "MT_CQB_next_order_request"},
+    {Message::MT_CQES_next_order_request, "MT_CQES_next_order_request"},
+    {Message::MT_CQB_I_am_doing, "MT_CQB_I_am_doing"},
+    {Message::MT_CQES_I_am_doing, "MT_CQES_I_am_doing"},
+    {Message::MT_CQB_MC_pos_angle, "MT_CQB_MC_pos_angle"},
+    {Message::MT_CQB_MC_speeds, "MT_CQB_MC_speeds"},
+    {Message::MT_CQB_MC_pids, "MT_CQB_MC_pids"},
+    {Message::MT_CQB_MC_motors, "MT_CQB_MC_motors"},
+    {Message::MT_CQB_MC_encs, "MT_CQB_MC_encs"},
+    {Message::MT_empty, "MT_empty"},
+    {Message::MT_last, "MT_last"}
+};
+
+
 const char *e2s_message_type(Message::e_message_type msg)
 {
-    typedef struct _t_e2s_message_type {
-        Message::e_message_type msg;
-        const char *str;
-    } t_e2s_message_type;
-
-    t_e2s_message_type _e2s_message_type[] = {
-        {Message::MT_CQR_ping, "MT_CQR_ping"},
-        {Message::MT_CQB_pong, "MT_CQB_pong"},
-        {Message::MT_CQR_pong, "MT_CQR_pong"},
-        {Message::MT_CQES_pong, "MT_CQES_pong"},
-        {Message::MT_CQR_match_start, "MT_CQR_match_start"},
-        {Message::MT_CQR_match_stop, "MT_CQR_match_stop"},
-        {Message::MT_CQR_reset, "MT_CQR_reset"},
-        {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
-        {Message::MT_CQR_order, "MT_CQR_order"},
-        {Message::MT_CQB_finished, "MT_CQB_finished"},
-        {Message::MT_CQES_finished, "MT_CQES_finished"},
-        {Message::MT_CQB_next_order_request, "MT_CQB_next_order_request"},
-        {Message::MT_CQES_next_order_request, "MT_CQES_next_order_request"},
-        {Message::MT_CQB_I_am_doing, "MT_CQB_I_am_doing"},
-        {Message::MT_CQES_I_am_doing, "MT_CQES_I_am_doing"},
-        {Message::MT_CQB_MC_pos_angle, "MT_CQB_MC_pos_angle"},
-        {Message::MT_CQB_MC_speeds, "MT_CQB_MC_speeds"},
-        {Message::MT_CQB_MC_pids, "MT_CQB_MC_pids"},
-        {Message::MT_CQB_MC_motors, "MT_CQB_MC_motors"},
-        {Message::MT_CQB_MC_encs, "MT_CQB_MC_encs"},
-        {Message::MT_empty, "MT_empty"},
-        {Message::MT_last, "MT_last"}
-    };
-
     int i = 0;
 
     while (1)
@@ -85,6 +86,49 @@ CanMessenger::CanMessenger(void) : can_(CAN_RX, CAN_TX) {
 }
 
 int CanMessenger::send_msg(Message msg) {
+    switch (msg.id)
+    {
+        case Message::MT_CQR_ping:
+        case Message::MT_CQR_pong:
+        case Message::MT_CQR_match_start:
+        case Message::MT_CQR_match_stop:
+        case Message::MT_CQR_reset:
+        case Message::MT_CQR_we_are_at:
+        case Message::MT_CQR_order:
+#ifndef IAM_QREFLECHI
+            g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
+#endif
+            break;
+
+        case Message::MT_CQB_pong:
+        case Message::MT_CQB_finished:
+        case Message::MT_CQB_next_order_request:
+        case Message::MT_CQB_I_am_doing:
+        case Message::MT_CQB_MC_pos_angle:
+        case Message::MT_CQB_MC_speeds:
+        case Message::MT_CQB_MC_pids:
+        case Message::MT_CQB_MC_motors:
+        case Message::MT_CQB_MC_encs:
+#ifndef IAM_QBOUGE
+            g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
+#endif
+            break;
+
+        case Message::MT_CQES_pong:
+        case Message::MT_CQES_finished:
+        case Message::MT_CQES_next_order_request:
+        case Message::MT_CQES_I_am_doing:
+#ifndef IAM_QENTRESORT
+            g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
+#endif
+            break;
+
+        case Message::MT_empty:
+        case Message::MT_last:
+            g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
+            break;
+    }
+
     // Can::write               returns 1 if success 0 if error.
     // CanMessenger.send_msg    returns 0 if success, 1 if error.
     int ret = !can_.write(

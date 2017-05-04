@@ -9,6 +9,7 @@
 #include "common/com.h"
 #include "common/init.h"
 #include "common/main_sleep.h"
+#include "common/sys.h"
 #include "common/utils.h"
 
 #include "config.h"
@@ -46,6 +47,8 @@ int main(void)
     Message rec_msg;
 
     main_timer->reset();
+    Timer print_timer;
+    print_timer.start();
     while (true)
     {
         g_mon->main_loop.start_new();
@@ -55,14 +58,15 @@ int main(void)
 
         while (messenger->read_msg(&rec_msg))
         {
-            debug->printf("[CAN/rec] id=%d\n", rec_msg.id);
-
+#ifdef PRINT_COM_CAN_REC
+        debug->printf("[CAN/rec] %d %s\n", rec_msg.id, e2s_message_type(rec_msg.id));
+#endif
             if (rec_msg.id == Message::MT_CQB_pong)
             {
                 last_ping_CQB = main_timer->read();
                 debug->printf("pong cqb\n");
             }
-            if (rec_msg.id == Message::MT_CQES_pong)
+            else if (rec_msg.id == Message::MT_CQES_pong)
             {
                 last_ping_CQES = main_timer->read();
                 debug->printf("pong cqb\n");
@@ -72,7 +76,7 @@ int main(void)
         bool ping_CQB = (main_timer->read()-last_ping_CQB) < 1.000;
         bool ping_CQES = (main_timer->read()-last_ping_CQES) < 1.000;
 
-        if (main_timer->read() > 0.500)
+        if (print_timer.read() > 0.500)
         {
             if (ping_CQB && ping_CQES)
             {
@@ -84,7 +88,7 @@ int main(void)
                 debug->printf("[CAN] alive status : CQB=%d CQES=%d\n", ping_CQB, ping_CQES);
             }
 
-            main_timer->reset();
+            print_timer.reset();
         }
 
         g_mon->main_loop.stop_and_save();
@@ -105,7 +109,7 @@ int main(void)
         Go!
     */
 
-    debug->printf("\nGo!\n");
+    debug->printf("\n\n\n==================== Go! ====================\n\n\n");
 
     messenger->send_msg_CQR_match_start();
 
