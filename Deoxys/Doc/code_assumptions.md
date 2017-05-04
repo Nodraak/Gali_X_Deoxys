@@ -30,14 +30,38 @@ Second, set default priority for all interrupts. That can't hurt.
 ---
 
 int     freq            period          duration
-exti    max 66k (16k)   15 us (62 us)   3.5 us
-asserv  200-500         2-5 ms          ??
+exti    max 66k (16k)   15 us (62)      4 us
 pwmout  50k ?           20 us           very short ? 1-10 us ?
+asserv  max 500 (200)   2000 us (5000)  600-1000 us
 can     ?               ?               ?               per frame ?
-uart    ?               ?               ?               per char ?
+uart    ?               50 ?            ?               per char ?
+mainloo 100             10k us          200-4000 us
 
-=> The duration of an interrupt must not be longuer that the period of a lower priority interrupt
+=> ** The duration of an interrupt must not be longuer that the period of a lower priority interrupt **
 
+cqr
+    main loop on cqr = 40 to 3500 us - avg 300 us - sum 25k us
+    can usage on cqr = 22 avg - max 80
+cqes
+    main loop on cqr = 50 to 6000 us - avg 350 us - sum 20k us
+cqb
+    qei avg 4, sum 40k, count 10k
+    asserv avg 600, max 1k, sum 100k,
+    main loop max 4k, avg 200, sum 10k
+
+---
+
+main loop    10 ms   (50 * 0.2)
+sleep       990 ms
+
+asserv      100 ms  (200 * 0.5)
+qei          40 ms  (10k * 4*10-3)
+
+---
+
+qei max 200 ms
+asserv 100-250 ms (200-500 Hz)
+ml 50 ms (250 Hz)
 
 ## CAN Bus Usage
 
