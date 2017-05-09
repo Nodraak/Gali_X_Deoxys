@@ -9,6 +9,9 @@
 #include "QBouge/MotionController.h"
 #endif
 
+#ifdef IAM_QENTRESORT
+#include "QEntreQSort/Actuators.h"
+#endif
 
 #ifdef IAM_QREFLECHI
 
@@ -87,7 +90,7 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 #ifdef IAM_QENTRESORT
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished)
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished, Actuators *actuators)
 #endif
 {
     Message rec_msg;
@@ -137,6 +140,12 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
             case Message::MT_CQES_finished:
                 *cqes_finished = true;
+                break;
+
+            case Message::MT_CQR_settings_CQB:
+                mc->print(debug);
+                mc->set(rec_msg.payload.CQR_settings_CQB.what, rec_msg.payload.CQR_settings_CQB.val);
+                mc->print(debug);
                 break;
 
             case Message::MT_CQES_I_am_doing:
@@ -199,6 +208,14 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
             case Message::MT_CQB_next_order_request:
                 // ignore on CQES
+                break;
+
+            case Message::MT_CQR_settings_CQB:
+                // ignore on CQES
+                break;
+
+            case Message::MT_CQR_settings_CQES:
+                actuators->set(rec_msg.payload.CQR_settings_CQES.act, rec_msg.payload.CQR_settings_CQES.val);
                 break;
 
             case Message::MT_CQB_finished:

@@ -37,7 +37,7 @@ int main(void)
         &loop
     );
     init_board_CQR(debug, orders);
-    init_finalize(debug, main_timer);
+    init_finalize(debug, main_timer, queue, messenger);
 
     // wait for other boards to be alive
     debug->printf("Waiting for other boards...\n");

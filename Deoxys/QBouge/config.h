@@ -1,8 +1,11 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
+#define PRINT_TIME
 #define PRINT_COM_CAN_REC
+// #define PRINT_COM_CAN_SEND
 #define PRINT_MONITORING_RESET
+#define PRINT_SYS_CAN_STATS
 
 
 #define MAIN_LOOP_FPS       50

@@ -25,6 +25,7 @@
 #define INIT_DELAY_MONITORING_RESET     1000        // ms
 #define INIT_DELAY_DEBUG_MC_SERIAL      1000        // ms
 #define INIT_DELAY_DEBUG_MC_CAN         1000        // ms
+#define INIT_DELAY_DEBUG_SYS_CAN        500         // ms
 
 #define INIT_FINALIZE_WAIT_UNTIL        1.500       // sec
 
@@ -57,6 +58,10 @@ void init_board_CQES(Debug *debug,
 );
 #endif
 
-void init_finalize(Debug *debug, Timer *main_timer);
+#ifdef IAM_QREFLECHI
+void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue, CanMessenger *messenger);
+#else
+void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue);
+#endif
 
 #endif // #ifndef INIT_H_INCLUDED

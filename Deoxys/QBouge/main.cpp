@@ -41,7 +41,7 @@ int main(void)
         messenger,
         &mc
     );
-    init_finalize(debug, main_timer);
+    init_finalize(debug, main_timer, queue);
 
     bool cqes_finished = false;
 

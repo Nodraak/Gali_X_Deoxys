@@ -416,6 +416,52 @@ void MotionController::debug_can(CanMessenger *cm) {
     // cm->send_msg_CQB_MC_motors(motor_l_.getSPwm(), motor_r_.getSPwm());
 }
 
+void MotionController::print(Debug *debug) {
+    debug->printf("MotionController:\n");
+    debug->printf("\tdist\n");
+    debug->printf("\t\tp %.3f\n", pid_dist_.getPParam());
+    debug->printf("\t\ti %.3f\n", pid_dist_.getIParam());
+    debug->printf("\t\td %.3f\n", pid_dist_.getDParam());
+    debug->printf("\tangle\n");
+    debug->printf("\t\tp %.3f\n", pid_angle_.getPParam());
+    debug->printf("\t\ti %.3f\n", pid_angle_.getIParam());
+    debug->printf("\t\td %.3f\n", pid_angle_.getDParam());
+}
+
+void MotionController::set(e_cqb_setting cqb_setting, float val) {
+    switch (cqb_setting) {
+        case CQB_SETTING_PID_DIST_P:
+            pid_dist_.setTunings(val, pid_dist_.getIParam(), pid_dist_.getDParam());
+            pid_dist_.reset();
+            break;
+
+        case CQB_SETTING_PID_DIST_I:
+            pid_dist_.setTunings(pid_dist_.getPParam(), val, pid_dist_.getDParam());
+            pid_dist_.reset();
+            break;
+
+        case CQB_SETTING_PID_DIST_D:
+            pid_dist_.setTunings(pid_dist_.getPParam(), pid_dist_.getIParam(), val);
+            pid_dist_.reset();
+            break;
+
+        case CQB_SETTING_PID_ANGLE_P:
+            pid_angle_.setTunings(val, pid_angle_.getIParam(), pid_angle_.getDParam());
+            pid_angle_.reset();
+            break;
+
+        case CQB_SETTING_PID_ANGLE_I:
+            pid_angle_.setTunings(pid_angle_.getPParam(), val, pid_angle_.getDParam());
+            pid_angle_.reset();
+            break;
+
+        case CQB_SETTING_PID_ANGLE_D:
+            pid_angle_.setTunings(pid_angle_.getPParam(), pid_angle_.getIParam(), val);
+            pid_angle_.reset();
+            break;
+    }
+}
+
 void MotionController::pidDistSetGoal(float goal) {
     pid_dist_goal_ = goal;
 }

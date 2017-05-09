@@ -109,13 +109,15 @@ void init_common(
 
     debug->printf("EventQueue...\n");
     queue = new EventQueue;
-    queue->call_every(INIT_DELAY_PRINT_TIME, callback(main_print_time), debug, main_timer);
     queue->call_every(INIT_DELAY_LED_RUNNING, callback(sl, &StatusLeds::running));
     queue->call_every(INIT_DELAY_LED_UPDATE_BO, callback(sl, &StatusLeds::updateBO));
-#ifdef IAM_QREFLECHI
-    queue->call_every(INIT_DELAY_CQR_PING, callback(messenger, &CanMessenger::send_msg_CQR_ping));
-#endif
     queue->call_every(INIT_DELAY_LEAVE_THE_BUS, callback(messenger, &CanMessenger::leave_the_bus_for_a_moment));
+#ifdef PRINT_TIME
+    queue->call_every(INIT_DELAY_PRINT_TIME, callback(main_print_time), debug, main_timer);
+#endif
+#ifdef PRINT_SYS_CAN_STATS
+    queue->call_every(INIT_DELAY_DEBUG_SYS_CAN, sys_debug_can);
+#endif
     debug->printf("\tok.\n");
 
     debug->printf("Timer loop...\n");
@@ -228,7 +230,11 @@ void init_board_CQES(Debug *debug,
 }
 #endif
 
-void init_finalize(Debug *debug, Timer *main_timer)
+#ifdef IAM_QREFLECHI
+void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue, CanMessenger *messenger)
+#else
+void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue)
+#endif
 {
     debug->printf("Board-specific subsystems initialized successfully.\n");
     debug->printf("t4=%.3f\n", main_timer->read());
@@ -240,9 +246,16 @@ void init_finalize(Debug *debug, Timer *main_timer)
 
     debug->printf("Waiting until %.3f sec...\n", INIT_FINALIZE_WAIT_UNTIL);
     while (main_timer->read() < INIT_FINALIZE_WAIT_UNTIL)
+    {
+        queue->dispatch(0);
         wait_ms(1);
+    }
     debug->printf("\tok.\n");
     debug->printf("t6=%.3f\n", main_timer->read());
+
+#ifdef IAM_QREFLECHI
+    queue->call_every(INIT_DELAY_CQR_PING, callback(messenger, &CanMessenger::send_msg_CQR_ping));
+#endif
 
     debug->set_current_level(Debug::DEBUG_DEBUG);
 }

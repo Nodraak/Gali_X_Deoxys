@@ -65,7 +65,7 @@ int main(void)
     EventQueue *queue = NULL;
     Timer *loop = NULL;
 
-    Actuators *actuators;
+    Actuators *actuators = NULL;
     float last_order_executed_timestamp = -1;
 
     init_common(
@@ -80,7 +80,7 @@ int main(void)
     init_board_CQES(debug,
         &actuators
     );
-    init_finalize(debug, main_timer);
+    init_finalize(debug, main_timer, queue);
 
     bool cqb_finished = false;
 
@@ -97,7 +97,7 @@ int main(void)
         loop->reset();
 
         queue->dispatch(0);  // non blocking dispatch
-        com_handle_can(debug, messenger, orders, &cqb_finished);
+        com_handle_can(debug, messenger, orders, &cqb_finished, actuators);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order

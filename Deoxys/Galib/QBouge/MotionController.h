@@ -68,6 +68,9 @@ public:
     void debug_serial(Debug *debug);
     void debug_can(CanMessenger *cm);
 
+    void print(Debug *debug);
+    void set(e_cqb_setting cqb_setting, float val);
+
 // semi-private (call from interrupt/Ticker)
 private:
     /*

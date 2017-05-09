@@ -72,3 +72,40 @@ void sys_interrupt_priorities_init(void)
     _SetPriority(USART1_IRQn, 11);
     _SetPriority(USART2_IRQn, 11);
 }
+
+void sys_debug_can(void)
+{
+#undef BASE_ADDR_CAN1
+#undef CAN_MCR
+#undef CAN_MCR_ABOM
+#undef CAN_ESR
+#undef CAN_ESR_REC
+#undef CAN_ESR_TEC
+#undef CAN_ESR_LEC
+#undef CAN_ESR_BOFF
+
+#define BASE_ADDR_CAN1 0x40006400
+
+#define CAN_MCR         (BASE_ADDR_CAN1+0x00)
+#define CAN_MCR_ABOM    (((*(uint32_t*)CAN_MCR) >> 6) & 0b1)    // Bit 6 ABOM: Automatic bus-off management
+
+#define CAN_ESR        (BASE_ADDR_CAN1+0x18)
+#define CAN_ESR_REC    (((*(uint32_t*)CAN_ESR) >> 24) & 0b11111111) // Bits 31:24 REC[7:0] : Receive error counter
+#define CAN_ESR_TEC    (((*(uint32_t*)CAN_ESR) >> 16) & 0b11111111) // Bits 23:16 TEC[7:0] : Least significant byte of the 9-bit transmit error counter
+#define CAN_ESR_LEC    (((*(uint32_t*)CAN_ESR) >> 4) & 0b111)       // Bits 6:4 LEC[2:0] : Last error code
+#define CAN_ESR_BOFF   (((*(uint32_t*)CAN_ESR) >> 2) & 0b1)         // Bit 2 BOFF : Bus-off flag
+
+    g_debug->printf("[CAN/Error] abom %d - rec tec %d %d - lec boff %d %d\n", CAN_MCR_ABOM, CAN_ESR_REC, CAN_ESR_TEC, CAN_ESR_LEC, CAN_ESR_BOFF);
+
+/*
+LEC
+    000: No Error
+    001: Stuff Error
+    010: Form Error
+    011: Acknowledgment Error
+    100: Bit recessive Error
+    101: Bit dominant Error
+    110: CRC Error
+    111: Set by software
+*/
+}

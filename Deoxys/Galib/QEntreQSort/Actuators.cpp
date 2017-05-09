@@ -34,15 +34,15 @@ void ServoActuator::print(Debug *debug, int depth) {
     debug->printf("%-6s %4.2f %4.2f    (r e)\n", name_, retracted_, extended_);
 }
 
-void ServoActuator::set(t_act act, char *val) {
+void ServoActuator::set(t_act act, float val) {
     if (act & ACT_STATE_EXTENDED)
     {
-        extended_ = atof(val);
+        extended_ = float(val);
         this->extend();
     }
     if (act & ACT_STATE_RETRACTED)
     {
-        retracted_ = atof(val);
+        retracted_ = float(val);
         this->retract();
     }
 }
@@ -88,20 +88,20 @@ void Ax12Actuator::print(Debug *debug, int depth) {
     debug->printf("%-6s %4d %4d %2d (r e i)\n", name_, retracted_, extended_, id_);
 }
 
-void Ax12Actuator::set(t_act act, char *val) {
+void Ax12Actuator::set(t_act act, float val) {
     if (act & ACT_STATE_EXTENDED)
     {
-        extended_ = atoi(val);
+        extended_ = uint16_t(val);
         this->extend();
     }
     if (act & ACT_STATE_NEUTRAL)
     {
-        extended_ = atoi(val);
+        extended_ = uint16_t(val);
         this->neutral();
     }
     if (act & ACT_STATE_RETRACTED)
     {
-        retracted_ = atoi(val);
+        retracted_ = uint16_t(val);
         this->retract();
     }
 }
@@ -166,15 +166,15 @@ void BooleanActuator::print(Debug *debug, int depth) {
     debug->printf("%-6s %4d %4d    (r e)\n", name_, retracted_, extended_);
 }
 
-void BooleanActuator::set(t_act act, char *val) {
+void BooleanActuator::set(t_act act, float val) {
     if (act & ACT_STATE_EXTENDED)
     {
-        extended_ = bool(atoi(val));
+        extended_ = bool(val);
         this->extend();
     }
     if (act & ACT_STATE_RETRACTED)
     {
-        retracted_ = bool(atoi(val));
+        retracted_ = bool(val);
         this->extend();
     }
 }
@@ -239,7 +239,7 @@ void ArmActuator::print(Debug *debug, int depth) {
     pump_.print(debug, depth+1);
 }
 
-void ArmActuator::set(t_act act, char *val) {
+void ArmActuator::set(t_act act, float val) {
     if (act & ACT_ACTUATOR_HEIGHT)
         height_.set(act, val);
     if (act & ACT_ACTUATOR_VERT)
@@ -325,7 +325,7 @@ void OneSideCylindersActuators::print(Debug *debug, int depth) {
     flap_.print(debug, depth+1);
 }
 
-void OneSideCylindersActuators::set(t_act act, char *val) {
+void OneSideCylindersActuators::set(t_act act, float val) {
     if (
         (act & ACT_ACTUATOR_HEIGHT)
         || (act & ACT_ACTUATOR_VERT)
@@ -451,7 +451,7 @@ void Actuators::print(Debug *debug, int depth) {
     prograde_dispenser_.print(debug, depth+1);
 }
 
-void Actuators::set(t_act act, char *val) {
+void Actuators::set(t_act act, float val) {
     if (act & ACT_SIDE_LEFT)
         left_.set(act, val);
     if (act & ACT_SIDE_RIGHT)

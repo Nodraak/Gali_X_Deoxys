@@ -6,6 +6,7 @@
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/MotionController.h"
+#include "config.h"
 #include "pinout.h"
 
 #include "common/Messenger.h"
@@ -30,6 +31,8 @@ t_e2s_message_type _e2s_message_type[] = {
     {Message::MT_CQES_finished, "MT_CQES_finished"},
     {Message::MT_CQB_next_order_request, "MT_CQB_next_order_request"},
     {Message::MT_CQES_next_order_request, "MT_CQES_next_order_request"},
+    {Message::MT_CQR_settings_CQB, "MT_CQR_settings_CQB"},
+    {Message::MT_CQR_settings_CQES, "MT_CQR_settings_CQES"},
     {Message::MT_CQB_I_am_doing, "MT_CQB_I_am_doing"},
     {Message::MT_CQES_I_am_doing, "MT_CQES_I_am_doing"},
     {Message::MT_CQB_MC_pos_angle, "MT_CQB_MC_pos_angle"},
@@ -95,6 +98,8 @@ int CanMessenger::send_msg(Message msg) {
         case Message::MT_CQR_reset:
         case Message::MT_CQR_we_are_at:
         case Message::MT_CQR_order:
+        case Message::MT_CQR_settings_CQB:
+        case Message::MT_CQR_settings_CQES:
 #ifndef IAM_QREFLECHI
             g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
 #endif
@@ -128,6 +133,10 @@ int CanMessenger::send_msg(Message msg) {
             g_debug->printf("[CAN/send] Error: non allowed msg.id %d (%s)\n", msg.id, e2s_message_type(msg.id));
             break;
     }
+
+#ifdef PRINT_COM_CAN_SEND
+    g_debug->printf("[CAN/send] %d (%s)\n", msg.id, e2s_message_type(msg.id));
+#endif
 
     // Can::write               returns 1 if success 0 if error.
     // CanMessenger.send_msg    returns 0 if success, 1 if error.
@@ -271,6 +280,26 @@ int CanMessenger::send_msg_CQES_next_order_request(void) {
     Message::CP_CQES_next_order_request payload;
     return this->send_msg(Message(
         Message::MT_CQES_next_order_request, sizeof(payload), (Message::u_payload){.CQES_next_order_request = payload}
+    ));
+}
+#endif
+
+#ifdef IAM_QREFLECHI
+int CanMessenger::send_msg_CQR_settings_CQB(e_cqb_setting what, float val) {
+    Message::CP_CQR_settings_CQB payload;
+    payload.what = what;
+    payload.val = val;
+    return this->send_msg(Message(
+        Message::MT_CQR_settings_CQB, sizeof(payload), (Message::u_payload){.CQR_settings_CQB = payload}
+    ));
+}
+
+int CanMessenger::send_msg_CQR_settings_CQES(t_act act, float val) {
+    Message::CP_CQR_settings_CQES payload;
+    payload.act = act;
+    payload.val = val;
+    return this->send_msg(Message(
+        Message::MT_CQR_settings_CQES, sizeof(payload), (Message::u_payload){.CQR_settings_CQES = payload}
     ));
 }
 #endif

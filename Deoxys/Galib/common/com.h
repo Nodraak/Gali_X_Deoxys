@@ -22,7 +22,9 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #ifdef IAM_QENTRESORT
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished);
+#include "QEntreQSort/Actuators.h"
+
+void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished, Actuators *actuators);
 
 #endif
 

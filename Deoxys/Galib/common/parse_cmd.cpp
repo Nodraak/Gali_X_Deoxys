@@ -2,9 +2,12 @@
 #include <cstring>
 
 #include "common/Debug.h"
+#include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 
-#if defined(IAM_QREFLECHI)
+#if defined(IAM_QBOUGE)
+#include "QBouge/MotionController.h"
+#elif defined(IAM_QREFLECHI)
 #include "common/Messenger.h"
 #elif defined(IAM_QENTRESORT)
 #include "QEntreQSort/Actuators.h"
@@ -14,7 +17,7 @@
 
 
 #if defined(IAM_QBOUGE)
-void parse_cmd(Debug *debug)
+void parse_cmd(Debug *debug, MotionController *mc)
 #elif defined(IAM_QREFLECHI)
 void parse_cmd(Debug *debug, CanMessenger *messenger, EventQueue *queue)
 #elif defined(IAM_QENTRESORT)
@@ -36,14 +39,20 @@ void parse_cmd(Debug *debug, OrdersFIFO *orders, Actuators *actuators)
     if (strcmp(cmd, "h") == 0)
     {
         debug->printf("Available commands:\n");
+
         debug->printf("\tseq l: seq left\n");
         debug->printf("\tseq r: seq right\n");
+        debug->printf("\tprint: print actuator settings\n");
         debug->printf("\tact: actuator cmd\n");
         debug->printf("\t\tact l flap e: extend actuator left flap\n");
         debug->printf("\t\tact l flap e 0.10: set actuator left flap extended to 0.10\n");
 
-// todo cmd reglage pid
-
+        debug->printf("\tmc\n");
+        debug->printf("\t\tmc dist <d>: move order\n");
+        debug->printf("\t\tmc angle <a>: angle order\n");
+        debug->printf("\tpid: pid setting cmd\n");
+        debug->printf("\t\tpid dist p 5.5\n");
+        debug->printf("\t\tpid angle i 1.5\n");
 
         debug->printf("--\n");
     }
@@ -100,6 +109,12 @@ void parse_cmd(Debug *debug, OrdersFIFO *orders, Actuators *actuators)
         orders->append(OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER, side));
 #endif
     }
+#if defined(IAM_QENTRESORT)
+    else if (strcmp(cmd, "print") == 0)
+    {
+        actuators->print(debug, 0);
+    }
+#endif
     else if (strcmp(cmd, "act") == 0)
     {
         char dst_side[20], dst_act[20], dst_conf[20];
@@ -179,12 +194,123 @@ void parse_cmd(Debug *debug, OrdersFIFO *orders, Actuators *actuators)
         else
         {
 #if defined(IAM_QREFLECHI)
-            // todo create CAN msg with s_order and remove actuator here
+            messenger->send_msg_CQR_settings_CQES(act, (float)atof(cmd));
 #elif defined(IAM_QENTRESORT)
-            actuators->set(act, cmd);
+            actuators->set(act, atof(cmd));
             actuators->print(debug, 0);
 #endif
         }
+    }
+    else if (strcmp(cmd, "mc") == 0)
+    {
+        char dst_action[20], dst_param[20];
+
+        cmd = strtok(NULL,  " ");
+        if (cmd == NULL)
+        {
+            debug->printf("Error: mc: expected action\n");
+            return;
+        }
+        strcpy(dst_action, cmd);
+
+        cmd = strtok(NULL,  " ");
+        if (cmd == NULL)
+        {
+            debug->printf("Error: mc: expected param\n");
+            return;
+        }
+        strcpy(dst_param, cmd);
+
+        // parse + exe
+
+        if (strcmp(dst_action, "dist") == 0)
+        {
+#if defined(IAM_QREFLECHI)
+            messenger->send_msg_CQR_order(OrderCom_makeRelDist(atof(dst_param)));
+#endif
+        }
+        else if (strcmp(dst_action, "angle") == 0)
+        {
+#if defined(IAM_QREFLECHI)
+            messenger->send_msg_CQR_order(OrderCom_makeAbsAngle(DEG2RAD(atof(dst_param))));
+#endif
+        }
+        else
+            debug->printf("Error: act: unknown action (%s)\n", dst_action);
+    }
+    else if (strcmp(cmd, "pid") == 0)
+    {
+        char dst_pid[20], dst_k[20];
+
+        cmd = strtok(NULL,  " ");
+        if (cmd == NULL)
+        {
+            debug->printf("Error: pid: expected pid (dist or angle)\n");
+            return;
+        }
+        strcpy(dst_pid, cmd);
+
+        cmd = strtok(NULL,  " ");
+        if (cmd == NULL)
+        {
+            debug->printf("Error: pid: expected k (p, i or d)\n");
+            return;
+        }
+        strcpy(dst_k, cmd);
+
+        // parse
+
+        e_cqb_setting cqb_setting;
+
+        if (strcmp(dst_pid, "dist") == 0)
+        {
+            if (strcmp(dst_k, "p") == 0)
+                cqb_setting = CQB_SETTING_PID_DIST_P;
+            else if (strcmp(dst_k, "i") == 0)
+                cqb_setting = CQB_SETTING_PID_DIST_I;
+            else if (strcmp(dst_k, "d") == 0)
+                cqb_setting = CQB_SETTING_PID_DIST_D;
+            else
+            {
+                debug->printf("Error: act: expected k (p, i or d) (%s)\n", dst_k);
+                return;
+            }
+        }
+        else if (strcmp(dst_pid, "angle") == 0)
+        {
+            if (strcmp(dst_k, "p") == 0)
+                cqb_setting = CQB_SETTING_PID_ANGLE_P;
+            else if (strcmp(dst_k, "i") == 0)
+                cqb_setting = CQB_SETTING_PID_ANGLE_I;
+            else if (strcmp(dst_k, "d") == 0)
+                cqb_setting = CQB_SETTING_PID_ANGLE_D;
+            else
+            {
+                debug->printf("Error: act: expected k (p, i or d) (%s)\n", dst_k);
+                return;
+            }
+        }
+        else
+        {
+            debug->printf("Error: act: expected pid (dist or angle) (%s)\n", dst_pid);
+            return;
+        }
+
+        // exe
+
+        cmd = strtok(NULL,  " ");
+        if (cmd == NULL)
+        {
+            debug->printf("Error: pid: expected val\n");
+            return;
+        }
+
+#if defined(IAM_QREFLECHI)
+        messenger->send_msg_CQR_settings_CQB(cqb_setting, atof(cmd));
+#elif defined(IAM_QBOUGE)
+        mc->set(cqb_setting, atof(cmd));
+        mc->print(debug);
+#endif
     }
     else
     {

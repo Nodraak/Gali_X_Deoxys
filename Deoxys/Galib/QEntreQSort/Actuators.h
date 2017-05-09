@@ -53,7 +53,7 @@ public:
     ServoActuator(const char *name, PwmOut servo, float retracted, float extended);
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
     void extend(void);
@@ -80,7 +80,7 @@ public:
     Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t neutral, uint16_t extended);
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
     void extend(void);
@@ -117,7 +117,7 @@ public:
     BooleanActuator(const char *name, DigitalOut out, bool retracted, bool extended);
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
     void extend(void);
@@ -154,7 +154,7 @@ public:
     );
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
     void ping_all(void);
@@ -186,7 +186,7 @@ public:
     );
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
 public:
@@ -211,7 +211,7 @@ public:
     static void order_decode_sequence(OrdersFIFO *orders, e_order_com_type type, t_act act_param);
 
     void print(Debug *debug, int depth);
-    void set(t_act act, char *val);
+    void set(t_act act, float val);
     void activate(t_act act);
 
     OneSideCylindersActuators *side(t_act side);

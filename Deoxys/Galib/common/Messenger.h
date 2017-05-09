@@ -36,6 +36,20 @@
 // Size of the on_receive callbacks list
 #define ON_RECEIVE_SLOT_COUNT           20
 
+
+typedef enum _e_cqb_setting {
+    CQB_SETTING_PID_DIST_P,
+    CQB_SETTING_PID_DIST_I,
+    CQB_SETTING_PID_DIST_D,
+
+    CQB_SETTING_PID_ANGLE_P,
+    CQB_SETTING_PID_ANGLE_I,
+    CQB_SETTING_PID_ANGLE_D,
+
+// todo max pwm, ...
+} e_cqb_setting;
+
+
 /*
     The Message is mostly used internally by the CanMessenger class, you most
     probably don't need to create instances, as CanMessenger methods returns
@@ -93,6 +107,9 @@ public:
         MT_CQB_next_order_request   = 520,
         MT_CQES_next_order_request  = 521,
 
+        MT_CQR_settings_CQB         = 550,
+        MT_CQR_settings_CQES        = 551,
+
         /*
             Low (debug) (600-799)
         */
@@ -138,8 +155,18 @@ public:
     typedef s_no_payload CP_CQES_next_order_request;
 
     typedef struct {
+        e_cqb_setting what;
+        float val;
+    } CP_CQR_settings_CQB;
+
+    typedef struct {
+        t_act act;
+        float val;  // can encode whatever: float, uint16_t, bool, ...
+    } CP_CQR_settings_CQES;
+
+    typedef struct {
         char i_am[4];
-        e_order_exe_type order;
+        e_order_exe_type order;  // todo change to uintX_t or assert size in tests.cpp
     } CP_I_am_doing;
 
     typedef CP_CQR_we_are_at CP_CQB_MC_pos_angle;
@@ -181,6 +208,9 @@ public:
         CP_CQR_order                CQR_order;
         CP_CQB_next_order_request   CQB_next_order_request;
         CP_CQES_next_order_request  CQES_next_order_request;
+
+        CP_CQR_settings_CQB         CQR_settings_CQB;
+        CP_CQR_settings_CQES        CQR_settings_CQES;
 
         CP_I_am_doing               I_am_doing;
 
@@ -264,6 +294,11 @@ public:
 #ifdef IAM_QENTRESORT
     int send_msg_CQES_finished(void);
     int send_msg_CQES_next_order_request(void);
+#endif
+
+#ifdef IAM_QREFLECHI
+    int send_msg_CQR_settings_CQB(e_cqb_setting what, float val);
+    int send_msg_CQR_settings_CQES(t_act act, float val);
 #endif
 
     int send_msg_I_am_doing(e_order_exe_type order);
