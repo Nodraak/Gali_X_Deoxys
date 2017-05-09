@@ -7,10 +7,15 @@
 
 #define PWM_MIN                 0.08                        // pwm value at which the robot starts moving
 #define PWM_MAX                 1.00                        // should always be 1. Maximum PWM should be set by MC
-#define PWM_STEP                (1.0/(ASSERV_FPS*1.0))      // pwm goes from 0 to 1 over a X sec timespan.
-                                                            //   this is used to increment slowly the speed, to prevent
-                                                            //   to wheels to slip
-#define PWM_IS_ALMOST_ZERO      (PWM_STEP/2)                // Pwm under this value are considered to be 0
+
+// Pwm goes from 0 to 1 over a X sec timespan.
+// This is used to increment slowly the speed, to prevent the wheels to slip
+// Note: be sure to have a steep increase (low PWM_STEP_1_AFTER_X_SEC value),
+// otherwise it might fucked up the PID settings
+#define PWM_STEP_1_AFTER_X_SEC  0.25
+#define PWM_STEP                (1.0/(ASSERV_FPS*PWM_STEP_1_AFTER_X_SEC))
+
+#define PWM_IS_ALMOST_ZERO      (PWM_STEP/2)                // Pwm under this value is considered to be 0
 
 /*
     Forward and backward direction (value of the digital input `direction` of

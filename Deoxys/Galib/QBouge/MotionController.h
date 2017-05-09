@@ -34,23 +34,23 @@
 
 #define MC_TARGET_TOLERANCE_DIST        5.0         // unit: mm     - Gali IX 12 - ESEO 10
 #define MC_TARGET_TOLERANCE_SPEED       5.0         // unit: mm/sec              - ESEO  8
-#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(5)  // unit: rad    - Gali IX  7 - ESEO  2 deg
-#define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(5)  // unit: rad/sec             - ESEO  3 deg
+#define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(2)  // unit: rad    - Gali IX  7 - ESEO  2 deg
+#define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(2)  // unit: rad/sec             - ESEO  3 deg
 
 // Max speed
 
-#define PID_DIST_MAX_OUPUT  0.9
-#define PID_ANGLE_MAX_OUPUT 0.6
+#define PID_DIST_MAX_OUPUT  1.0
+#define PID_ANGLE_MAX_OUPUT 1.0
 
 // PID settings
 
-#define PID_DIST_P          5.0
+#define PID_DIST_P          6.0
 #define PID_DIST_I          0
-#define PID_DIST_D          0
+#define PID_DIST_D          (0.5/1000)
 
-#define PID_ANGLE_P         2.0
+#define PID_ANGLE_P         3.0
 #define PID_ANGLE_I         0
-#define PID_ANGLE_D         0
+#define PID_ANGLE_D         (1.0/1000)
 
 
 class MotionController {

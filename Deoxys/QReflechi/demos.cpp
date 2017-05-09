@@ -191,7 +191,7 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeAbsPos(600-(D+50), 1000),
     OrderCom_makeAbsAngle(DEG2RAD(180)),
-    OrderCom_makeAbsPos(600-(D+10), 1000),
+    OrderCom_makeAbsPos(600-(D+0), 1000),
 
     // take
 
@@ -217,12 +217,11 @@ s_order_com demo_table_arm[] = {
 */
     // go in pos
 
-    OrderCom_makeAbsPos(900, 1000),
     OrderCom_makeAbsPos(1100, 1000),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1100, 500+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
-    OrderCom_makeAbsPos(1100, 500+(D+10)),
+    OrderCom_makeAbsPos(1100, 500+(D+0)),
 
     // take
 
@@ -245,7 +244,10 @@ s_order_com demo_table_arm[] = {
     Unload the two cylinders
 */
 
-    OrderCom_makeRelAngle(DEG2RAD(180)),
+    OrderCom_makeAbsAngle(DEG2RAD(270)),
+    OrderCom_makeAbsPos(1050, 300+50),
+    OrderCom_makeAbsAngle(DEG2RAD(270)),
+    OrderCom_makeAbsPos(1050, 300+0),
     OrderCom_makeWaitCQBFinished(),
 
 // todo move in position
