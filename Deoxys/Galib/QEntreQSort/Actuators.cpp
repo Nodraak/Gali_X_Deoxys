@@ -385,56 +385,56 @@ Actuators::Actuators(
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_INIT:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_INIT));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_INIT));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_GRAB:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_CLOSED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_ON));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_GRAB));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_GRAB));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_ON));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_CLOSED));
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_MOVE_UP:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_RETRACTED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_RETRACTED));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_HALF));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_RETRACTED));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_FULL));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_FULL));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_RETRACTED));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_UP_HALF));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_RETRACTED));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_RETRACTED));
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_RELEASE));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_RELEASE));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PUMP | ACT_STATE_OFF));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_CLAMP | ACT_STATE_OPEN));
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_HALF));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_FULL));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_FULL));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HORIZ | ACT_STATE_EXTENDED));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_EXTENDED));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_HEIGHT | ACT_STATE_EXTENDED));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_MOVE_DOWN_HALF));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_VERT | ACT_STATE_NEUTRAL));
             break;
 
         case ORDER_COM_TYPE_SEQ_FLAP:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_OPEN));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_OPEN));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_CLOSED));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_CLOSE));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_CLOSE));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_CLOSED));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_FLAP_OPEN));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_OPEN));
             break;
 
         case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_OPEN));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_OPEN));
-            orders->append(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_CLOSED));
-            orders->append(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_CLOSE));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_CLOSE));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_CLOSED));
+            orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_OPEN));
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_OPEN));
             break;
     }
 }
