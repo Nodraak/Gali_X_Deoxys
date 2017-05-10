@@ -41,10 +41,16 @@ void sys_interrupt_priorities_init(void)
 
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);  // 4 bits for pre-emption priority, 0 bit for subpriority
 
-#define _SetPriority(IRQn, PreemptPriority) NVIC_SetPriority(IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PreemptPriority, 0));
+// weird, this version does not work (but it should):
+// NVIC_SetPriority(IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PreemptPriority, 0))
+#define _SetPriority(IRQn, PreemptPriority) NVIC_SetPriority(IRQn, PreemptPriority)
 
-#ifdef IAM_QBOUGE
-    // encoders input (DigitalIn interrupt)
+#if defined(IAM_QBOUGE) || defined(IAM_QENTRESORT)
+/*
+    DigitalIn interrupt
+       CQB: encoders input
+       CQES: SRF echo
+*/
     _SetPriority(EXTI0_IRQn, 1);
     _SetPriority(EXTI1_IRQn, 1);
     _SetPriority(EXTI2_IRQn, 1);
