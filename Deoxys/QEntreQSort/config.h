@@ -7,7 +7,7 @@
 #define PRINT_MONITORING_RESET
 #define PRINT_SYS_CAN_STATS
 
-#define MAIN_LOOP_FPS       50
+#define MAIN_LOOP_FPS       200
 #define MAIN_LOOP_DELAY     (1.0/MAIN_LOOP_FPS)
 
 
