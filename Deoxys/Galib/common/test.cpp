@@ -1,9 +1,11 @@
 
+#include "common/Debug.h"
+#include "common/Messenger.h"
 #include "common/OrdersFIFO.h"
 #ifdef IAM_QBOUGE
 #include "QBouge/test_mc.h"
 #endif
-#include "test.h"
+#include "common/test.h"
 
 #ifndef DISABLE_TESTS
 
@@ -17,6 +19,7 @@ void test_run_all(Debug *debug)
     test_mc_calcDistThetaOrderPos(debug);
     test_mc_updateCurOrder(debug);
 #endif
+    test_CAN_payload_sizes(debug);
     debug->printf("[Tests] Done.\n");
 
 #ifdef INFINITE_LOOP_AFTER_TESTS
@@ -45,6 +48,32 @@ void test_sizes(Debug *debug) {
     ft_assert(sizeof(int64_t) == 8);
 
     ft_assert(sizeof(s_order_com) == 8);
+
+    debug->printf("\tok.\n");
+}
+
+void test_CAN_payload_sizes(Debug *debug) {
+    debug->printf("Testing CAN payload size\n");
+
+    ft_assert(sizeof(Message::CP_CQR_ping) <= 8);
+    ft_assert(sizeof(Message::CP_pong) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_match_start) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_match_stop) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_we_are_at) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_order) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_next_order_request) <= 8);
+    ft_assert(sizeof(Message::CP_CQES_next_order_request) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_settings_CQB) <= 8);
+    ft_assert(sizeof(Message::CP_CQR_settings_CQES) <= 8);
+    ft_assert(sizeof(Message::CP_I_am_doing) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_MC_pos_angle) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_MC_speeds) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_MC_pids) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_MC_motors) <= 8);
+    ft_assert(sizeof(Message::CP_CQB_MC_encs) <= 8);
+    ft_assert(sizeof(Message::u_payload) <= 8);
+
+    debug->printf("\tok.\n");
 }
 
 #else // #ifndef DISABLE_TESTS

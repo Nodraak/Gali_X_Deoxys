@@ -90,7 +90,6 @@ void init_common(
 
     mem_stats_objects(debug);
     mem_stats_settings(debug);
-    test_run_all(debug);
 
     debug->printf("Interrupt Priorities...\n");
     sys_interrupt_priorities_init();
@@ -238,6 +237,11 @@ void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue)
     debug->printf("Initialization successfull.\n");
     debug->printf("t5=%.3f\n", main_timer->read());
 
+    debug->printf("Running tests...\n");
+    test_run_all(debug);
+    debug->printf("Tests ran successfull.\n");
+    debug->printf("t6=%.3f\n", main_timer->read());
+
     debug->printf("Waiting until %.3f sec...\n", INIT_FINALIZE_WAIT_UNTIL);
     while (main_timer->read() < INIT_FINALIZE_WAIT_UNTIL)
     {
@@ -245,7 +249,7 @@ void init_finalize(Debug *debug, Timer *main_timer, EventQueue *queue)
         wait_ms(1);
     }
     debug->printf("\tok.\n");
-    debug->printf("t6=%.3f\n", main_timer->read());
+    debug->printf("t7=%.3f\n", main_timer->read());
 
 #ifdef IAM_QREFLECHI
     queue->call_every(INIT_DELAY_CQR_PING, callback(messenger, &CanMessenger::send_msg_CQR_ping));

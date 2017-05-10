@@ -1,7 +1,7 @@
 #ifndef TEST_H_INCLUDED
 #define TEST_H_INCLUDED
 
-#include "Debug.h"
+#include "common/Debug.h"
 
 void test_run_all(Debug *debug);
 
@@ -15,6 +15,8 @@ void ft_assert(bool cond);
 void ft_assert_equal(float f1, float f2);
 // check sizes (int*_t)
 void test_sizes(Debug *debug);
+
+void test_CAN_payload_sizes(Debug *debug);
 
 /*
     Private

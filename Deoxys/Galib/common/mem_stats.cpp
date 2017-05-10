@@ -16,7 +16,7 @@
     #include "QBouge/MotionController.h"
 #endif
 
-#include "mem_stats.h"
+#include "common/mem_stats.h"
 
 
 void mem_stats_objects(Debug *debug)
