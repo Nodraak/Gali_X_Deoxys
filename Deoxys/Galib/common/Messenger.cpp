@@ -24,7 +24,6 @@ t_e2s_message_type _e2s_message_type[] = {
     {Message::MT_CQES_pong, "MT_CQES_pong"},
     {Message::MT_CQR_match_start, "MT_CQR_match_start"},
     {Message::MT_CQR_match_stop, "MT_CQR_match_stop"},
-    {Message::MT_CQR_reset, "MT_CQR_reset"},
     {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
     {Message::MT_CQR_order, "MT_CQR_order"},
     {Message::MT_CQB_finished, "MT_CQB_finished"},
@@ -95,7 +94,6 @@ int CanMessenger::send_msg(Message msg) {
         case Message::MT_CQR_pong:
         case Message::MT_CQR_match_start:
         case Message::MT_CQR_match_stop:
-        case Message::MT_CQR_reset:
         case Message::MT_CQR_we_are_at:
         case Message::MT_CQR_order:
         case Message::MT_CQR_settings_CQB:
@@ -246,11 +244,6 @@ int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
     payload.pos.y = y;
     payload.angle = angle;
     return this->send_msg(Message(Message::MT_CQR_we_are_at, sizeof(payload), (Message::u_payload){.CQR_we_are_at = payload}));
-}
-
-int CanMessenger::send_msg_CQR_reset(void) {
-    Message::CP_CQR_reset payload;
-    return this->send_msg(Message(Message::MT_CQR_reset, sizeof(payload), (Message::u_payload){.CQR_reset = payload}));
 }
 
 int CanMessenger::send_msg_CQR_order(s_order_com order) {

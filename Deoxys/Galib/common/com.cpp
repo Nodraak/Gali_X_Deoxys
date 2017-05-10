@@ -128,10 +128,6 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                 );
                 break;
 
-            case Message::MT_CQR_reset:
-                mc->reset();
-                break;
-
             case Message::MT_CQR_order:
                 // todo ack if ok, else send error
                 // todo sync with CQES
@@ -191,10 +187,6 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 #ifdef IAM_QENTRESORT
             case Message::MT_CQB_MC_pos_angle:
                 // ignore on CQES
-                break;
-
-            case Message::MT_CQR_reset:
-                orders->reset();
                 break;
 
             case Message::MT_CQR_order:

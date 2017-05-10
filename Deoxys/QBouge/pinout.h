@@ -18,8 +18,6 @@
     #define CAN_TX          D2
     #define CAN_RX          D10
 
-    #define BUZZER_PIN      D5
-
 #else  // #ifndef SIMULATION
 
     #define USBTX           D0

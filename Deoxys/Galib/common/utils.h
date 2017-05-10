@@ -40,8 +40,4 @@ double constrain(double val, double min, double max);
     #endif
 #endif
 
-#ifdef TARGET_NUCLEO_L432KC
-const char *pin2str(PinName pin);
-#endif
-
 #endif

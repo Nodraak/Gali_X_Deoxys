@@ -92,7 +92,6 @@ public:
         MT_CQR_match_stop           = 221,
 
 
-        MT_CQR_reset                = 310,
         MT_CQR_we_are_at            = 311,
 
         /*
@@ -147,8 +146,6 @@ public:
         float angle;
     } CP_CQR_we_are_at;
 
-    typedef s_no_payload CP_CQR_reset;
-
     typedef s_order_com CP_CQR_order;
 
     typedef s_no_payload CP_CQB_next_order_request;
@@ -202,7 +199,6 @@ public:
         CP_CQR_match_start          CQR_match_start;
         CP_CQR_match_stop           CQR_match_stop;
 
-        CP_CQR_reset                CQR_reset;
         CP_CQR_we_are_at            CQR_we_are_at;
 
         CP_CQR_order                CQR_order;
@@ -283,7 +279,6 @@ public:
     int send_msg_CQR_match_stop(void);
 
     int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
-    int send_msg_CQR_reset(void);
 
     int send_msg_CQR_order(s_order_com order);
 #endif
