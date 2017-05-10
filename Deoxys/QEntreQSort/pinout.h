@@ -6,6 +6,12 @@
     #define CAN_TX              PA_12
     #define CAN_RX              PA_11
 
+    #define LED_RUNNING         NC
+    #define LED_PONG_CQB        NC
+    #define LED_PONG_CQR        NC
+    #define LED_PONG_CQES       NC
+    #define LED_BUS_OFF         NC
+
     #define AX12_PIN_SWITCH     PA_10   // D2
     #define AX12_PIN_TX         PC_10
     #define AX12_PIN_RX         PC_11

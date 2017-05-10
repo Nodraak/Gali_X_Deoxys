@@ -18,6 +18,13 @@
     #define CAN_TX          D2
     #define CAN_RX          D10
 
+    #define BUZZER_PIN      D5
+    #define LED_RUNNING     NC
+    #define LED_PONG_CQB    NC
+    #define LED_PONG_CQR    NC
+    #define LED_PONG_CQES   NC
+    #define LED_BUS_OFF     NC
+
 #else  // #ifndef SIMULATION
 
     #define USBTX           D0

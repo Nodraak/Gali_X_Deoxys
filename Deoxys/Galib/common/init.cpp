@@ -23,6 +23,7 @@
 #endif
 
 #include "config.h"
+#include "pinout.h"
 
 #include "common/init.h"
 
@@ -56,15 +57,7 @@ void init_common(
     main_timer = new Timer;
     main_timer->start();
 
-#ifdef IAM_QBOUGE
-    sl = new StatusLeds(NC, NC, NC, NC, NC);
-#endif
-#ifdef IAM_QREFLECHI
-    sl = new StatusLeds(A5, A4, NC, A3, A6);
-#endif
-#ifdef IAM_QENTRESORT
-    sl = new StatusLeds(A3, NC, A4, NC, A6);
-#endif
+    sl = new StatusLeds(LED_RUNNING, LED_PONG_CQB, LED_PONG_CQR, LED_PONG_CQES, LED_BUS_OFF);
 
     debug = new Debug;
     g_debug = debug;
