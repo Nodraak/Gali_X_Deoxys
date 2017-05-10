@@ -59,6 +59,7 @@ int main(void)
 
         queue->dispatch(0);  // non blocking dispatch
 
+        // com handle can + serial ?
         while (messenger->read_msg(&rec_msg))
         {
 #ifdef PRINT_COM_CAN_REC
@@ -74,6 +75,7 @@ int main(void)
                 last_ping_CQES = main_timer->read();
                 debug->printf("pong cqb\n");
             }
+            // else todo com_handle_can ??? beware of side effects like loading orders (what if we reset a board ?)
         }
 
         bool ping_CQB = (main_timer->read()-last_ping_CQB) < 1.000;
@@ -99,13 +101,24 @@ int main(void)
     }
 
     debug->printf("[CAN] sending we_are_at\n");
+
     messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     /*
         Ready, wait for tirette
     */
 
-    wait_ms(100);
+    main_timer->reset();
+    while (main_timer->read() < 0.500)
+    {
+        g_mon->main_loop.start_new();
+        loop->reset();
+
+        com_handle_can(debug, messenger, orders);
+
+        g_mon->main_loop.stop_and_save();
+        main_sleep(debug, loop);
+    }
 
     // todo wait for tirette
 

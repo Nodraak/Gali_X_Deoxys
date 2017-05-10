@@ -308,10 +308,12 @@ void ArmActuator::write_speed_all(uint16_t speed) {
 OneSideCylindersActuators::OneSideCylindersActuators(
     const char *name,
     ArmActuator arm,
-    ServoActuator flap
-) : name_(name), arm_(arm), flap_(flap)
+    ServoActuator flap,
+    ServoActuator prograde_dispenser
+) : name_(name), arm_(arm), flap_(flap), prograde_dispenser_(prograde_dispenser)
 {
     flap_.close();
+    prograde_dispenser_.close();
 }
 
 void OneSideCylindersActuators::print(Debug *debug, int depth) {
@@ -323,6 +325,7 @@ void OneSideCylindersActuators::print(Debug *debug, int depth) {
 
     arm_.print(debug, depth+1);
     flap_.print(debug, depth+1);
+    prograde_dispenser_.print(debug, depth+1);
 }
 
 void OneSideCylindersActuators::set(t_act act, float val) {
@@ -336,6 +339,8 @@ void OneSideCylindersActuators::set(t_act act, float val) {
         arm_.set(act, val);
     if (act & ACT_ACTUATOR_FLAP)
         flap_.set(act, val);
+    if (act & ACT_ACTUATOR_PROG)
+        prograde_dispenser_.set(act, val);
 }
 
 void OneSideCylindersActuators::activate(t_act act) {
@@ -349,6 +354,8 @@ void OneSideCylindersActuators::activate(t_act act) {
         arm_.activate(act);
     if (act & ACT_ACTUATOR_FLAP)
         flap_.activate(act);
+    if (act & ACT_ACTUATOR_PROG)
+        prograde_dispenser_.activate(act);
 }
 
 /*
@@ -361,14 +368,16 @@ void OneSideCylindersActuators::activate(t_act act) {
 
 Actuators::Actuators(
     OneSideCylindersActuators left,
-    OneSideCylindersActuators right,
-    ServoActuator prograde_dispenser
-) : left_(left), right_(right), prograde_dispenser_(prograde_dispenser)
+    OneSideCylindersActuators right
+) : left_(left), right_(right)
 {
-    prograde_dispenser_.close();
+    // nothing to do
 }
 
 /* static */ void Actuators::order_decode_sequence(OrdersFIFO *orders, e_order_com_type type, t_act act_param) {
+
+// !! prepend in reverse order !!
+
     switch (type)
     {
         case ORDER_COM_TYPE_NONE:
@@ -448,7 +457,6 @@ void Actuators::print(Debug *debug, int depth) {
 
     left_.print(debug, depth+1);
     right_.print(debug, depth+1);
-    prograde_dispenser_.print(debug, depth+1);
 }
 
 void Actuators::set(t_act act, float val) {
@@ -456,8 +464,6 @@ void Actuators::set(t_act act, float val) {
         left_.set(act, val);
     if (act & ACT_SIDE_RIGHT)
         right_.set(act, val);
-    if (act & ACT_ACTUATOR_PROG)
-        prograde_dispenser_.set(act, val);
 }
 
 void Actuators::activate(t_act act) {
@@ -465,8 +471,6 @@ void Actuators::activate(t_act act) {
         left_.activate(act);
     if (act & ACT_SIDE_RIGHT)
         right_.activate(act);
-    if (act & ACT_ACTUATOR_PROG)
-        prograde_dispenser_.activate(act);
 }
 
 OneSideCylindersActuators *Actuators::side(t_act side) {

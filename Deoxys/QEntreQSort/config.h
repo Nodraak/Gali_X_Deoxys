@@ -36,11 +36,13 @@
 
 #define ACT_L_FLAP_R            0.05
 #define ACT_L_FLAP_E            0.10
+#define ACT_L_PROG_R            0.06
+#define ACT_L_PROG_E            0.11
 
 
-#define ACT_R_ARM_HEIGHT_R      470
-#define ACT_R_ARM_HEIGHT_N      465
-#define ACT_R_ARM_HEIGHT_E      465
+#define ACT_R_ARM_HEIGHT_R      400
+#define ACT_R_ARM_HEIGHT_N      400
+#define ACT_R_ARM_HEIGHT_E      420
 #define ACT_R_ARM_VERT_R        800
 #define ACT_R_ARM_VERT_N        300
 #define ACT_R_ARM_VERT_E        170
@@ -55,10 +57,8 @@
 
 #define ACT_R_FLAP_R            0.10
 #define ACT_R_FLAP_E            0.04
-
-
-#define ACT_PROG_R              0.06
-#define ACT_PROG_E              0.11
+#define ACT_R_PROG_R            0.06
+#define ACT_R_PROG_E            0.11
 
 
 #endif // CONFIG_H_INCLUDED

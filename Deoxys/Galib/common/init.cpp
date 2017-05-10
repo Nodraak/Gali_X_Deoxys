@@ -194,9 +194,11 @@ void init_board_CQES(Debug *debug,
     Ax12Driver *ax12 = NULL;
     Actuators *actuators = NULL;
 
-    debug->printf("AX12_arm...\n");
+    debug->printf("Ax12Driver...\n");
     ax12 = new Ax12Driver;
+    debug->printf("\tok\n");
 
+    debug->printf("Actuators...\n");
     actuators = new Actuators(
         // left
         OneSideCylindersActuators("left",
@@ -207,23 +209,22 @@ void init_board_CQES(Debug *debug,
                 ServoActuator("clamp",  PwmOut(ACT_L_CLAMP),    ACT_L_ARM_CLAMP_R, ACT_L_ARM_CLAMP_E),
                 BooleanActuator("pump", DigitalOut(ACT_L_PUMP), ACT_L_ARM_PUMP_R,  ACT_L_ARM_PUMP_E)
             ),
-            ServoActuator("flap", PwmOut(ACT_L_FLAP), ACT_L_FLAP_R, ACT_L_FLAP_E)
+            ServoActuator("flap", PwmOut(ACT_L_FLAP), ACT_L_FLAP_R, ACT_L_FLAP_E),
+            ServoActuator("prog_disp", PwmOut(ACT_L_PROG), ACT_L_PROG_R, ACT_L_PROG_E)
         ),
         // right
         OneSideCylindersActuators("right",
             ArmActuator(
-                Ax12Actuator("height", ax12, 1, ACT_R_ARM_HEIGHT_R, ACT_R_ARM_HEIGHT_N, ACT_R_ARM_HEIGHT_E),
+                Ax12Actuator("height", ax12, 10, ACT_R_ARM_HEIGHT_R, ACT_R_ARM_HEIGHT_N, ACT_R_ARM_HEIGHT_E),
                 Ax12Actuator("vert",   ax12, 8, ACT_R_ARM_VERT_R,   ACT_R_ARM_VERT_N,   ACT_R_ARM_VERT_E),
                 Ax12Actuator("horiz",  ax12, 9, ACT_R_ARM_HORIZ_R,  ACT_R_ARM_HORIZ_N,  ACT_R_ARM_HORIZ_E),
                 ServoActuator("clamp",  PwmOut(ACT_R_CLAMP),    ACT_R_ARM_CLAMP_R, ACT_R_ARM_CLAMP_E),
                 BooleanActuator("pump", DigitalOut(ACT_R_PUMP), ACT_R_ARM_PUMP_R,  ACT_R_ARM_PUMP_E)
             ),
-            ServoActuator("flap", PwmOut(ACT_R_FLAP), ACT_R_FLAP_R, ACT_R_FLAP_E)
-        ),
-        // prograde_dispenser
-        ServoActuator("prog_disp", PwmOut(ACT_PROGRADE_DISPENSER), ACT_PROG_R, ACT_PROG_E)
+            ServoActuator("flap", PwmOut(ACT_R_FLAP), ACT_R_FLAP_R, ACT_R_FLAP_E),
+            ServoActuator("prog_disp", PwmOut(ACT_R_PROG), ACT_R_PROG_R, ACT_R_PROG_E)
+        )
     );
-
     debug->printf("\tok.\n");
 
     *_actuators = actuators;

@@ -182,7 +182,8 @@ public:
     OneSideCylindersActuators(
         const char *name,
         ArmActuator arm,
-        ServoActuator flap
+        ServoActuator flap,
+        ServoActuator prograde_dispenser
     );
 
     void print(Debug *debug, int depth);
@@ -193,6 +194,7 @@ public:
     const char *name_;
     ArmActuator arm_;
     ServoActuator flap_;
+    ServoActuator prograde_dispenser_;
     // rotating device (dc motor + color sensor)
 };
 
@@ -206,7 +208,7 @@ public:
 
 class Actuators {
 public:
-    Actuators(OneSideCylindersActuators left, OneSideCylindersActuators right, ServoActuator prograde_dispenser);
+    Actuators(OneSideCylindersActuators left, OneSideCylindersActuators right);
 
     static void order_decode_sequence(OrdersFIFO *orders, e_order_com_type type, t_act act_param);
 
@@ -219,7 +221,6 @@ public:
 public:
     OneSideCylindersActuators left_;
     OneSideCylindersActuators right_;
-    ServoActuator prograde_dispenser_;
     // ((dc motor + micro switch) | step motor) radial_dispenser
     // colorArmActuator side;
 };
