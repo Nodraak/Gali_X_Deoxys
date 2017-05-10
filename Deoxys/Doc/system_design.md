@@ -42,6 +42,7 @@ Tasks:
     * main_loop (com)
 
 Sensor automatic computation might me set up somewhere, somehow. TODO
+Actuators => ALWAYS sequences, without low level stuff like sleeps, so let's plan the sleep in Actuator::order_decode_sequence()
 
 ## Code (Common Classes Only)
 

@@ -16,6 +16,8 @@ Take a look at the header files for moer in depth code documentation).
 * stm_debug.md
 * tests.md
 
+* conclusions and tips for the future
+
 ## Links
 
 offline compiler (there is an online compiler somewhere at mbed.com / mbed.org

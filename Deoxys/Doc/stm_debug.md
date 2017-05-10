@@ -1,4 +1,6 @@
 
+=> https://github.com/RIOT-OS/RIOT/wiki/ST-LINK-tool
+
 # Debugging STM32 boards
 
 There are two ways of debug (in addition to the good old printf):
