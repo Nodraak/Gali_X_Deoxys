@@ -217,7 +217,7 @@ s_order_com demo_table_arm[] = {
 */
     // go in pos
 
-    OrderCom_makeAbsPos(1100, 1000),
+    OrderCom_makeAbsPos(1050, 1000),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
     OrderCom_makeAbsPos(1100, 500+(D+50)),
     OrderCom_makeAbsAngle(DEG2RAD(90)),
@@ -245,9 +245,9 @@ s_order_com demo_table_arm[] = {
 */
 
     OrderCom_makeAbsAngle(DEG2RAD(270)),
-    OrderCom_makeAbsPos(1040, 240+50),
+    OrderCom_makeAbsPos(1040, 260+80),
     OrderCom_makeAbsAngle(DEG2RAD(270)),
-    OrderCom_makeAbsPos(1040, 240+0),
+    OrderCom_makeAbsPos(1040, 260+0),
     OrderCom_makeWaitCQBFinished(),
 
 // todo move in position
