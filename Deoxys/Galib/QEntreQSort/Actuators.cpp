@@ -175,7 +175,7 @@ void BooleanActuator::set(t_act act, float val) {
     if (act & ACT_STATE_RETRACTED)
     {
         retracted_ = bool(val);
-        this->extend();
+        this->retract();
     }
 }
 
@@ -183,7 +183,7 @@ void BooleanActuator::activate(t_act act) {
     if (act & ACT_STATE_EXTENDED)
         this->extend();
     if (act & ACT_STATE_RETRACTED)
-        this->extend();
+        this->retract();
 }
 
 void BooleanActuator::extend(void) {

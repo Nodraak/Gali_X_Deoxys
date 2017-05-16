@@ -50,8 +50,8 @@
 #define ACT_R_ARM_HORIZ_N       125
 #define ACT_R_ARM_HORIZ_E       330
 
-#define ACT_R_ARM_CLAMP_R       0.06
-#define ACT_R_ARM_CLAMP_E       0.08
+#define ACT_R_ARM_CLAMP_R       0.08
+#define ACT_R_ARM_CLAMP_E       0.05
 #define ACT_R_ARM_PUMP_R        true
 #define ACT_R_ARM_PUMP_E        false
 
