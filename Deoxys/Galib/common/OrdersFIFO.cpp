@@ -17,21 +17,22 @@ const char *e2s_order_com_type[ORDER_COM_TYPE_LAST] = {
 
     "WAIT_CQB",
     "WAIT_CQES",
+    "WAIT_CQR",
 
     "MOV_ABS_POS",
     "MOV_ABS_ANGLE",
     "MOV_REL_DIST",
     "MOV_REL_ANGLE",
 
-    "ORDER_COM_TYPE_ACTUATOR",
+    "ACTUATOR",
 
-    "ACT_ORDER_COM_TYPE_SEQ_ARM_INIT",
-    "ACT_ORDER_COM_TYPE_SEQ_ARM_GRAB",
-    "ACT_ORDER_COM_TYPE_SEQ_ARM_MOVE_UP",
-    "ACT_ORDER_COM_TYPE_SEQ_ARM_RELEASE",
-    "ACT_ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN",
-    "ACT_ORDER_COM_TYPE_SEQ_FLAP",
-    "ACT_ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER"
+    "SEQ_ARM_INIT",
+    "SEQ_ARM_GRAB",
+    "SEQ_ARM_MOVE_UP",
+    "SEQ_ARM_RELEASE",
+    "SEQ_ARM_MOVE_DOWN",
+    "SEQ_FLAP",
+    "SEQ_PROGRADE_DISPENSER"
 };
 
 
@@ -42,11 +43,12 @@ const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
 
     "WAIT_CQB",
     "WAIT_CQES",
+    "WAIT_CQR",
 
     "MOV_POS",
     "MOV_ANGLE",
 
-    "ORDER_EXE_TYPE_ACTUATOR"
+    "ACTUATOR"
 };
 
 
@@ -150,6 +152,10 @@ int OrdersFIFO::next_order_execute(void) {
 
             case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
                 current_order_.type = ORDER_EXE_TYPE_WAIT_CQES_FINISHED;
+                break;
+
+            case ORDER_COM_TYPE_WAIT_CQR_FINISHED:
+                current_order_.type = ORDER_EXE_TYPE_WAIT_CQR_FINISHED;
                 break;
 
 #ifdef IAM_QBOUGE
@@ -285,6 +291,7 @@ void OrdersFIFO::debug(Debug *debug) {
 
                 case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
                 case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
+                case ORDER_COM_TYPE_WAIT_CQR_FINISHED:
                     // ignore
                     break;
 
@@ -379,6 +386,12 @@ s_order_com OrderCom_makeWaitCQBFinished(void) {
 s_order_com OrderCom_makeWaitCQESFinished(void) {
     s_order_com tmp;
     tmp.type = ORDER_COM_TYPE_WAIT_CQES_FINISHED;
+    return tmp;
+}
+
+s_order_com OrderCom_makeWaitCQRFinished(void) {
+    s_order_com tmp;
+    tmp.type = ORDER_COM_TYPE_WAIT_CQR_FINISHED;
     return tmp;
 }
 

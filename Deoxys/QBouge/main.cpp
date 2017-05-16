@@ -43,7 +43,7 @@ int main(void)
     );
     init_finalize(debug, main_timer, queue);
 
-    bool cqes_finished = false;
+    bool cqes_finished = false, cqr_finished = false;
 
     /*
         Go!
@@ -57,7 +57,7 @@ int main(void)
         loop->reset();
 
         queue->dispatch(0);  // non blocking dispatch
-        com_handle_can(debug, messenger, orders, &cqes_finished, mc);
+        com_handle_can(debug, messenger, orders, &cqes_finished, &cqr_finished, mc);
 
         if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
@@ -69,6 +69,11 @@ int main(void)
         {
             mc->is_current_order_executed_ = true;
             cqes_finished = false;
+        }
+        if (cqr_finished && (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQR_FINISHED))
+        {
+            mc->is_current_order_executed_ = true;
+            cqr_finished = false;
         }
 
         if (mc->is_current_order_executed_)

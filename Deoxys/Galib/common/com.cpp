@@ -84,13 +84,19 @@ void com_handle_serial(Debug *debug, CanMessenger *messenger)
 #endif
 
 #ifdef IAM_QBOUGE
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqes_finished, MotionController *mc)
+void com_handle_can(
+    Debug *debug, CanMessenger *messenger, OrdersFIFO *orders,
+    bool *cqes_finished, bool *cqr_finished, MotionController *mc
+)
 #endif
 #ifdef IAM_QREFLECHI
 void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders)
 #endif
 #ifdef IAM_QENTRESORT
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished, Actuators *actuators)
+void com_handle_can(
+    Debug *debug, CanMessenger *messenger, OrdersFIFO *orders,
+    bool *cqb_finished, bool *cqr_finished, Actuators *actuators
+)
 #endif
 {
     Message rec_msg;
@@ -136,6 +142,10 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
 
             case Message::MT_CQES_finished:
                 *cqes_finished = true;
+                break;
+
+            case Message::MT_CQR_finished:
+                *cqr_finished = true;
                 break;
 
             case Message::MT_CQR_settings_CQB:
@@ -211,8 +221,11 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, b
                 break;
 
             case Message::MT_CQB_finished:
-                debug->printf("\t-> MT_CQB_finished\n");
                 *cqb_finished = true;
+                break;
+
+            case Message::MT_CQR_finished:
+                *cqr_finished = true;
                 break;
 
             case Message::MT_CQB_I_am_doing:

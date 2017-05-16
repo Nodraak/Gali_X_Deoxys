@@ -55,14 +55,8 @@ void test_sizes(Debug *debug) {
 void test_CAN_payload_sizes(Debug *debug) {
     debug->printf("Testing CAN payload size\n");
 
-    ft_assert(sizeof(Message::CP_CQR_ping) <= 8);
-    ft_assert(sizeof(Message::CP_pong) <= 8);
-    ft_assert(sizeof(Message::CP_CQR_match_start) <= 8);
-    ft_assert(sizeof(Message::CP_CQR_match_stop) <= 8);
     ft_assert(sizeof(Message::CP_CQR_we_are_at) <= 8);
     ft_assert(sizeof(Message::CP_CQR_order) <= 8);
-    ft_assert(sizeof(Message::CP_CQB_next_order_request) <= 8);
-    ft_assert(sizeof(Message::CP_CQES_next_order_request) <= 8);
     ft_assert(sizeof(Message::CP_CQR_settings_CQB) <= 8);
     ft_assert(sizeof(Message::CP_CQR_settings_CQES) <= 8);
     ft_assert(sizeof(Message::CP_I_am_doing) <= 8);

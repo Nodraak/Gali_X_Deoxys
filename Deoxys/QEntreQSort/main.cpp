@@ -18,7 +18,7 @@
 
 
 // move in Actuators ?? or OrdersFIFO ??
-bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, float time_since_last_order_finished)
+bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, float time_since_last_order_finished, bool *cqb_finished, bool *cqr_finished)
 {
     bool is_current_order_executed_ = false;
 
@@ -35,7 +35,25 @@ bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, float time_
             break;
 
         case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
-        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:  // todo send send_msg_CQES_finished and remove it from main() ??
+            if (*cqb_finished)
+            {
+                *cqb_finished = false;
+                is_current_order_executed_ = true;
+            }
+            break;
+
+        case ORDER_EXE_TYPE_WAIT_CQR_FINISHED:
+            if (*cqr_finished)
+            {
+                *cqr_finished = false;
+                is_current_order_executed_ = true;
+            }
+            break;
+
+        case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:
+            // ignore here
+            break;
+
         case ORDER_EXE_TYPE_MOV_POS:
         case ORDER_EXE_TYPE_MOV_ANGLE:
             // ignore on CQES
@@ -82,7 +100,7 @@ int main(void)
     );
     init_finalize(debug, main_timer, queue);
 
-    bool cqb_finished = false;
+    bool cqb_finished = false, cqr_finished = false;
 
 
     /*
@@ -97,17 +115,13 @@ int main(void)
         loop->reset();
 
         queue->dispatch(0);  // non blocking dispatch
-        com_handle_can(debug, messenger, orders, &cqb_finished, actuators);
+        com_handle_can(debug, messenger, orders, &cqb_finished, &cqr_finished, actuators);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order
-        bool is_current_order_executed_ = main_update_cur_order(actuators, orders, main_timer->read()-last_order_executed_timestamp);
-
-        if (cqb_finished && (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED))
-        {
-            orders->current_order_.type = ORDER_EXE_TYPE_NONE;
-            cqb_finished = false;
-        }
+        bool is_current_order_executed_ = main_update_cur_order(
+            actuators, orders, main_timer->read()-last_order_executed_timestamp, &cqb_finished, &cqr_finished
+        );
 
         if (orders->current_order_.type == ORDER_EXE_TYPE_WAIT_CQES_FINISHED)
         {

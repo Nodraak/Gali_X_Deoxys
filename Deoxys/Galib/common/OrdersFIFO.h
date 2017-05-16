@@ -81,6 +81,7 @@ typedef enum    _e_order_com_type {
 // Synchronization orders
     ORDER_COM_TYPE_WAIT_CQB_FINISHED,
     ORDER_COM_TYPE_WAIT_CQES_FINISHED,
+    ORDER_COM_TYPE_WAIT_CQR_FINISHED,
 // wait_CQB_im_finished (what: move order, reach spec pos, ... ?)
 // wait_CQES_im_finished (idem) (what: taking cylinder, loading cylinder, ..., valve, ... ?)
 
@@ -142,6 +143,7 @@ typedef enum    _e_order_exe_type {
 // Synchronization orders
     ORDER_EXE_TYPE_WAIT_CQB_FINISHED,
     ORDER_EXE_TYPE_WAIT_CQES_FINISHED,
+    ORDER_EXE_TYPE_WAIT_CQR_FINISHED,
 
 // Movement orders (CQB)
     ORDER_EXE_TYPE_MOV_POS,                 // param: x, y
@@ -258,6 +260,7 @@ s_order_com OrderCom_makeDelay(float delay);
 
 s_order_com OrderCom_makeWaitCQBFinished(void);
 s_order_com OrderCom_makeWaitCQESFinished(void);
+s_order_com OrderCom_makeWaitCQRFinished(void);
 
 s_order_com OrderCom_makeAbsPos(s_vector_int16 pos);
 s_order_com OrderCom_makeAbsPos(int16_t x, int16_t y);

@@ -271,6 +271,10 @@ int mc_updateCurOrder(
             ret = 1;
             break;
 
+        case ORDER_EXE_TYPE_WAIT_CQR_FINISHED:
+            // do nothing. Just wait without holding pos nor angle.
+            break;
+
         case ORDER_EXE_TYPE_DELAY:
         case ORDER_EXE_TYPE_WAIT_CQB_FINISHED:
         case ORDER_EXE_TYPE_WAIT_CQES_FINISHED:

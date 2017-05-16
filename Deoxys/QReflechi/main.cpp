@@ -45,6 +45,14 @@ int main(void)
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
 
+    /*
+        Sync boards:
+        * Wait a ping for all of them
+        * Check we have on CQR, one CQES (and one Lidar ?)
+        * Init boards (reset and preload orders)
+    */
+
+
     Message rec_msg;
 
     main_timer->reset();
@@ -105,30 +113,12 @@ int main(void)
     messenger->send_msg_CQR_we_are_at(MC_START_X, MC_START_Y, MC_START_ANGLE);
 
     /*
-        Ready, wait for tirette
-    */
-
-    main_timer->reset();
-    while (main_timer->read() < 0.500)
-    {
-        g_mon->main_loop.start_new();
-        loop->reset();
-
-        com_handle_can(debug, messenger, orders);
-
-        g_mon->main_loop.stop_and_save();
-        main_sleep(debug, loop);
-    }
-
-    // todo wait for tirette
-
-    /*
         Go!
     */
 
     debug->printf("\n\n\n==================== Go! ====================\n\n\n");
 
-    messenger->send_msg_CQR_match_start();
+    bool match_is_started = false;
 
     main_timer->reset();
     while (true)  // todo main_timer->read() < 90
@@ -142,13 +132,17 @@ int main(void)
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
 
+        if (!match_is_started)  // todo : && tirette.read()
+        {
+            messenger->send_msg_CQR_finished();
+            main_timer->reset();
+
+            match_is_started = true;
+        }
+
         g_mon->main_loop.stop_and_save();
         main_sleep(debug, loop);
     }
-
-    // messenger->send_msg_CQR_match_stop();
-    // todo stop motors over can
-    // todo funny action
 
     /*
         Cleanup

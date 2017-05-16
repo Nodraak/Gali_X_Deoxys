@@ -88,10 +88,6 @@ public:
         MT_CQR_pong                 = 212,
         MT_CQES_pong                = 213,
 
-        MT_CQR_match_start          = 220,
-        MT_CQR_match_stop           = 221,
-
-
         MT_CQR_we_are_at            = 311,
 
         /*
@@ -102,6 +98,7 @@ public:
 
         MT_CQB_finished             = 510,
         MT_CQES_finished            = 511,
+        MT_CQR_finished             = 512,
 
         MT_CQB_next_order_request   = 520,
         MT_CQES_next_order_request  = 521,
@@ -133,23 +130,11 @@ public:
     */
 
     typedef struct {
-    } s_no_payload;
-
-    typedef s_no_payload CP_CQR_ping;
-    typedef s_no_payload CP_pong;
-
-    typedef s_no_payload CP_CQR_match_start;
-    typedef s_no_payload CP_CQR_match_stop;
-
-    typedef struct {
         s_vector_int16 pos;
         float angle;
     } CP_CQR_we_are_at;
 
     typedef s_order_com CP_CQR_order;
-
-    typedef s_no_payload CP_CQB_next_order_request;
-    typedef s_no_payload CP_CQES_next_order_request;
 
     typedef struct {
         e_cqb_setting what;
@@ -193,17 +178,9 @@ public:
     typedef union {
         char raw_data[8];
 
-        CP_CQR_ping                 CQR_ping;
-        CP_pong                     pong;
-
-        CP_CQR_match_start          CQR_match_start;
-        CP_CQR_match_stop           CQR_match_stop;
-
         CP_CQR_we_are_at            CQR_we_are_at;
 
         CP_CQR_order                CQR_order;
-        CP_CQB_next_order_request   CQB_next_order_request;
-        CP_CQES_next_order_request  CQES_next_order_request;
 
         CP_CQR_settings_CQB         CQR_settings_CQB;
         CP_CQR_settings_CQES        CQR_settings_CQES;
@@ -292,6 +269,7 @@ public:
 #endif
 
 #ifdef IAM_QREFLECHI
+    int send_msg_CQR_finished(void);
     int send_msg_CQR_settings_CQB(e_cqb_setting what, float val);
     int send_msg_CQR_settings_CQES(t_act act, float val);
 #endif

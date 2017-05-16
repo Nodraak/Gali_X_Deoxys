@@ -22,12 +22,11 @@ t_e2s_message_type _e2s_message_type[] = {
     {Message::MT_CQB_pong, "MT_CQB_pong"},
     {Message::MT_CQR_pong, "MT_CQR_pong"},
     {Message::MT_CQES_pong, "MT_CQES_pong"},
-    {Message::MT_CQR_match_start, "MT_CQR_match_start"},
-    {Message::MT_CQR_match_stop, "MT_CQR_match_stop"},
     {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
     {Message::MT_CQR_order, "MT_CQR_order"},
     {Message::MT_CQB_finished, "MT_CQB_finished"},
     {Message::MT_CQES_finished, "MT_CQES_finished"},
+    {Message::MT_CQR_finished, "MT_CQR_finished"},
     {Message::MT_CQB_next_order_request, "MT_CQB_next_order_request"},
     {Message::MT_CQES_next_order_request, "MT_CQES_next_order_request"},
     {Message::MT_CQR_settings_CQB, "MT_CQR_settings_CQB"},
@@ -57,7 +56,7 @@ const char *e2s_message_type(Message::e_message_type msg)
         i ++;
     }
 
-    return "NONE";
+    return "(e2s_message_type unknown)";
 }
 
 
@@ -92,8 +91,7 @@ int CanMessenger::send_msg(Message msg) {
     {
         case Message::MT_CQR_ping:
         case Message::MT_CQR_pong:
-        case Message::MT_CQR_match_start:
-        case Message::MT_CQR_match_stop:
+        case Message::MT_CQR_finished:
         case Message::MT_CQR_we_are_at:
         case Message::MT_CQR_order:
         case Message::MT_CQR_settings_CQB:
@@ -205,14 +203,12 @@ int CanMessenger::on_receive_add(Message::e_message_type type, Callback<void(voi
 
 #ifdef IAM_QREFLECHI
 int CanMessenger::send_msg_CQR_ping(void) {
-    Message::CP_CQR_ping payload;
-    return this->send_msg(Message(Message::MT_CQR_ping, sizeof(payload), (Message::u_payload){.CQR_ping = payload}));
+    return this->send_msg(Message(Message::MT_CQR_ping, 0, (Message::u_payload){}));
 }
 #endif
 
 int CanMessenger::send_msg_pong(void) {
     Message::e_message_type message_type;
-    Message::CP_pong payload;
 
 #ifdef IAM_QBOUGE
     message_type = Message::MT_CQB_pong;
@@ -224,20 +220,10 @@ int CanMessenger::send_msg_pong(void) {
     message_type = Message::MT_CQES_pong;
 #endif
 
-    return this->send_msg(Message(message_type, sizeof(payload), (Message::u_payload){.pong = payload}));
+    return this->send_msg(Message(message_type, 0, (Message::u_payload){}));
 }
 
 #ifdef IAM_QREFLECHI
-int CanMessenger::send_msg_CQR_match_start(void) {
-    Message::CP_CQR_match_start payload;
-    return this->send_msg(Message(Message::MT_CQR_match_start, sizeof(payload), (Message::u_payload){.CQR_match_start = payload}));
-}
-
-int CanMessenger::send_msg_CQR_match_stop(void) {
-    Message::CP_CQR_match_stop payload;
-    return this->send_msg(Message(Message::MT_CQR_match_stop, sizeof(payload), (Message::u_payload){.CQR_match_stop = payload}));
-}
-
 int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
     Message::CP_CQR_we_are_at payload;
     payload.pos.x = x;
@@ -257,10 +243,7 @@ int CanMessenger::send_msg_CQB_finished(void) {
 }
 
 int CanMessenger::send_msg_CQB_next_order_request(void) {
-    Message::CP_CQB_next_order_request payload;
-    return this->send_msg(Message(
-        Message::MT_CQB_next_order_request, sizeof(payload), (Message::u_payload){.CQB_next_order_request = payload}
-    ));
+    return this->send_msg(Message(Message::MT_CQB_next_order_request, 0, (Message::u_payload){}));
 }
 #endif
 
@@ -270,14 +253,15 @@ int CanMessenger::send_msg_CQES_finished(void) {
 }
 
 int CanMessenger::send_msg_CQES_next_order_request(void) {
-    Message::CP_CQES_next_order_request payload;
-    return this->send_msg(Message(
-        Message::MT_CQES_next_order_request, sizeof(payload), (Message::u_payload){.CQES_next_order_request = payload}
-    ));
+    return this->send_msg(Message(Message::MT_CQES_next_order_request, 0, (Message::u_payload){}));
 }
 #endif
 
 #ifdef IAM_QREFLECHI
+int CanMessenger::send_msg_CQR_finished(void) {
+    return this->send_msg(Message(Message::MT_CQR_finished, 0, (Message::u_payload){}));
+}
+
 int CanMessenger::send_msg_CQR_settings_CQB(e_cqb_setting what, float val) {
     Message::CP_CQR_settings_CQB payload;
     payload.what = what;

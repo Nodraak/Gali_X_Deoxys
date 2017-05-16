@@ -9,14 +9,19 @@
 
 #include "QBouge/MotionController.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqes_finished, MotionController *mc);
+void com_handle_can(
+    Debug *debug, CanMessenger *messenger, OrdersFIFO *orders,
+    bool *cqes_finished, bool *cqr_finished, MotionController *mc
+);
 
 #endif
 
 #ifdef IAM_QREFLECHI
 
 void com_handle_serial(Debug *debug, CanMessenger *messenger);
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
+void com_handle_can(
+    Debug *debug, CanMessenger *messenger, OrdersFIFO *orders
+);
 
 #endif
 
@@ -24,7 +29,10 @@ void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders);
 
 #include "QEntreQSort/Actuators.h"
 
-void com_handle_can(Debug *debug, CanMessenger *messenger, OrdersFIFO *orders, bool *cqb_finished, Actuators *actuators);
+void com_handle_can(
+    Debug *debug, CanMessenger *messenger, OrdersFIFO *orders,
+    bool *cqb_finished, bool *cqr_finished, Actuators *actuators
+);
 
 #endif
 
