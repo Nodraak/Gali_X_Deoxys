@@ -132,10 +132,10 @@ s_order_com demo_test_enc_turn[] = {
 };
 
 
+#define Pra         (150-60)    // pos from center to robotic arm
 #define Rc          32          // cylinder radius
 #define Lra         100         // robotic arm length
 #define Hr2         (260/2)     // half robot height
-#define Pra         (150-40)    // pos from center to robotic arm
 
 #define l           (Pra)
 #define L           (Rc + Lra + Hr2)
