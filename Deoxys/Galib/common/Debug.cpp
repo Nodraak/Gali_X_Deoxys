@@ -93,12 +93,41 @@ void Debug::printf(Level level, const char* format, ...) {
 
 int _get_line(BufferedSerial *interface, char *buffer, int buffer_length) {
     int i = 0;
+    Timer t;
+    t.start();
 
-    for (i = 0; (i < buffer_length-1) && interface->readable(); ++i)
+#define READ_TIMEOUT 2000  // us
+
+    while (1)
     {
-        buffer[i] = interface->getc();
-        if ((buffer[i] == '\r') || (buffer[i] == '\n'))
+        /*
+            No more space in buffer.
+            -1 because leave room for '\0'.
+        */
+        if (i == buffer_length-1)
             break;
+
+        if (!interface->readable())
+        {
+            /*
+                If we have already read something (i != 0), wait for a full line
+                ('\n') until a timeout to prevent infinite loop.
+                Dont getc() now, or it will block and we could be trapped.
+                Try interface->readable() again.
+
+                If we have not read anything or if we have waited too long,
+                just quit.
+            */
+            if ((i == 0) || (t.read_us() > READ_TIMEOUT))
+                break;
+        }
+        else
+        {
+            buffer[i] = interface->getc();
+            if ((buffer[i] == '\r') || (buffer[i] == '\n'))
+                break;
+            i ++;
+        }
     }
 
     buffer[i] = '\0';
