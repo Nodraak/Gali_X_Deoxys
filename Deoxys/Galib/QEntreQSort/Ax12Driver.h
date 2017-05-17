@@ -14,7 +14,6 @@
 
 #define AX12_MOVING_SPEED               500
 
-
 /*
     Commands and their lengths
 */
@@ -37,10 +36,20 @@
 #define REG_ADDR_ID                     0x03    // 1 byte
 #define REG_ADDR_BAUD_RATE              0x04    // 1 byte
 #define REG_ADDR_RESPONSE_DELAY         0x05    // 1 byte
+#define REG_ADDR_CW_ANGLE_LIM           0x06    // 2 bytes
+#define REG_ADDR_CCW_ANGLE_LIM          0x08    // 2 bytes
 // RAM (rw)
 #define REG_ADDR_GOAL_POSITION          0x1E    // 2 bytes
 #define REG_ADDR_SPEED                  0x20    // 2 bytes
 #define REG_ADDR_CURRENT_POSITION       0x24    // 2 bytes
+
+/*
+    Default Ax12 settings
+*/
+#define AX12_DIR_CCW                    0
+#define AX12_DIR_CW                     1
+#define CW_ANGLE_LIM_DEFAULT            0
+#define CCW_ANGLE_LIM_DEFAULT           0x3FF   // 0x3FF == 1023
 
 /*
     Errors
@@ -53,10 +62,12 @@
 #define AX12_E_UNHANDLED_CMD            (-260)
 #define AX12_E_READ_CMD                 (-261)
 
+
 #define MAX_BITS_PER_MSG_REQUEST        70
 #define AX12_TIME_FOR_DATA_TO_BE_SENT   (1000*1000*MAX_BITS_PER_MSG_REQUEST/BAUD_RATE + 350)  // us
 #define MAX_BITS_PER_MSG_RESPONSE       100
 #define AX12_READ_TIMEOUT               (1000*1000*MAX_BITS_PER_MSG_RESPONSE/BAUD_RATE + 1000)  // us
+
 
 
 #if AX12_TIME_FOR_DATA_TO_BE_SENT > 1000  // us
@@ -119,6 +130,9 @@ public:
         baud_rate_id == 9 => baud rate of 200 000 bps
     */
     int write_baud_rate(uint8_t id, uint8_t baud_rate_id);
+
+    void endless_turn_enable(uint8_t id, uint16_t speed);
+    void endless_turn_disable(uint8_t id);
 
 private:
     BufferedSerial ax12_;

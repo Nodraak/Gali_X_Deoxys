@@ -1,9 +1,10 @@
+#ifdef IAM_QENTRESORT
 
 #include <string.h>
 #include <stdlib.h>
 
 #include "common/Debug.h"
-#include "QEntreQSort/Sensors.h"
+#include "QEntreQSort/ColorSensor.h"
 
 
 ColorSensor::ColorSensor(PinName g, PinName b) : g_(g), b_(b) {
@@ -15,14 +16,14 @@ ColorSensor::ColorSensor(PinName g, PinName b) : g_(g), b_(b) {
         raw_b_[i] = b_.read();
     }
 
-    tick_.attach(callback(this, &ColorSensor::read_data), 1.000/FREQ_RAW);
-
     tim_.start();
 
     val_ = COLOR_UNKNOWN;
+
+    tick_.attach(callback(this, &ColorSensor::update), 1.000/FREQ_RAW);
 }
 
-void ColorSensor::read_data(void) {
+void ColorSensor::update(void) {
     float tmp_g = 0, tmp_b = 0;
     int i = 0;
 
@@ -42,7 +43,7 @@ void ColorSensor::read_data(void) {
     last_avg_b_ = tmp_b / RAW2AVG_WINDOW;
 }
 
-e_color ColorSensor::val(void) {
+e_color ColorSensor::get_val(void) {
     e_color new_color;
 
     if ((last_avg_g_ > 0.058) && (last_avg_b_ > 0.058))
@@ -68,3 +69,5 @@ e_color ColorSensor::val(void) {
             return val_;
     }
 }
+
+#endif // #ifdef IAM_QENTRESORT

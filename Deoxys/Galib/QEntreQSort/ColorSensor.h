@@ -1,3 +1,5 @@
+#ifdef IAM_QENTRESORT
+
 #ifndef SENSORS_H_INCLUDED
 #define SENSORS_H_INCLUDED
 
@@ -6,15 +8,17 @@
         Seules les LED sont alimentés -> du coup 5V
         Les photodiodes sont auto alimentées
         Apparement, la rouge ne marche pas
-    20 Hz ok -> 50 / sec
-    avg (raw val + dist) sur 1 sec
+    todo doc in english
+    The sensor is shit, so we sample at FREQ_RAW (500) Hz, moving avg on
+    last RAW2AVG_WINDOW (50) raw values. we work only on these averaged values.
+    fancy algorithms with a calibraton phase has been tried, but the dumb
+    version actually works better.
 */
 
-#include "QEntreQSort/Ax12Driver.h"
-#include "common/Debug.h"
 
-#define DIR                     AX12_DIR_CW     // 1 bit
-#define SPEED                   (0x3FF)         // 10 bits  // should be 114 RPM ie 2 turns per sec ie 1 sec for a full cylinder turn, but it is 2 sec :/
+#include "common/Debug.h"
+#include "QEntreQSort/Ax12Driver.h"
+
 
 #define ONE_ROTATION_DURATION   2.0             // sec
 #define FREQ_RAW                500
@@ -37,9 +41,11 @@ class ColorSensor {
 public:
     ColorSensor(PinName g, PinName b);
 
-    void read_data(void);
+private:
+    void update(void);
 
-    e_color val(void);
+public:
+    e_color get_val(void);
 
 private:
     AnalogIn g_;
@@ -55,4 +61,6 @@ private:
     e_color val_;
 };
 
+
 #endif // #ifndef SENSORS_H_INCLUDED
+#endif // #ifdef IAM_QENTRESORT
