@@ -474,4 +474,50 @@ void MotionController::pidAngleSetGoal(float goal) {
     pid_angle_goal_ = goal;
 }
 
+#if 0
+void MotionController::sensor_handle(enum what, int16_t dist) {
+    int sensor_dx = 0, sensor_dy = 0;
+    int sensor_x = 0, sensor_y = 0;
+
+    if (dist == -1)
+        return;
+
+    switch (what)
+    {
+        // todo define ?
+        case front_left:
+            sensor_dx = -200;
+            sensor_dy = 130;
+        case front_midlle:
+            sensor_dx = 0;
+            sensor_dy = 130;
+        case front_right:
+            sensor_dx = 200;
+            sensor_dy = 130;
+        case back_left:
+            sensor_dx = -200;
+            sensor_dy = -130;
+        case back_right:
+            sensor_dx = 200;
+            sensor_dy = -130;
+    }
+
+    sensor_x = cur_x_ + (sin(cur_angle_)*sensor_dx + cos(cur_angle_)*sensor_dy) + cos(cur_angle_)*dist;
+    sensor_y = cur_y_ + (-cos(cur_angle_)*sensor_dx + sin(cur_angle_)*sensor_dy) + sin(cur_angle_)*dist;
+
+    if (!(
+        (sensor_x >= 0+TABLE_MARGIN)
+        && (sensor_x < 2000-TABLE_MARGIN)
+        && (sensor_y >= 0+TABLE_MARGIN)
+        && (sensor_y < 3000-TABLE_MARGIN)
+    ))
+        return;
+
+    if (dist < SENSOR_DIST_STOP)
+        sensor_stop = timer_.read();
+    // else if (dist < SENSOR_DIST_SLOW)
+    //     sensor_slow = timer_.read();
+}
+#endif
+
 #endif // #ifdef IAM_QBOUGE

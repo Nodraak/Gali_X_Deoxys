@@ -2,6 +2,7 @@
 
 #include "mbed.h"
 #include "QEntreQSort/Srf05Sensor.h"
+#include "config.h"
 
 
 Srf05Sensor::Srf05Sensor(PinName trigger, PinName echo) : trigger_(trigger), echo_(echo)
@@ -30,7 +31,11 @@ void Srf05Sensor::echo_callback(void) {
 }
 
 int16_t Srf05Sensor::get_val(void) {
+#ifdef SENSOR_ULTRASOUND_ENABLED
     return val_;
+#else
+    return -1;
+#endif
 }
 
 #endif // #ifdef IAM_QENTRESORT

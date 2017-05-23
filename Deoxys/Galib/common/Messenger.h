@@ -90,6 +90,10 @@ public:
 
         MT_CQR_we_are_at            = 311,
 
+        MT_CQES_sensor_sharp_front  = 320,
+        MT_CQES_sensor_sharp_back   = 321,
+        MT_CQES_sensor_ultrasound   = 322,
+
         /*
             Medium (default) (400-599)
         */
@@ -133,6 +137,24 @@ public:
         s_vector_int16 pos;
         float angle;
     } CP_CQR_we_are_at;
+
+    typedef struct {
+        int16_t left;
+        int16_t middle;
+        int16_t right;
+    } CP_CQES_sensor_sharp_front;
+
+    typedef struct {
+        int16_t left;
+        int16_t right;
+    } CP_CQES_sensor_sharp_back;
+
+    typedef struct {
+        int16_t front_left;
+        int16_t front_right;
+        int16_t back_left;
+        int16_t back_right;
+    } CP_CQES_sensor_ultrasound;
 
     typedef s_order_com CP_CQR_order;
 
@@ -179,6 +201,9 @@ public:
         char raw_data[8];
 
         CP_CQR_we_are_at            CQR_we_are_at;
+        CP_CQES_sensor_sharp_front  CQES_sensor_sharp_front;
+        CP_CQES_sensor_sharp_back   CQES_sensor_sharp_back;
+        CP_CQES_sensor_ultrasound   CQES_sensor_ultrasound;
 
         CP_CQR_order                CQR_order;
 
@@ -256,9 +281,20 @@ public:
     int send_msg_CQR_match_stop(void);
 
     int send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle);
+#endif
 
+#ifdef IAM_QENTRESORT
+    int send_msg_CQES_sensor_sharp_front(int16_t left, int16_t middle, int16_t right);
+    int send_msg_CQES_sensor_sharp_back(int16_t left, int16_t right);
+    int send_msg_CQES_sensor_ultrasound(
+        int16_t front_left, int16_t front_right, int16_t back_left, int16_t back_right
+    );
+#endif
+
+#ifdef IAM_QREFLECHI
     int send_msg_CQR_order(s_order_com order);
 #endif
+
 #ifdef IAM_QBOUGE
     int send_msg_CQB_finished(void);
     int send_msg_CQB_next_order_request(void);

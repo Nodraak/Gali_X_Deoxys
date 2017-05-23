@@ -52,6 +52,19 @@
 #define PID_ANGLE_I         0
 #define PID_ANGLE_D         (1.0/1000)
 
+// Obstacle detection
+
+#if 0
+#define SENSOR_DIST_STOP 200
+// #define SENSOR_DIST_SLOW 400
+#define TABLE_MARGIN 50
+
+typedef enum _e_ {
+    SHARP_FRONT_LEFT,
+    SHARP_FRONT_MIDDLE,
+    SHARP_FRONT_RIGHT
+};
+#endif
 
 class MotionController {
 public:

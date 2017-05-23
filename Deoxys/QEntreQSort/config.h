@@ -60,5 +60,11 @@
 #define ACT_R_PROG_R            0.06
 #define ACT_R_PROG_E            0.11
 
+/*
+    Sensor config
+*/
+
+#define SENSOR_ULTRASOUND_ENABLED   // comment to disable, uncomment to enable
+
 
 #endif // CONFIG_H_INCLUDED

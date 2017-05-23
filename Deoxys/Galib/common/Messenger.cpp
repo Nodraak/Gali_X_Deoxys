@@ -24,6 +24,9 @@ t_e2s_message_type _e2s_message_type[] = {
     {Message::MT_CQES_pong, "MT_CQES_pong"},
     {Message::MT_CQR_we_are_at, "MT_CQR_we_are_at"},
     {Message::MT_CQR_order, "MT_CQR_order"},
+    {Message::MT_CQES_sensor_sharp_front, "MT_CQES_sensor_sharp_front"},
+    {Message::MT_CQES_sensor_sharp_back, "MT_CQES_sensor_sharp_back"},
+    {Message::MT_CQES_sensor_ultrasound, "MT_CQES_sensor_ultrasound"},
     {Message::MT_CQB_finished, "MT_CQB_finished"},
     {Message::MT_CQES_finished, "MT_CQES_finished"},
     {Message::MT_CQR_finished, "MT_CQR_finished"},
@@ -116,6 +119,9 @@ int CanMessenger::send_msg(Message msg) {
             break;
 
         case Message::MT_CQES_pong:
+        case Message::MT_CQES_sensor_sharp_front:
+        case Message::MT_CQES_sensor_sharp_back:
+        case Message::MT_CQES_sensor_ultrasound:
         case Message::MT_CQES_finished:
         case Message::MT_CQES_next_order_request:
         case Message::MT_CQES_I_am_doing:
@@ -234,6 +240,40 @@ int CanMessenger::send_msg_CQR_we_are_at(int16_t x, int16_t y, float angle) {
 
 int CanMessenger::send_msg_CQR_order(s_order_com order) {
     return this->send_msg(Message(Message::MT_CQR_order, sizeof(order), (Message::u_payload){.CQR_order = order}));
+}
+#endif
+
+#ifdef IAM_QENTRESORT
+int CanMessenger::send_msg_CQES_sensor_sharp_front(int16_t left, int16_t middle, int16_t right) {
+    Message::CP_CQES_sensor_sharp_front payload;
+    payload.left = left;
+    payload.middle = middle;
+    payload.right = right;
+    return this->send_msg(Message(
+        Message::MT_CQES_sensor_sharp_front, sizeof(payload), (Message::u_payload){.CQES_sensor_sharp_front = payload}
+    ));
+}
+
+int CanMessenger::send_msg_CQES_sensor_sharp_back(int16_t left, int16_t right) {
+    Message::CP_CQES_sensor_sharp_back payload;
+    payload.left = left;
+    payload.right = right;
+    return this->send_msg(Message(
+        Message::MT_CQES_sensor_sharp_back, sizeof(payload), (Message::u_payload){.CQES_sensor_sharp_back = payload}
+    ));
+}
+
+int CanMessenger::send_msg_CQES_sensor_ultrasound(
+    int16_t front_left, int16_t front_right, int16_t back_left, int16_t back_right
+) {
+    Message::CP_CQES_sensor_ultrasound payload;
+    payload.front_left = front_left;
+    payload.front_right = front_right;
+    payload.back_left = back_left;
+    payload.back_right = back_right;
+    return this->send_msg(Message(
+        Message::MT_CQES_sensor_ultrasound, sizeof(payload), (Message::u_payload){.CQES_sensor_ultrasound = payload}
+    ));
 }
 #endif
 
