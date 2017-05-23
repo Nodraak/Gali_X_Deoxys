@@ -1,12 +1,23 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#define PRINT_TIME
-#define PRINT_COM_CAN_REC
-// #define PRINT_COM_CAN_SEND
-#define PRINT_MONITORING_RESET
-#define PRINT_SYS_CAN_STATS
+/*
+    Read Doc/code_assumptions.md to not fuck everything up by changing things here.
+*/
 
+/*
+    Debug prints. Comment to disable, uncomment to enable.
+*/
+
+// #define PRINT_TIME
+// #define PRINT_COM_CAN_REC
+// #define PRINT_COM_CAN_SEND
+// #define PRINT_MONITORING_RESET
+// #define PRINT_SYS_CAN_STATS
+
+/*
+    Common config
+*/
 
 #define MAIN_LOOP_FPS       200
 #define MAIN_LOOP_DELAY     (1.0/MAIN_LOOP_FPS)

@@ -168,6 +168,7 @@ void init_board_CQR(Debug *debug,
     // ret += demo_load(demo_table, orders);
     // ret += demo_load(demo_test_enc_turn, orders);
     ret += demo_load(demo_table_arm, orders);
+    // ret += demo_load(demo_basic_test, orders);
     if (ret != 0)
     {
         debug->printf("Error: demo_init()\n");

@@ -1,11 +1,23 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
+/*
+    Read Doc/code_assumptions.md to not fuck everything up by changing things here.
+*/
+
+/*
+    Debug prints. Comment to disable, uncomment to enable.
+*/
+
 // #define PRINT_TIME
-#define PRINT_COM_CAN_REC
+// #define PRINT_COM_CAN_REC
 // #define PRINT_COM_CAN_SEND
 #define PRINT_MONITORING_RESET
 #define PRINT_SYS_CAN_STATS
+
+/*
+    Common config
+*/
 
 #define MAIN_LOOP_FPS       200
 #define MAIN_LOOP_DELAY     (1.0/MAIN_LOOP_FPS)
@@ -13,6 +25,17 @@
 
 #define ORDERS_COUNT        100
 
+/*
+    Board-specific config
+*/
+
+/*
+    datasheet MG90S
+    50 Hz
+    1 to 2 ms (over 20 ms pulse width)
+        => 5% to 10% 5V pwm
+        => 7% to 15% 3.3V pwm
+*/
 #define SERVO_PWM_PERIOD    (1.0/50)
 
 /*

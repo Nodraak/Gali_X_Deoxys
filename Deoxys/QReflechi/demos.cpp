@@ -140,9 +140,13 @@ s_order_com demo_test_enc_turn[] = {
 #define l           (Pra)
 #define L           (Rc + Lra + Hr2)
 
+// 277.0
 #define D           DIST(l, L)          // distance to center of cylinder
 #define theta       (1.0*l/L)           // angle to turn to take the cylinder
+// 19.7
 #define theta_deg   (theta*180/3.14)
+
+// todo print these stats
 
 /*
 
@@ -309,6 +313,18 @@ s_order_com demo_table_arm[] = {
 
     OrderCom_makeNone()
 };
+
+
+s_order_com demo_basic_test[] = {
+    OrderCom_makeAbsPos(1000, 0),
+    OrderCom_makeAbsAngle(180),
+    OrderCom_makeAbsPos(1000, 500),
+    OrderCom_makeAbsAngle(0),
+    OrderCom_makeAbsPos(1000, 0),
+
+    OrderCom_makeNone()
+};
+
 
 int demo_load(s_order_com *demo, OrdersFIFO *dest)
 {
