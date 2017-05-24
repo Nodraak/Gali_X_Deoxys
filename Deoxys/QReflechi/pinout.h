@@ -14,4 +14,6 @@
 #define XBEE_TX         D1
 #define XBEE_RX         D0
 
+#define B_PIN           A2
+
 #endif

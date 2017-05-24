@@ -44,6 +44,7 @@ int main(void)
 
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
+    DigitalIn tirette(B_PIN);
 
     /*
         Sync boards:
@@ -132,7 +133,7 @@ int main(void)
         com_handle_serial(debug, messenger);
         com_handle_can(debug, messenger, orders);
 
-        if (!match_is_started)  // todo : && tirette.read()
+        if ((match_is_started == false) && (tirette.read() == 0))
         {
             messenger->send_msg_CQR_finished();
             main_timer->reset();

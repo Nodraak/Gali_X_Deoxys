@@ -27,8 +27,8 @@
 */
 #define MOTOR_DIR_LEFT_FORWARD      1
 #define MOTOR_DIR_LEFT_BACKWARD     0
-#define MOTOR_DIR_RIGHT_FORWARD     1
-#define MOTOR_DIR_RIGHT_BACKWARD    0
+#define MOTOR_DIR_RIGHT_FORWARD     0
+#define MOTOR_DIR_RIGHT_BACKWARD    1
 
 
 class Motor {
