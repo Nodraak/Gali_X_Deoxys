@@ -23,12 +23,14 @@
 
 #define ENC_RADIUS          28.2                    // one encoder radius
 #define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one encoder perimeter
-#define TICKS_PER_MM        16.5
-
 #define ENC_POS_RADIUS      87                      // distance from one encoder to the center of the robot
 
-#define MM_TO_TICKS(val)    ((val)*TICKS_PER_MM)
-#define TICKS_TO_MM(val)    ((val)/TICKS_PER_MM)
+#define TICKS_PER_MM_L      16.5
+#define TICKS_PER_MM_R      131.8
+#define MM_TO_TICKS_L(val)  ((val)*TICKS_PER_MM_L)
+#define TICKS_TO_MM_L(val)  ((val)/TICKS_PER_MM_L)
+#define MM_TO_TICKS_R(val)  ((val)*TICKS_PER_MM_R)
+#define TICKS_TO_MM_R(val)  ((val)/TICKS_PER_MM_R)
 
 // Execute next order conditions
 

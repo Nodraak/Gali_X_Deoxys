@@ -216,8 +216,8 @@ void MotionController::updatePosition(void) {
     float diff_l = 0, diff_r = 0;  // unit: mm
     float last_angle = 0;
 
-    diff_l = TICKS_TO_MM(enc_l_val_-enc_l_last_);
-    diff_r = TICKS_TO_MM(enc_r_val_-enc_r_last_);
+    diff_l = TICKS_TO_MM_L(enc_l_val_-enc_l_last_);
+    diff_r = TICKS_TO_MM_R(enc_r_val_-enc_r_last_);
 
     motor_l_.updateSpeed(diff_l);
     motor_r_.updateSpeed(diff_r);

@@ -14,8 +14,8 @@ Qei::Qei(PinName channelA, PinName channelB): channelA_(channelA), channelB_(cha
     // register isr
     channelA_.rise(callback(this, &Qei::encode));
     channelA_.fall(callback(this, &Qei::encode));
-    channelB_.rise(callback(this, &Qei::encode));
-    channelB_.fall(callback(this, &Qei::encode));
+    // channelB_.rise(callback(this, &Qei::encode));
+    // channelB_.fall(callback(this, &Qei::encode));
 }
 
 int Qei::getPulses(void) {
@@ -31,6 +31,7 @@ void Qei::encode(void) {
     //2-bit state.
     currState_ = (channelA_.read() << 1) | (channelB_.read());
 
+#if 0
     //Entered a new valid state.
     if (((currState_ ^ prevState_) != INVALID) && (currState_ != prevState_)) {
         //2 bit state. Right hand bit of prev XOR left hand bit of current
@@ -42,6 +43,18 @@ void Qei::encode(void) {
         }
 
         pulses_ -= change;
+    }
+#endif
+
+    //11->00->11->00 is counter clockwise rotation or "forward".
+    if ((prevState_ == 0x3 && currState_ == 0x0) ||
+            (prevState_ == 0x0 && currState_ == 0x3)) {
+        pulses_++;
+    }
+    //10->01->10->01 is clockwise rotation or "backward".
+    else if ((prevState_ == 0x2 && currState_ == 0x1) ||
+             (prevState_ == 0x1 && currState_ == 0x2)) {
+        pulses_--;
     }
 
     prevState_ = currState_;
