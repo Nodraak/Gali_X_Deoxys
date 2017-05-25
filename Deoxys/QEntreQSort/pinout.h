@@ -25,4 +25,14 @@
 #define ACT_R_FLAP          PB_8    // D15 pwm
 #define ACT_R_PROG          PB_9    // D14 pwm
 
+#define COLOR_L_GREEN       PC_0  // analog in
+#define COLOR_L_BLUE        PA_5  // analog in
+#define COLOR_L_AX12_ID     11
+#define COLOR_L_REVERSED    false
+
+#define COLOR_R_GREEN       PA_6  // analog in
+#define COLOR_R_BLUE        PA_7  // analog in
+#define COLOR_R_AX12_ID     14
+#define COLOR_R_REVERSED    true
+
 #endif

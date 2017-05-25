@@ -61,7 +61,15 @@ bool main_update_cur_order(Actuators *actuators, OrdersFIFO *orders, float time_
 
         case ORDER_EXE_TYPE_ACTUATOR:
             actuators->activate(orders->current_order_.act_param);
-            is_current_order_executed_ = true;
+            if (orders->current_order_.act_param & ACT_ACTUATOR_COLOR)
+                orders->current_order_.type = ORDER_EXE_TYPE_COLOR_WAIT;
+            else
+                is_current_order_executed_ = true;
+            break;
+
+        case ORDER_EXE_TYPE_COLOR_WAIT:
+            if (actuators->is_color_done(orders->current_order_.act_param))
+                is_current_order_executed_ = true;
             break;
 
         case ORDER_EXE_TYPE_LAST:
@@ -96,6 +104,7 @@ int main(void)
         &loop
     );
     init_board_CQES(debug,
+        queue,
         &actuators
     );
     init_finalize(debug, main_timer, queue);

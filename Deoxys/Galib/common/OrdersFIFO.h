@@ -50,6 +50,7 @@
 #define ACT_ACTUATOR_PUMP       (0x1 << 12)
 #define ACT_ACTUATOR_FLAP       (0x1 << 13)
 #define ACT_ACTUATOR_PROG       (0x1 << 14)
+#define ACT_ACTUATOR_COLOR      (0x1 << 15)
 
 // side: 8 bits
 #define ACT_SIDE_LEFT           (0x1 << 24)
@@ -102,6 +103,7 @@ typedef enum    _e_order_com_type {
     ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN,       // param: side
     ORDER_COM_TYPE_SEQ_FLAP,                // param: side
     ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER,  // param: side
+    ORDER_COM_TYPE_SEQ_COLOR,               // param: side
 // todo order radial_dispenser
 
     ORDER_COM_TYPE_LAST
@@ -151,6 +153,7 @@ typedef enum    _e_order_exe_type {
 
 // Actuators orders (CQES)
     ORDER_EXE_TYPE_ACTUATOR,
+    ORDER_EXE_TYPE_COLOR_WAIT,
 
     ORDER_EXE_TYPE_LAST
 }               e_order_exe_type;

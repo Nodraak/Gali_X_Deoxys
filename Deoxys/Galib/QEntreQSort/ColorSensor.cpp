@@ -20,12 +20,17 @@ ColorSensor::ColorSensor(PinName g, PinName b) : g_(g), b_(b) {
 
     val_ = COLOR_UNKNOWN;
 
+    updating_ = false;
     tick_.attach(callback(this, &ColorSensor::update), 1.000/FREQ_RAW);
 }
 
 void ColorSensor::update(void) {
     float tmp_g = 0, tmp_b = 0;
     int i = 0;
+
+    if (updating_)
+        return;
+    updating_ = true;
 
     // read new val
     memmove(&raw_g_[0], &raw_g_[1], (RAW2AVG_WINDOW-1)*sizeof(float));
@@ -41,6 +46,8 @@ void ColorSensor::update(void) {
     }
     last_avg_g_ = tmp_g / RAW2AVG_WINDOW;
     last_avg_b_ = tmp_b / RAW2AVG_WINDOW;
+
+    updating_ = false;
 }
 
 e_color ColorSensor::get_val(void) {

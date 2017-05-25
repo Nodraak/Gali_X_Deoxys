@@ -249,10 +249,10 @@ int Ax12Driver::write_baud_rate(uint8_t id, uint8_t baud_rate_id) {
     return this->_write(id, AX12_WRITE_1B_LEN, AX12_WRITE_CMD, REG_ADDR_BAUD_RATE, baud_rate_id);
 }
 
-void Ax12Driver::endless_turn_enable(uint8_t id, uint16_t speed) {
+void Ax12Driver::endless_turn_enable(uint8_t id, uint8_t direction, uint16_t speed) {
     this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, REG_ADDR_CW_ANGLE_LIM, 0, 0);
     this->_write(id, AX12_WRITE_2B_LEN, AX12_WRITE_CMD, REG_ADDR_CCW_ANGLE_LIM, 0, 0);
-    this->write_speed(id, speed);
+    this->write_speed(id, ((direction << 10) | speed));
 }
 
 void Ax12Driver::endless_turn_disable(uint8_t id) {

@@ -181,6 +181,7 @@ void init_board_CQR(Debug *debug,
 
 #ifdef IAM_QENTRESORT
 void init_board_CQES(Debug *debug,
+    EventQueue *queue,
     Actuators **_actuators
 )
 {
@@ -203,7 +204,8 @@ void init_board_CQES(Debug *debug,
                 BooleanActuator("pump", DigitalOut(ACT_L_PUMP), ACT_L_ARM_PUMP_R,  ACT_L_ARM_PUMP_E)
             ),
             ServoActuator("flap", PwmOut(ACT_L_FLAP), ACT_L_FLAP_R, ACT_L_FLAP_E),
-            ServoActuator("prog_disp", PwmOut(ACT_L_PROG), ACT_L_PROG_R, ACT_L_PROG_E)
+            ServoActuator("prog_disp", PwmOut(ACT_L_PROG), ACT_L_PROG_R, ACT_L_PROG_E),
+            CylinderRotationSystem(ax12_driver, queue, COLOR_L_GREEN, COLOR_L_BLUE, COLOR_L_AX12_ID, COLOR_L_REVERSED)
         ),
         // right
         OneSideCylindersActuators("right",
@@ -215,7 +217,8 @@ void init_board_CQES(Debug *debug,
                 BooleanActuator("pump", DigitalOut(ACT_R_PUMP), ACT_R_ARM_PUMP_R,  ACT_R_ARM_PUMP_E)
             ),
             ServoActuator("flap", PwmOut(ACT_R_FLAP), ACT_R_FLAP_R, ACT_R_FLAP_E),
-            ServoActuator("prog_disp", PwmOut(ACT_R_PROG), ACT_R_PROG_R, ACT_R_PROG_E)
+            ServoActuator("prog_disp", PwmOut(ACT_R_PROG), ACT_R_PROG_R, ACT_R_PROG_E),
+            CylinderRotationSystem(ax12_driver, queue, COLOR_R_GREEN, COLOR_R_BLUE, COLOR_R_AX12_ID, COLOR_R_REVERSED)
         )
     );
     debug->printf("\tok.\n");

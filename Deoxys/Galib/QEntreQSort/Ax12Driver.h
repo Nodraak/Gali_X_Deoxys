@@ -131,7 +131,14 @@ public:
     */
     int write_baud_rate(uint8_t id, uint8_t baud_rate_id);
 
-    void endless_turn_enable(uint8_t id, uint16_t speed);
+    /*
+        Direction:
+            AX12_DIR_CW
+            AX12_DIR_CCW
+        Speed:
+            0 to 1023 (0x03FF)
+    */
+    void endless_turn_enable(uint8_t id, uint8_t direction, uint16_t speed);
     void endless_turn_disable(uint8_t id);
 
 private:

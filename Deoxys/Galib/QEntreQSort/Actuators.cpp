@@ -4,6 +4,7 @@
 #include "common/Debug.h"
 #include "common/OrdersFIFO.h"
 #include "QEntreQSort/Ax12Driver.h"
+#include "QEntreQSort/CylinderRotationSystem.h"
 
 #include "config.h"
 
@@ -309,8 +310,9 @@ OneSideCylindersActuators::OneSideCylindersActuators(
     const char *name,
     ArmActuator arm,
     ServoActuator flap,
-    ServoActuator prograde_dispenser
-) : name_(name), arm_(arm), flap_(flap), prograde_dispenser_(prograde_dispenser)
+    ServoActuator prograde_dispenser,
+    CylinderRotationSystem crs
+) : name_(name), arm_(arm), flap_(flap), prograde_dispenser_(prograde_dispenser), crs_(crs)
 {
     flap_.close();
     prograde_dispenser_.close();
@@ -356,6 +358,12 @@ void OneSideCylindersActuators::activate(t_act act) {
         flap_.activate(act);
     if (act & ACT_ACTUATOR_PROG)
         prograde_dispenser_.activate(act);
+    if (act & ACT_ACTUATOR_COLOR)
+        crs_.rotate(180);
+}
+
+int OneSideCylindersActuators::is_color_done(void) {
+    return crs_.is_color_done();
 }
 
 /*
@@ -439,6 +447,10 @@ Actuators::Actuators(
             orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_FLAP | ACT_STATE_OPEN));
             break;
 
+        case ORDER_COM_TYPE_SEQ_COLOR:
+            orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_COLOR));
+            break;
+
         case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
             orders->prepend(OrderCom_makeDelay(ACT_DELAY_SEQ_PROG_CLOSE));
             orders->prepend(OrderCom_makeActuator(act_param | ACT_ACTUATOR_PROG | ACT_STATE_CLOSED));
@@ -473,13 +485,11 @@ void Actuators::activate(t_act act) {
         right_.activate(act);
 }
 
-OneSideCylindersActuators *Actuators::side(t_act side) {
-    if (side & ACT_SIDE_LEFT)
-        return &left_;
-    if (side & ACT_SIDE_RIGHT)
-        return &right_;
-
-    return NULL;
+int Actuators::is_color_done(t_act act) {
+    if (act & ACT_SIDE_LEFT)
+        return left_.is_color_done();
+    if (act & ACT_SIDE_RIGHT)
+        return right_.is_color_done();
 }
 
 #endif // #ifdef IAM_QENTRESORT

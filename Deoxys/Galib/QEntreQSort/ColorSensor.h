@@ -56,6 +56,7 @@ private:
     float raw_b_[RAW2AVG_WINDOW];
     float last_avg_g_;
     float last_avg_b_;
+    bool updating_;
 
     Timer tim_;
     e_color val_;

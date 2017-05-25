@@ -21,6 +21,7 @@
 #include "common/Debug.h"
 #include "common/OrdersFIFO.h"
 #include "QEntreQSort/Ax12Driver.h"
+#include "QEntreQSort/CylinderRotationSystem.h"
 
 
 /*
@@ -183,19 +184,22 @@ public:
         const char *name,
         ArmActuator arm,
         ServoActuator flap,
-        ServoActuator prograde_dispenser
+        ServoActuator prograde_dispenser,
+        CylinderRotationSystem crs
     );
 
     void print(Debug *debug, int depth);
     void set(t_act act, float val);
     void activate(t_act act);
+    int is_color_done(void);
 
 public:
     const char *name_;
     ArmActuator arm_;
     ServoActuator flap_;
     ServoActuator prograde_dispenser_;
-    // rotating device (dc motor + color sensor)
+    CylinderRotationSystem crs_;
+    // rotating device (dc motor)
 };
 
 /*
@@ -216,13 +220,12 @@ public:
     void set(t_act act, float val);
     void activate(t_act act);
 
-    OneSideCylindersActuators *side(t_act side);
+    int is_color_done(t_act act);
 
 public:
     OneSideCylindersActuators left_;
     OneSideCylindersActuators right_;
     // ((dc motor + micro switch) | step motor) radial_dispenser
-    // colorArmActuator side;
 };
 
 #endif // #ifndef ACTUATORS_H_INCLUDED

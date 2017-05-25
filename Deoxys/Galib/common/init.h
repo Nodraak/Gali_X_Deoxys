@@ -54,6 +54,7 @@ void init_board_CQR(Debug *debug, OrdersFIFO *orders);
 
 #ifdef IAM_QENTRESORT
 void init_board_CQES(Debug *debug,
+    EventQueue *queue,
     Actuators **_actuators
 );
 #endif

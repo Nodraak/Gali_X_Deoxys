@@ -32,7 +32,8 @@ const char *e2s_order_com_type[ORDER_COM_TYPE_LAST] = {
     "SEQ_ARM_RELEASE",
     "SEQ_ARM_MOVE_DOWN",
     "SEQ_FLAP",
-    "SEQ_PROGRADE_DISPENSER"
+    "SEQ_PROGRADE_DISPENSER",
+    "SEQ_COLOR"
 };
 
 
@@ -48,7 +49,8 @@ const char *e2s_order_exe_type[ORDER_EXE_TYPE_LAST] = {
     "MOV_POS",
     "MOV_ANGLE",
 
-    "ACTUATOR"
+    "ACTUATOR",
+    "COLOR_WAIT"
 };
 
 
@@ -201,6 +203,7 @@ int OrdersFIFO::next_order_execute(void) {
             case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
             case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
             case ORDER_COM_TYPE_SEQ_FLAP:
+            case ORDER_COM_TYPE_SEQ_COLOR:
             case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
                 Actuators::order_decode_sequence(this, (e_order_com_type)next.type, next.order_data.act_param);
                 break;
@@ -213,6 +216,7 @@ int OrdersFIFO::next_order_execute(void) {
             case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
             case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
             case ORDER_COM_TYPE_SEQ_FLAP:
+            case ORDER_COM_TYPE_SEQ_COLOR:
             case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
                 // ignore if not on CQES
                 ret = 1;
@@ -342,6 +346,7 @@ void OrdersFIFO::debug(Debug *debug) {
                 case ORDER_COM_TYPE_SEQ_ARM_RELEASE:
                 case ORDER_COM_TYPE_SEQ_ARM_MOVE_DOWN:
                 case ORDER_COM_TYPE_SEQ_FLAP:
+                case ORDER_COM_TYPE_SEQ_COLOR:
                 case ORDER_COM_TYPE_SEQ_PROGRADE_DISPENSER:
                     debug->printf(
                         "side l=%d r=%d",
