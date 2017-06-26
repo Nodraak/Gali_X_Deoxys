@@ -84,6 +84,26 @@ int main(void)
                 last_ping_CQES = main_timer->read();
                 debug->printf("pong cqb\n");
             }
+            else if (rec_msg.id == Message::MT_CQB_MC_pos_angle)
+            {
+                debug->printf(
+                    "\t-> pos angle %d %d %.0f\n",
+                    rec_msg.payload.CQB_MC_pos_angle.pos.x,
+                    rec_msg.payload.CQB_MC_pos_angle.pos.y,
+                    RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
+                );
+            }
+            else if (rec_msg.id == Message::MT_CQB_MC_encs)
+            {
+                debug->printf(
+                    "\t-> encs %d %d\n",
+                    rec_msg.payload.CQB_MC_encs.enc_l,
+                    rec_msg.payload.CQB_MC_encs.enc_r
+                );
+            }
+
+
+
             // else todo com_handle_can ??? beware of side effects like loading orders (what if we reset a board ?)
         }
 

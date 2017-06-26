@@ -21,8 +21,8 @@
 
 
 #define ONE_ROTATION_DURATION   2.0             // sec
-#define FREQ_RAW                500
-#define RAW2AVG_WINDOW          50
+#define FREQ_RAW                200
+#define RAW2AVG_WINDOW          40
 #define CONFIDENCE_DELAY        (0.050)         // default value is (ONE_ROTATION_DURATION/8) (the middle of the color)
 
 #define SIZE_AVG                ((int)(FREQ_RAW*ONE_ROTATION_DURATION))

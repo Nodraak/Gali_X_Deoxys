@@ -58,14 +58,14 @@ void sys_interrupt_priorities_init(void)
 #endif
 
     // pwm outputs (mbed PwmOut via TIM1)
-    _SetPriority(TIM1_BRK_TIM15_IRQn, 2);
-    _SetPriority(TIM1_UP_TIM16_IRQn, 2);
-    _SetPriority(TIM1_TRG_COM_IRQn, 2);
-    _SetPriority(TIM1_CC_IRQn, 2);
+    _SetPriority(TIM1_BRK_TIM15_IRQn, 4);
+    _SetPriority(TIM1_UP_TIM16_IRQn, 4);
+    _SetPriority(TIM1_TRG_COM_IRQn, 4);
+    _SetPriority(TIM1_CC_IRQn, 4);
 
 #ifdef IAM_QBOUGE
     // asserv (mbed ticker (ISR) via TIM2)
-    _SetPriority(TIM2_IRQn, 3);
+    _SetPriority(TIM2_IRQn, 5);
 #endif
 
     // CAN bus

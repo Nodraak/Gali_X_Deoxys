@@ -1,2 +1,5 @@
 .build/
+BUILD
+logs/
+tests/
 

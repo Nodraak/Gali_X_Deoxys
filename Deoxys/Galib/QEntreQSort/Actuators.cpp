@@ -392,13 +392,14 @@ Actuators::Actuators(
         case ORDER_COM_TYPE_DELAY:
         case ORDER_COM_TYPE_WAIT_CQB_FINISHED:
         case ORDER_COM_TYPE_WAIT_CQES_FINISHED:
+        case ORDER_COM_TYPE_WAIT_CQR_FINISHED:
         case ORDER_COM_TYPE_MOV_ABS_POS:
         case ORDER_COM_TYPE_MOV_ABS_ANGLE:
         case ORDER_COM_TYPE_MOV_REL_DIST:
         case ORDER_COM_TYPE_MOV_REL_ANGLE:
         case ORDER_COM_TYPE_ACTUATOR:
         case ORDER_COM_TYPE_LAST:
-            // ignore on CQES
+            // ignore. Here we handle only actuators related orders
             break;
 
         case ORDER_COM_TYPE_SEQ_ARM_INIT:

@@ -9,9 +9,12 @@
 #include "common/com.h"
 #include "common/init.h"
 #include "common/main_sleep.h"
+#include "common/parse_cmd.h"
 #include "common/utils.h"
 #include "QEntreQSort/Ax12Driver.h"
 #include "QEntreQSort/Actuators.h"
+#include "QEntreQSort/CylinderRotationSystem.h"
+
 
 #include "config.h"
 #include "pinout.h"
@@ -103,6 +106,7 @@ int main(void)
         &queue,
         &loop
     );
+
     init_board_CQES(debug,
         queue,
         &actuators
@@ -125,6 +129,8 @@ int main(void)
 
         queue->dispatch(0);  // non blocking dispatch
         com_handle_can(debug, messenger, orders, &cqb_finished, &cqr_finished, actuators);
+
+        parse_cmd(debug, orders, actuators);
 
         // equiv MC::updateCurOrder
         // update the goals in function of the given order

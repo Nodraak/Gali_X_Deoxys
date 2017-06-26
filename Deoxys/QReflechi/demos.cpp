@@ -316,11 +316,11 @@ s_order_com demo_table_arm[] = {
 
 
 s_order_com demo_basic_test[] = {
-    OrderCom_makeAbsPos(1000, 0),
+    OrderCom_makeAbsPos(500, 0),
     OrderCom_makeAbsAngle(180),
-    OrderCom_makeAbsPos(1000, 500),
+    OrderCom_makeAbsPos(250, 0),
     OrderCom_makeAbsAngle(0),
-    OrderCom_makeAbsPos(1000, 0),
+    OrderCom_makeAbsPos(0, 0),
 
     OrderCom_makeNone()
 };

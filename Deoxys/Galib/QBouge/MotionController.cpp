@@ -324,6 +324,7 @@ int mc_updateCurOrder(
             break;
 
         case ORDER_EXE_TYPE_ACTUATOR:
+        case ORDER_EXE_TYPE_COLOR_WAIT:
             // ignore on CQB
             ret = 1;
             break;
@@ -396,9 +397,10 @@ void MotionController::updateMotors(void) {
 
 
 void MotionController::debug_serial(Debug *debug) {
-    debug->printf("[MC/i] (ticks l r) %d %d\n", enc_l_val_, enc_r_val_);
+    // debug->printf("[MC/i] (ticks l r) %d %d\n", enc_l_val_, enc_r_val_);
+    debug->printf("[MC/i] (mm l r) %.2f %.2f\n", TICKS_TO_MM_L(enc_l_val_), TICKS_TO_MM_R(enc_r_val_));
     debug->printf("[MC/t_pid] (dist angle) %.3f %.3f\n", pid_dist_out_, pid_angle_out_);
-    debug->printf("[MC/o_mot] (pwm) %.3f %.3f\n", motor_l_.getSPwm(), motor_r_.getSPwm());
+    // debug->printf("[MC/o_mot] (pwm) %.3f %.3f\n", motor_l_.getSPwm(), motor_r_.getSPwm());
     debug->printf(
         "[MC/o_robot] (pos angle speed ang_speed) %.0f %.0f %d %.0f %d\n",
         pos_.x, pos_.y, (int)RAD2DEG(angle_), speed_, (int)RAD2DEG(speed_ang_)
@@ -412,12 +414,12 @@ void MotionController::debug_serial(Debug *debug) {
 
 void MotionController::debug_can(CanMessenger *cm) {
 // todo: can fifo ? yes, but still take advantage of built in hw can fifo (of size 3 IIRC)
-    cm->send_msg_CQB_MC_pos_angle(pos_.x, pos_.y, angle_);
-    // cm->send_msg_CQB_MC_speeds(speed_, speed_ang_);
 
-    // cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
+    cm->send_msg_CQB_MC_encs(enc_l_val_, enc_r_val_);
     // cm->send_msg_CQB_MC_pids(pid_dist_out_, pid_angle_out_);
     // cm->send_msg_CQB_MC_motors(motor_l_.getSPwm(), motor_r_.getSPwm());
+    cm->send_msg_CQB_MC_pos_angle(pos_.x, pos_.y, angle_);
+    // cm->send_msg_CQB_MC_speeds(speed_, speed_ang_);
 }
 
 void MotionController::print(Debug *debug) {

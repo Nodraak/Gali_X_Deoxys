@@ -155,13 +155,16 @@ void com_handle_can(
                 break;
 
             case Message::MT_CQES_I_am_doing:
-                // ignore on CQB
+                debug->printf(
+                    "\t-> I am doing %s %s\n",
+                    rec_msg.payload.I_am_doing.i_am,
+                    e2s_order_exe_type[rec_msg.payload.I_am_doing.order]
+                );
                 break;
 #endif
 
 #ifdef IAM_QREFLECHI
             case Message::MT_CQB_next_order_request:
-                debug->printf("\t-> MT_CQB_next_order_request\n");
                 if (orders->size() == 0)
                     debug->printf("\t-> orders->size() == 0\n");
                 // todo send a shut up order
@@ -192,10 +195,17 @@ void com_handle_can(
                     RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
                 );
                 break;
+
+        case Message::MT_CQES_sensor_sharp_front:
+        case Message::MT_CQES_sensor_sharp_back:
+        case Message::MT_CQES_sensor_ultrasound:
+            // ignore on cqr
+            break;
 #endif
 
 #ifdef IAM_QENTRESORT
             case Message::MT_CQB_MC_pos_angle:
+            case Message::MT_CQB_MC_encs:
                 // ignore on CQES
                 break;
 

@@ -20,6 +20,8 @@ build:
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 stats:
+	# nm --print-size --size-sort .build/NUCLEO_$(BOARD)/GCC_ARM/out.elf | tail
+	# python mbed-os/tools/memap.py .build/NUCLEO_$(BOARD)/GCC_ARM/out.map -t GCC_ARM -d
 	python ../memstats_free.py "$(BOARD)" "$(BOARD_FLASH)" "$(BOARD_RAM)"
 
 soft_re:

@@ -1,5 +1,6 @@
 
 #include "mbed.h"
+#include "common/Debug.h"
 
 /*
     This is some Cortex F3 low level magic.
@@ -106,9 +107,15 @@ void fault_handler(uint32_t *top_of_stack, const char *msg)
 
     printf(buf);
     error(buf);
+    g_debug->printf(buf);
+
+    DigitalOut led(LED1);
 
     while (1)
-        ;
+    {
+        led = !led;
+        wait_ms(200);
+    }
 }
 
 extern "C" void HardFault_Handler(uint32_t *top_of_stack) {

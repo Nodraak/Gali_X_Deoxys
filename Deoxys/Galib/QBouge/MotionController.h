@@ -41,8 +41,8 @@
 
 // Max speed
 
-#define PID_DIST_MAX_OUPUT  1.0
-#define PID_ANGLE_MAX_OUPUT 1.0
+#define PID_DIST_MAX_OUPUT  0.8
+#define PID_ANGLE_MAX_OUPUT 0.6
 
 // PID settings
 
