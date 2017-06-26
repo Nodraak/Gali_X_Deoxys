@@ -16,4 +16,4 @@ You are encouraged to use the Makefile:
 * `make build`: compile the sources
 * `make upload`: flash the connected microcontroller with the executable
 
-When compiling, the output file is in `./.build/NUCLEO_XXX/GCC_ARM/out.bin`. In orde to flash the microcontroller, just copy and paste this file. You might use the st-link utility, which save a lot of trouble (if no space is left on teh microcontroller and you were using the copy method, unplug an replug the board. Yes, this is a very silly bug).
+When compiling, the output file is in `./.build/NUCLEO_XXX/GCC_ARM/out.bin`. In orde to flash the microcontroller, just copy and paste this file. You might use the st-link utility, which save a lot of trouble (if no space is left on the microcontroller and you were using the copy method, unplug an replug the board. Yes, this is a very silly bug).

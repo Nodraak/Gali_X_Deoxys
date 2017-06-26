@@ -14,8 +14,9 @@ Openocd receive commands from gdb and is the interface to the microcontroller.
 ## Prerequisites
 
 Make sure you have:
-    * arm-none-eabi-gdb (alongside your compiler arm-none-eabi-gcc)
-    * openocd
+
+* arm-none-eabi-gdb (alongside your compiler arm-none-eabi-gcc)
+* openocd
 
 A few notes:
 
