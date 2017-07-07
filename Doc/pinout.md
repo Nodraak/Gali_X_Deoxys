@@ -1,11 +1,24 @@
 
-xxx
-we have boards and wiring ...
+# Pinout
+
+Here is some very crude diagram showing the pinout.
 
 
-# Boards
+Some explanation so you are not (too) lost:
 
-## CQB
+* Xbee: wireless transmitter used for remote debug
+* Can: bus connecting all microcontrollers
+* BRK, Dir, Pwm: H Bridge (LMD18200) pins
+* Pwm: (cheap) servo controlled with PWM
+* Ax12/Mx28: (high end) servo controlled with a proprietary UART-like bus
+* SRF04/SRF05: ultra sound distance (proximity) sensor
+
+
+## Boards
+
+### CQB
+
+Heavily used board. Encoders should used hardware counter or maybe another board.
 
 ```text
                      +---------+
@@ -18,7 +31,7 @@ we have boards and wiring ...
         | GND                             x |
 Can Td  | D2                             A7 |
 L Enc 1 | D3 PB0                         A6 | R BRK
-        | D4                             A5 | R pwm ?
+        | D4                             A5 | R Pwm?
 L BRK   | D5 Pwm16                       A4 |
         | D6 Pwm1                        A3 |
         | D7                         P13 A2 | R Enc 2
@@ -34,7 +47,9 @@ L Enc 2 | D12 PB4                       D13 | R Dir
 ```
 
 
-## CQR
+### CQR
+
+Used much less than planned. It was basically doing nothing.
 
 ```text
                      +---------+
@@ -63,14 +78,12 @@ Can Rd  | D10                             x |
 ```
 
 
-## CQES
+### CQES
 
-osef des connecteurs arduino, en dessous y'en a pas. on focus sur les morpho headers
+Input/output are a mess. Use buses, it saves *a lot* of wires (I2C, ...).
 
 ```text
                                             USB
-
-                                             //
                                              //
  Ax12Tx | PC10 S3Tx      S3Rx PC11 | Ax12Rx  // R Clamp (pwm1) | PC9 pwm8         digi PC8 | R Pump (digi)
  SRF4 T | PC12                 PD2 |         //  R Flap (pwm2) | PB8 pwm4         digi PC6 | L Pump (digi)
@@ -92,35 +105,26 @@ osef des connecteurs arduino, en dessous y'en a pas. on focus sur les morpho hea
  SRF3 E | PC2           AnagIn PC1 | S5      //         (Xbee) | PA2 S2Tx                x |
  SRF4 E | PC3           AnagIn PC0 | C1a     //         (Xbee) | PA3 S2Rx                x |
                                              //
-                                             //
 ```
 
-Prog L  Flap L  Flap R  Prog R  x     x
-J18     J16     J14     J12     J10   J8
 
+## Wiring
 
-J14 -> D8 -> Prog L
-J8 -> PB_9 D14 -> Prog R
-
-
-
-# Wiring
-
-## MCP 2551 (CAN Transciever)
+### MCP 2551 (CAN Transciever)
 
 ```text
-        +----\   /----+
-        |     ---     |
- CAN TD | Tx       Rs | GND
-    GND | VSS   CAN H |
-     5V | VDD   CAN L |
- CAN RD | Rx     VRef | floating
-        |             |
-        +-------------+
+                  +----\   /----+
+                  |     ---     |
+to uc ---- CAN TD | Tx       Rs | GND
+              GND | VSS   CAN H | ----------- to CAN bus
+               5V | VDD   CAN L | ----------- to CAN bus
+to uc ---- CAN RD | Rx     VRef | floating
+                  |             |
+                  +-------------+
 ```
 
 
-## Mosfet (Pump)
+### Mosfet (Pump)
 
 ```text
           +-------+
@@ -147,20 +151,13 @@ J8 -> PB_9 D14 -> Prog R
 
 ```
 
-## Composant Ax12
+### Ax12 Stuff
 
          stm
-  5V Sw rx tx
+  5V Sw Rx Tx
  +----------------------+
  )                      |
  +----------------------+
-  sw ax12 ax12         gnd
+  Sw Ax12 Ax12         gnd
 
-
--> sw + rx en pullup
-
-# Xbee settings
-
-
-
-
+-> pullup on Sw + Rx
