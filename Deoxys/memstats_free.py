@@ -36,7 +36,7 @@ def format_stats_to_dic(summary, what):
 def main(BOARD):
     out = subprocess.check_output([
         'python', 'mbed-os/tools/memap.py',
-        '.build/NUCLEO_%s/GCC_ARM/out.map' % BOARD['name'],
+        'BUILD/NUCLEO_%s/GCC_ARM/out.map' % BOARD['name'],
         '-t', 'GCC_ARM',
         '-e', 'json'
     ])

@@ -77,7 +77,10 @@ void parse_cmd(Debug *debug, OrdersFIFO *orders, Actuators *actuators)
             return;
         }
 
-#if defined(IAM_QREFLECHI)
+#if defined(IAM_QBOUGE)
+        // nothing to do here
+        (void)side; // remove warning
+#elif defined(IAM_QREFLECHI)
         queue->call_in(0, callback(messenger, &CanMessenger::send_msg_CQR_order),
             OrderCom_makeSequence(ORDER_COM_TYPE_SEQ_ARM_INIT, side)
         );

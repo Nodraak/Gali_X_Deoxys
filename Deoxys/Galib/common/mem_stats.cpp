@@ -49,8 +49,9 @@ void mem_stats_objects(Debug *debug)
 void mem_stats_dynamic(Debug *debug)
 {
     mbed_stats_heap_t heap_stats;
-    osEvent info;
-    osThreadId threadid;
+    osThreadId_t *threads = NULL;
+    uint32_t thread_count = 0;
+    uint8_t i = 0;
 
     debug->printf("----- symbols\n");
 
@@ -66,23 +67,24 @@ void mem_stats_dynamic(Debug *debug)
 
     debug->printf("----- stack\n");
 
-    osThreadEnumId enumid = _osThreadsEnumStart();
-    while ((threadid = _osThreadEnumNext(enumid)))
+    thread_count = osThreadGetCount();
+
+    debug->printf("Thread count %d\n", thread_count);
+
+    threads = new osThreadId_t[thread_count];
+    thread_count = osThreadEnumerate(threads, thread_count);
+
+    debug->printf("\ti threadid stack name\n");
+    for (i = 0; i < thread_count; i++)
     {
-        debug->printf("\tthread id 0x%x\n", (uint32_t)threadid);
+        const char *name = osThreadGetName(threads[i]);
+        uint32_t stack_size = osThreadGetStackSize(threads[i]);
+        uint32_t stack_max = osThreadGetStackSpace(threads[i]);
 
-        info = _osThreadGetInfo(threadid, osThreadInfoStackSize);
-        if (info.status != osOK)
-            error("\t\tCould not get stack size");
-        uint32_t stack_size = (uint32_t)info.value.v;
-
-        info = _osThreadGetInfo(threadid, osThreadInfoStackMax);
-        if (info.status != osOK)
-            error("\t\tCould not get max stack");
-        uint32_t max_stack = (uint32_t)info.value.v;
-
-        debug->printf("\t\tStack used %d of %d bytes\n", max_stack, stack_size);
+        debug->printf("\t%d 0x%X %d/%d %s\n", i, threads[i], stack_size, stack_max, name);
     }
+
+    delete[] threads;
 
     debug->printf("\n");
 

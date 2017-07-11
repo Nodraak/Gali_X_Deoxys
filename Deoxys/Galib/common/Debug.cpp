@@ -29,21 +29,15 @@ void debug_pre_init(Debug *debug)
 }
 
 
-Debug::Debug(void) :
-interfaces_{
-    BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE),
-#ifdef IAM_QREFLECHI
-    BufferedSerial(XBEE_TX, XBEE_RX, INTERFACE_BUFFER_SIZE),
-#endif
-},
-interfaces_str_{
-    "pc",
-#ifdef IAM_QREFLECHI
-    "xbee",
-#endif
-}
-{
+Debug::Debug(void) {
     int i = 0;
+
+    interfaces_[DEBUG_PC] = new BufferedSerial(USBTX, USBRX, INTERFACE_BUFFER_SIZE);
+    interfaces_str_[DEBUG_PC] = "pc";
+#ifdef IAM_QREFLECHI
+    interfaces_[DEBUG_XBEE] = new BufferedSerial(XBEE_TX, XBEE_RX, INTERFACE_BUFFER_SIZE);
+    interfaces_str_[DEBUG_XBEE] = "xbee";
+#endif
 
     print_level_ = DEBUG_INITIALISATION;
     current_level_ = DEBUG_INITIALISATION;
@@ -51,13 +45,13 @@ interfaces_str_{
     wait_ms(100);  // wait for the various UART buffers to clean up (xbee)
 
     for (i = 0; i < DEBUG_LAST; ++i)
-        interfaces_[i].baud(DEBUG_SPEED);
+        interfaces_[i]->baud(DEBUG_SPEED);
 
     this->printf("\n\n========================================\n\n");
     this->printf("Hello, world! (all)\n");
 
     for (i = 0; i < DEBUG_LAST; ++i)
-        interfaces_[i].printf("Hello, world! (%s)\n", interfaces_str_[i]);
+        interfaces_[i]->printf("Hello, world! (%s)\n", interfaces_str_[i]);
 
     this->printf("\n");
 }
@@ -85,7 +79,7 @@ void Debug::printf(Level level, const char* format, ...) {
     va_end(args);
 
     for (i = 0; i < DEBUG_LAST; ++i)
-        interfaces_[i].printf("%s", buffer);
+        interfaces_[i]->printf("%s", buffer);
 
     if (level == DEBUG_INITIALISATION)
         wait_ms(5);
@@ -141,7 +135,7 @@ int Debug::get_line(char *buffer, int buffer_length, Interface interface) {
     {
         if ((interface == i) || (interface == DEBUG_ALL))
         {
-            ret = _get_line(&interfaces_[i], buffer, buffer_length);
+            ret = _get_line(interfaces_[i], buffer, buffer_length);
             if (ret != 0)
                 return ret;
         }

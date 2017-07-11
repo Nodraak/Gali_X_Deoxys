@@ -14,7 +14,7 @@
 #define CDS_SEND_OVER_CAN       100
 
 
-struct CollisionDetectionSystem {
+class CollisionDetectionSystem {
 public:
     CollisionDetectionSystem(EventQueue *queue, CanMessenger *messenger) {
         sharp_[0] = new SharpSensor(SHARP1, queue);

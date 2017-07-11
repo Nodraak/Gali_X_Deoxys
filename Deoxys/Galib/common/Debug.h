@@ -55,7 +55,7 @@ public:
     void set_current_level(Level level);
 
 protected:
-    BufferedSerial interfaces_[DEBUG_LAST];
+    BufferedSerial *interfaces_[DEBUG_LAST];
     const char *interfaces_str_[DEBUG_LAST];
     Level print_level_;
     Level current_level_;

@@ -106,7 +106,6 @@ void init_common(
     queue = new EventQueue;
     queue->call_every(INIT_DELAY_LED_RUNNING, callback(sl, &StatusLeds::running));
     queue->call_every(INIT_DELAY_LED_UPDATE_BO, callback(sl, &StatusLeds::updateBO));
-    queue->call_every(INIT_DELAY_LEAVE_THE_BUS, callback(messenger, &CanMessenger::leave_the_bus_for_a_moment));
 #ifdef PRINT_TIME
     queue->call_every(INIT_DELAY_PRINT_TIME, callback(main_print_time), debug, main_timer);
 #endif

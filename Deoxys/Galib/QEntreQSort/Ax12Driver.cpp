@@ -69,7 +69,8 @@ int Ax12Driver::__send_request(uint8_t payload_len, uint8_t *payload_data) {
     ax12_.printf("%c", checksum);
 
     wait_us(AX12_TIME_FOR_DATA_TO_BE_SENT);  // wait a little for the data to be send
-    ax12_.clear();  // clear the rx buffer to remove any outdated char
+    while (ax12_.readable()) // clear the rx buffer to remove any outdated char
+        ax12_.getc();
     txrx_set_rx();
 
     // wait for response and parse it

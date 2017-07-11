@@ -72,9 +72,6 @@ t_funny_action.start();
 Timer t_print;
 t_print.start();
 
-if (THIS_IS_THE_CUP)
-    mc->this_is_the_cup_and_nothing_is_working(0.4);
-
 debug->printf("======= GO =======\n");
 
     main_timer->reset();
@@ -87,8 +84,6 @@ debug->printf("======= GO =======\n");
         queue->dispatch(0);  // non blocking dispatch
         com_handle_can(debug, messenger, orders, &cqes_finished, &cqr_finished, mc);
 
-if (!THIS_IS_THE_CUP)
-{
         if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
             messenger->send_msg_CQB_finished();
@@ -120,18 +115,6 @@ if (!THIS_IS_THE_CUP)
             messenger->send_msg_CQB_next_order_request();
 
         // messenger->send_msg_I_am_doing(orders->current_order_.type);
-}
-
-if (THIS_IS_THE_CUP)
-{
-    if (t_funny_action.read() >= MOVE_TIME)
-        mc->this_is_the_cup_and_nothing_is_working(0);
-}
-
-if (t_funny_action.read() >= TIME_FUNNY_ACTION)
-{
-    funny_action.write(FUNNY_ACTION_ON);
-}
 
         g_mon->main_loop.stop_and_save();
         main_sleep(debug, loop);

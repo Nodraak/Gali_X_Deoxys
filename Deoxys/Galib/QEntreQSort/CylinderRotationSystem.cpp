@@ -15,8 +15,9 @@ CylinderRotationSystem::CylinderRotationSystem(
     rotation_reversed_ = rotation_reversed;
     running_ = false;
 
+    timeout_ = new Timer();
+    timeout_->start();
     queue_ = queue;
-    timeout_.start();
 }
 
 void CylinderRotationSystem::rotate(int angle_deg) {
@@ -26,14 +27,14 @@ void CylinderRotationSystem::rotate(int angle_deg) {
 
     ax12_->endless_turn_enable(ax12_id_, rotation_reversed_ ? AX12_DIR_CCW : AX12_DIR_CW, AX12_ROTATION_SPEED);
 
-    timeout_.reset();
+    timeout_->reset();
     float post_yellow_wait = 1000.0 * ONE_ROTATION_DURATION * angle_deg/360;
     queue_->call_in(0.001, callback(this, &CylinderRotationSystem::rotate_wait_trigger), post_yellow_wait);
 }
 
 void CylinderRotationSystem::rotate_wait_trigger(float post_yellow_wait) {
     // timeout -> abort now, do nothing
-    if (timeout_.read_ms() > 5*1000)  // todo define timeout
+    if (timeout_->read_ms() > 5*1000)  // todo define timeout
         this->rotate_finish();
     // trigger (yellow) -> schedule finish in XX ms
     else if (cs_->get_val() == COLOR_YELLOW)

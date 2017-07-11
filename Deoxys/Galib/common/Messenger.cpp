@@ -178,19 +178,6 @@ int CanMessenger::read_msg(Message *dest) {
     return ret;
 }
 
-// Bug fixed by implementation
-// void CanMessenger::set_silent(bool enable) {
-//     can_.monitor(enable);
-// }
-
-// Bug fixed by implementation
-// void CanMessenger::leave_the_bus_for_a_moment(void) {
-//     this->set_silent(true);
-//     Thread::wait(3);  // ms
-//     // 1/(500*1000) * (128*11) == 2.8 ms - bus off recovery time (let other boards initialise their CAN)
-//     this->set_silent(false);
-// }
-
 int CanMessenger::on_receive_add(Message::e_message_type type, Callback<void(void*)> cb) {
     if (or_count_ == ON_RECEIVE_SLOT_COUNT)
         return 1;

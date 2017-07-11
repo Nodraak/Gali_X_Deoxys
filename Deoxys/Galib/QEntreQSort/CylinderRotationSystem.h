@@ -11,7 +11,7 @@
 #define AX12_ROTATION_SPEED     0x3FF  // should be 114 RPM ie 2 turns per sec ie 1 sec for a full cylinder turn, but it is 2 sec :/
 
 
-struct CylinderRotationSystem {
+class CylinderRotationSystem {
 public:
     CylinderRotationSystem(
         Ax12Driver *ax12, EventQueue *queue, PinName c_green, PinName c_blue, uint8_t ax12_id, bool rotation_reversed
@@ -33,7 +33,7 @@ private:
     bool rotation_reversed_;
     bool running_;
 
-    Timer timeout_;
+    Timer *timeout_;
     EventQueue *queue_;
 };
 

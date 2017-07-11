@@ -279,17 +279,6 @@ public:
     CanMessenger(void);
 
     /*
-        Silent mode disable write to the bus. We can still read msg.
-    */
-    void set_silent(bool enable);
-
-    /*
-        Enable silent mode for a moment (few ms) to let the other boards
-        initialize their CAN bus (CanMessenger)
-    */
-    void leave_the_bus_for_a_moment(void);
-
-    /*
         Tries to read from the CAN receive buffers.
         If a CAN message is available, fill msg and returns 1;
         If no CAN message is available, returns 0 (msg might be overwritten with
