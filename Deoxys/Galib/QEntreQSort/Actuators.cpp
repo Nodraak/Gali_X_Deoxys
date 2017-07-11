@@ -493,6 +493,7 @@ int Actuators::is_color_done(t_act act) {
         return left_.is_color_done();
     if (act & ACT_SIDE_RIGHT)
         return right_.is_color_done();
+    return -1;
 }
 
 #endif // #ifdef IAM_QENTRESORT
