@@ -27,6 +27,9 @@
 
 #include "common/init.h"
 
+#ifdef IAM_QENTRESORT
+extern Ax12Driver *ax12_driver;
+#endif
 
 void init_common(
     Timer **_main_timer,
@@ -190,8 +193,10 @@ void init_board_CQES(Debug *debug,
 
     debug->printf("Ax12Driver...\n");
     ax12 = new Ax12Driver;
+    ax12_driver = ax12;
     debug->printf("\tok\n");
 
+// todo define ax12 id ?
     debug->printf("Actuators...\n");
     actuators = new Actuators(
         // left

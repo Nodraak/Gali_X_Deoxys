@@ -53,6 +53,7 @@ void ColorSensor::update(void) {
 e_color ColorSensor::get_val(void) {
     e_color new_color;
 
+    // todo define
     if ((last_avg_g_ > 0.058) && (last_avg_b_ > 0.058))
         new_color = COLOR_WHITE;
     else if ((last_avg_g_ > 0.058) && (last_avg_b_ < 0.058))

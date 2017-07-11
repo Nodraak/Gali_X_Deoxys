@@ -49,6 +49,34 @@ int main(void)
         Go!
     */
 
+#define FUNNY_ACTION_OFF        0.02
+#define FUNNY_ACTION_ON         0.07
+#define PIN_TIRETTE             A4
+#define PIN_FUNNY_ACTION        A5
+#define TIME_FUNNY_ACTION       92.000
+#define MOVE_TIME               2.000
+DigitalIn tirette(PIN_TIRETTE);
+Timer t_move;
+t_move.start();
+Timer t_funny_action;
+PwmOut funny_action(PIN_FUNNY_ACTION);
+funny_action.period(1.0/50);
+funny_action.write(FUNNY_ACTION_OFF);
+
+debug->printf("======= TIRETTE =======\n");
+
+while (tirette.read() == 1)
+    queue->dispatch(0);
+t_funny_action.start();
+
+Timer t_print;
+t_print.start();
+
+if (THIS_IS_THE_CUP)
+    mc->this_is_the_cup_and_nothing_is_working(0.4);
+
+debug->printf("======= GO =======\n");
+
     main_timer->reset();
 
     while (true)
@@ -59,6 +87,8 @@ int main(void)
         queue->dispatch(0);  // non blocking dispatch
         com_handle_can(debug, messenger, orders, &cqes_finished, &cqr_finished, mc);
 
+if (!THIS_IS_THE_CUP)
+{
         if (mc->current_order_.type == ORDER_EXE_TYPE_WAIT_CQB_FINISHED)
         {
             messenger->send_msg_CQB_finished();
@@ -89,7 +119,19 @@ int main(void)
         if (orders->next_order_should_request())
             messenger->send_msg_CQB_next_order_request();
 
-        messenger->send_msg_I_am_doing(orders->current_order_.type);
+        // messenger->send_msg_I_am_doing(orders->current_order_.type);
+}
+
+if (THIS_IS_THE_CUP)
+{
+    if (t_funny_action.read() >= MOVE_TIME)
+        mc->this_is_the_cup_and_nothing_is_working(0);
+}
+
+if (t_funny_action.read() >= TIME_FUNNY_ACTION)
+{
+    funny_action.write(FUNNY_ACTION_ON);
+}
 
         g_mon->main_loop.stop_and_save();
         main_sleep(debug, loop);

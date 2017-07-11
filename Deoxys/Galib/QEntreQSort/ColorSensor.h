@@ -13,6 +13,8 @@
     last RAW2AVG_WINDOW (50) raw values. we work only on these averaged values.
     fancy algorithms with a calibraton phase has been tried, but the dumb
     version actually works better.
+
+    Blue is not recognized !!
 */
 
 
@@ -65,3 +67,13 @@ private:
 
 #endif // #ifndef SENSORS_H_INCLUDED
 #endif // #ifdef IAM_QENTRESORT
+
+/*
+    const char *color2str[] = {
+        "COLOR_UNKNOWN",
+        "COLOR_NOT_CONFIDENT",
+        "COLOR_BLUE",
+        "COLOR_YELLOW",
+        "COLOR_WHITE"
+    };
+*/

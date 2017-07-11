@@ -77,7 +77,7 @@ void ServoActuator::close(void) {
 Ax12Actuator::Ax12Actuator(const char *name, Ax12Driver *ax12, uint8_t id, uint16_t retracted, uint16_t neutral, uint16_t extended) :
     name_(name), ax12_(ax12), id_(id), retracted_(retracted), neutral_(neutral), extended_(extended)
 {
-    this->retract();
+    // this->retract();
 }
 
 void Ax12Actuator::print(Debug *debug, int depth) {
@@ -219,9 +219,9 @@ ArmActuator::ArmActuator(
     ServoActuator clamp,
     BooleanActuator pump
 ) : height_(height), vert_(vert), horiz_(horiz), clamp_(clamp), pump_(pump) {
-    height_.extend();
-    vert_.extend();
-    horiz_.extend();
+    // height_.extend();
+    // vert_.extend();
+    // horiz_.extend();
     clamp_.open();
     pump_.off();
 }
@@ -328,6 +328,7 @@ void OneSideCylindersActuators::print(Debug *debug, int depth) {
     arm_.print(debug, depth+1);
     flap_.print(debug, depth+1);
     prograde_dispenser_.print(debug, depth+1);
+    // print crs ?
 }
 
 void OneSideCylindersActuators::set(t_act act, float val) {
@@ -343,6 +344,7 @@ void OneSideCylindersActuators::set(t_act act, float val) {
         flap_.set(act, val);
     if (act & ACT_ACTUATOR_PROG)
         prograde_dispenser_.set(act, val);
+    // set crs ?
 }
 
 void OneSideCylindersActuators::activate(t_act act) {

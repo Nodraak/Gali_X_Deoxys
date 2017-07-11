@@ -68,9 +68,7 @@ const char *e2s_message_type(Message::e_message_type msg)
 */
 
 Message::Message(void) {
-    id = MT_empty;
-    len = 0;
-    memset(payload.raw_data, 0, 8);
+    Message(MT_empty);
 }
 
 Message::Message(e_message_type id_, unsigned int len_, u_payload payload_) {
@@ -180,16 +178,18 @@ int CanMessenger::read_msg(Message *dest) {
     return ret;
 }
 
-void CanMessenger::set_silent(bool enable) {
-    can_.monitor(enable);
-}
+// Bug fixed by implementation
+// void CanMessenger::set_silent(bool enable) {
+//     can_.monitor(enable);
+// }
 
-void CanMessenger::leave_the_bus_for_a_moment(void) {
-    this->set_silent(true);
-    Thread::wait(3);  // ms
-    // 1/(500*1000) * (128*11) == 2.8 ms - bus off recovery time (let other boards initialise their CAN)
-    this->set_silent(false);
-}
+// Bug fixed by implementation
+// void CanMessenger::leave_the_bus_for_a_moment(void) {
+//     this->set_silent(true);
+//     Thread::wait(3);  // ms
+//     // 1/(500*1000) * (128*11) == 2.8 ms - bus off recovery time (let other boards initialise their CAN)
+//     this->set_silent(false);
+// }
 
 int CanMessenger::on_receive_add(Message::e_message_type type, Callback<void(void*)> cb) {
     if (or_count_ == ON_RECEIVE_SLOT_COUNT)
@@ -209,24 +209,13 @@ int CanMessenger::on_receive_add(Message::e_message_type type, Callback<void(voi
 
 #ifdef IAM_QREFLECHI
 int CanMessenger::send_msg_CQR_ping(void) {
-    return this->send_msg(Message(Message::MT_CQR_ping, 0, (Message::u_payload){}));
+    // TODO inline this
+    return this->send_msg(Message::make_ping());
 }
 #endif
 
 int CanMessenger::send_msg_pong(void) {
-    Message::e_message_type message_type;
-
-#ifdef IAM_QBOUGE
-    message_type = Message::MT_CQB_pong;
-#endif
-#ifdef IAM_QREFLECHI
-    message_type = Message::MT_CQR_pong;
-#endif
-#ifdef IAM_QENTRESORT
-    message_type = Message::MT_CQES_pong;
-#endif
-
-    return this->send_msg(Message(message_type, 0, (Message::u_payload){}));
+    return this->send_msg(Message::make_pong());
 }
 
 #ifdef IAM_QREFLECHI

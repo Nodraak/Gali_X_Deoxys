@@ -79,6 +79,24 @@ void sys_interrupt_priorities_init(void)
     _SetPriority(USART2_IRQn, 11);
 }
 
+void sys_can_enable_auto_bus_off_recovery(void)
+{
+// NOPE NOPE NOPE NOPE !! that hides errors, if you need it, find the error
+#define BASE_ADDR_CAN1      0x40006400
+#define CAN_MCR             (BASE_ADDR_CAN1+0x00)
+    *(uint32_t*)CAN_MCR |= 0x1 << 6;  // Bit 6 ABOM: Automatic bus-off management
+    // todo detect bus off errors for stats and error reporting
+}
+
+void sys_can_disable_auto_bus_off_recovery(void)
+{
+// NOPE NOPE NOPE NOPE !! that hides errors, if you need it, find the error
+#define BASE_ADDR_CAN1      0x40006400
+#define CAN_MCR             (BASE_ADDR_CAN1+0x00)
+    *(uint32_t*)CAN_MCR &= ~(0x1 << 6);  // Bit 6 ABOM: Automatic bus-off management
+    // todo detect bus off errors for stats and error reporting
+}
+
 void sys_debug_can(void)
 {
 #undef BASE_ADDR_CAN1
@@ -114,4 +132,10 @@ LEC
     110: CRC Error
     111: Set by software
 */
+
+    // if (CAN_ESR_BOFF)
+    // {
+    //     g_debug->printf("Bus off, reset\n");
+    //     *(uint32_t*)CAN_MCR |= 0x1 << 15;  // Bit 15 RESET: bxCAN software master reset
+    // }
 }

@@ -136,3 +136,100 @@ extern "C" void BusFault_Handler(uint32_t *top_of_stack) {
 extern "C" void UsageFault_Handler(uint32_t *top_of_stack) {
     fault_handler(top_of_stack, "UsageFault Fault");
 }
+
+#if 0
+
+    //See http://infocenter.arm.com/help/topic/com.arm.doc.dui0553a/Cihdjcfc.html
+
+    if((__get_IPSR() & 0xFF) == 3) {
+        fprintf(stderr, "HardFault reason:\n");
+        if(SCB->HFSR & SCB_HFSR_DEBUGEVT_Msk)
+            fprintf(stderr, "- DEBUGEVT\n");
+        if(SCB->HFSR & SCB_HFSR_FORCED_Msk)
+            fprintf(stderr, "- Fault escalated to a hard fault\n");
+        if(SCB->HFSR & SCB_HFSR_VECTTBL_Msk)
+            fprintf(stderr, "- Bus error on a vector read\n");
+    }
+
+
+    //See http://infocenter.arm.com/help/topic/com.arm.doc.dui0553a/Cihcfefj.html#Cihgghei
+
+    if((__get_IPSR() & 0xFF) == 4) {
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x80)
+            fprintf(stderr, "MemManage fault at address 0x%08lX\n", SCB->MMFAR);
+        else
+            fprintf(stderr, "MemManage fault\n");
+
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x01)
+            fprintf(stderr, "- Memory is not executable\n");
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x02)
+            fprintf(stderr, "- Memory is not readable/writable\n");
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x08)
+            fprintf(stderr, "- Exception when unstacking from exception\n");
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x10)
+            fprintf(stderr, "- Exception when stacking for an exception\n");
+        if((SCB->CFSR >> SCB_CFSR_MEMFAULTSR_Pos) & 0x20)
+            fprintf(stderr, "- Fault when floating-point lazy state preservation\n");
+    }
+
+
+    //See http://infocenter.arm.com/help/topic/com.arm.doc.dui0553a/Cihcfefj.html#Cihbeigb
+
+    if((__get_IPSR() & 0xFF) == 5) {
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x80)
+            fprintf(stderr, "BusFault fault at address 0x%08lX\n", SCB->BFAR);
+        else
+            fprintf(stderr, "BusFault fault\n");
+
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x01)
+            fprintf(stderr, "- Instruction bus error\n");
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x02)
+            fprintf(stderr, "- Precise Data bus error\n");
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x04)
+            fprintf(stderr, "- Imprecise Data bus error\n");
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x08)
+            fprintf(stderr, "- Exception when unstacking from exception\n");
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x10)
+            fprintf(stderr, "- Exception when stacking for an exception\n");
+        if((SCB->CFSR >> SCB_CFSR_BUSFAULTSR_Pos) & 0x20)
+            fprintf(stderr, "- Fault when floating-point lazy state preservation\n");
+    }
+
+    //See http://infocenter.arm.com/help/topic/com.arm.doc.dui0553a/Cihcfefj.html#Cihgbdbi
+
+    if((__get_IPSR() & 0xFF) == 6) {
+        fprintf(stderr, "UsageFault fault, return address: 0x%08lX\n", stack_ptr[6]);
+
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x001)
+            fprintf(stderr, "- Undefined instruction\n");
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x002)
+            fprintf(stderr, "- Illegal use of the EPSR\n");
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x004)
+            fprintf(stderr, "- Illegal load of the PC\n");
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x008)
+            fprintf(stderr, "- Attempt to access a coprocessor but not present\n");
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x100)
+            fprintf(stderr, "- Unaligned memory access\n");
+        if((SCB->CFSR >> SCB_CFSR_USGFAULTSR_Pos) & 0x200)
+            fprintf(stderr, "- Divide by zero\n");
+    }
+    fprintf(stderr, "END of Fault Handler\n");
+}
+
+
+__attribute__((naked)) void Fault_Handler(void)
+{
+    //On ne veux pas perdre l'état des registres, donc pas de C
+    //l'attribut naked indique qu'on ne veux pas de prologue / epilogue générés par GCC
+    __asm volatile
+    (
+        "TST LR, #4\n"      // Test for MSP or PSP
+        "ITE EQ\n"          //If equal
+        "MRSEQ R0, MSP\n"   //r0 = msp
+        "MRSNE R0, PSP\n"   //else r0 = psp
+        "MOV R1, LR\n"
+        "B dump_trap_info\n"
+    );
+}
+
+#endif

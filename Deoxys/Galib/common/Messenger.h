@@ -19,6 +19,7 @@
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 
+// todo assert all size
 
 /*
     Can bus baud rate, in Hz.
@@ -103,6 +104,7 @@ public:
         MT_CQB_finished             = 510,
         MT_CQES_finished            = 511,
         MT_CQR_finished             = 512,
+// *_I_am_finished order_id -> much better IMO
 
         MT_CQB_next_order_request   = 520,
         MT_CQES_next_order_request  = 521,
@@ -224,7 +226,31 @@ public:
     */
 
     Message(void);  // Receive. Fills the attributes with default placeholders.
+    Message(e_message_type id_)  // len and payload are 0 and NULL
+    {
+        Message(id_, 0, (Message::u_payload){});
+    };
     Message(e_message_type id_, unsigned int len_, u_payload payload_);  // Send.
+
+    static Message make_ping(void) {
+        return Message(Message::MT_CQR_ping);
+    };
+    static Message make_pong(void) {
+        Message::e_message_type message_type;
+
+#ifdef IAM_QBOUGE
+    message_type = Message::MT_CQB_pong;
+#endif
+#ifdef IAM_QREFLECHI
+    message_type = Message::MT_CQR_pong;
+#endif
+#ifdef IAM_QENTRESORT
+    message_type = Message::MT_CQES_pong;
+#endif
+
+        return Message(message_type);
+    };
+
 
     /*
         Class Attributes

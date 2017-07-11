@@ -134,6 +134,35 @@ void com_handle_can(
                 );
                 break;
 
+            case Message::MT_CQES_sensor_sharp_front:
+                // debug->printf("[CAN] MT_CQES_sensor_sharp_front %d %d %d\n",
+                //     rec_msg.payload.CQES_sensor_sharp_front.left,
+                //     rec_msg.payload.CQES_sensor_sharp_front.middle,
+                //     rec_msg.payload.CQES_sensor_sharp_front.right
+                // );
+
+                // mc->sensor_handle(SHARP_FRONT_LEFT, rec_msg.payload.CQES_sensor_sharp_front.left);
+                // mc->sensor_handle(SHARP_FRONT_MIDDLE, rec_msg.payload.CQES_sensor_sharp_front.middle);
+                // mc->sensor_handle(SHARP_FRONT_RIGHT, rec_msg.payload.CQES_sensor_sharp_front.right);
+
+                break;
+
+            case Message::MT_CQES_sensor_sharp_back:
+                // debug->printf("[CAN] MT_CQES_sensor_sharp_back %d %d\n",
+                //     rec_msg.payload.CQES_sensor_sharp_back.left,
+                //     rec_msg.payload.CQES_sensor_sharp_back.left
+                // );
+                break;
+
+            case Message::MT_CQES_sensor_ultrasound:
+                // debug->printf("[CAN] \t\t\t\t MT_CQES_sensor_ultrasound %d %d %d %d\n",
+                //     rec_msg.payload.CQES_sensor_ultrasound.front_left,
+                //     rec_msg.payload.CQES_sensor_ultrasound.front_right,
+                //     rec_msg.payload.CQES_sensor_ultrasound.back_left,
+                //     rec_msg.payload.CQES_sensor_ultrasound.back_right
+                // );
+                break;
+
             case Message::MT_CQR_order:
                 // todo ack if ok, else send error
                 // todo sync with CQES
@@ -165,8 +194,11 @@ void com_handle_can(
 
 #ifdef IAM_QREFLECHI
             case Message::MT_CQB_next_order_request:
+                // debug->printf("\t-> MT_CQB_next_order_request\n");
                 if (orders->size() == 0)
-                    debug->printf("\t-> orders->size() == 0\n");
+                {
+                    // debug->printf("\t-> orders->size() == 0\n");
+                }
                 // todo send a shut up order
                 else
                 {
@@ -180,11 +212,11 @@ void com_handle_can(
 
             case Message::MT_CQB_I_am_doing:
             case Message::MT_CQES_I_am_doing:
-                debug->printf(
-                    "\t-> I am doing %s %s\n",
-                    rec_msg.payload.I_am_doing.i_am,
-                    e2s_order_exe_type[rec_msg.payload.I_am_doing.order]
-                );
+                // debug->printf(
+                //     "\t-> I am doing %s %s\n",
+                //     rec_msg.payload.I_am_doing.i_am,
+                //     e2s_order_exe_type[rec_msg.payload.I_am_doing.order]
+                // );
                 break;
 
             case Message::MT_CQB_MC_pos_angle:
@@ -193,6 +225,14 @@ void com_handle_can(
                     rec_msg.payload.CQB_MC_pos_angle.pos.x,
                     rec_msg.payload.CQB_MC_pos_angle.pos.y,
                     RAD2DEG(rec_msg.payload.CQB_MC_pos_angle.angle)
+                );
+                break;
+
+            case Message::MT_CQB_MC_encs:
+                debug->printf(
+                    "\t-> enc %d %d\n",
+                    rec_msg.payload.CQB_MC_encs.enc_l,
+                    rec_msg.payload.CQB_MC_encs.enc_r
                 );
                 break;
 

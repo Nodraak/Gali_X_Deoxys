@@ -42,6 +42,7 @@ int main(void)
     // wait for other boards to be alive
     debug->printf("Waiting for other boards...\n");
 
+    // todo better place to init these
     float last_ping_CQB = -1;
     float last_ping_CQES = -1;
     DigitalIn tirette(B_PIN);

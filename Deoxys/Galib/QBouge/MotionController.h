@@ -4,6 +4,21 @@
 #define MOTION_CONTROLLER_H_INLCUDED
 
 /*
+We should extract the stuff related to QEI Positionning out of MotionController
+
+QeiPosition
+    qei l, r
+    pos
+    angle
+    speed, speed_ang
+
+MotionController
+    Motor l, r
+    Pid dist, angle
+    current order
+*/
+
+/*
     The MotionController have the responsability to control the motors to move
     the robot to the specified coordinates (it execute orders: position, angle,
     delay, ...).
@@ -38,6 +53,9 @@
 #define MC_TARGET_TOLERANCE_SPEED       5.0         // unit: mm/sec              - ESEO  8
 #define MC_TARGET_TOLERANCE_ANGLE       DEG2RAD(2)  // unit: rad    - Gali IX  7 - ESEO  2 deg
 #define MC_TARGET_TOLERANCE_ANG_SPEED   DEG2RAD(2)  // unit: rad/sec             - ESEO  3 deg
+
+// todo print this
+// max error due to angle tolerance (sqrt(100**2+(130+140)**2) * sin(MC_TARGET_TOLERANCE_ANG_SPEED)) == 10
 
 // Max speed
 

@@ -13,6 +13,7 @@
 // Note: be sure to have a steep increase (low PWM_STEP_1_AFTER_X_SEC value),
 // otherwise it might fucked up the PID settings
 #define PWM_STEP_1_AFTER_X_SEC  0.25
+// This is acceleration and should not be constant, but be incremented -> https://www.rcva.fr/10-ans-dexperience/4/
 #define PWM_STEP                (1.0/(ASSERV_FPS*PWM_STEP_1_AFTER_X_SEC))
 
 #define PWM_IS_ALMOST_ZERO      (PWM_STEP/2)                // Pwm under this value is considered to be 0
