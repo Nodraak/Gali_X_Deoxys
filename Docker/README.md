@@ -5,4 +5,3 @@
 * To compile the code (at each modification): `make docker_run`
 
 Output will be at `./build_output/`
-

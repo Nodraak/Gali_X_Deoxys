@@ -7,7 +7,6 @@ docker_build:
 docker_run:
 	mkdir -p ./build_output
 	docker run -t -i --rm \
-		-v $(shell realpath $(shell pwd)/../Deoxys):/opt/Deoxys:ro \
-		-v $(shell realpath $(shell pwd)/build_output):/tmp/build/output:rw \
+		-v $(shell readlink -f ../Deoxys):/opt/Deoxys:ro \
+		-v $(shell readlink -f ./build_output):/tmp/build/output:rw \
 		eceborg/mbed_build
-

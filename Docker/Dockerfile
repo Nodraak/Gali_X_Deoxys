@@ -13,12 +13,9 @@ RUN apt-get update -q && \
         make \
         openssh-client \
         python-dev \
-        python-setuptools \
         python-pip \
+        python-setuptools \
         wget
-    #libcurl4-openssl-dev \
-    #libssl-dev \
-    #mercurial \
 
 RUN pip install --upgrade setuptools pip
 
@@ -60,4 +57,3 @@ RUN mkdir /tmp/build
 WORKDIR /tmp/build
 COPY build.sh ./
 ENTRYPOINT ./build.sh
-

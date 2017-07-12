@@ -1,0 +1,11 @@
+sudo: required
+services:
+    - docker
+addons:
+    apt:
+        packages:
+        - make
+before_install:
+    - make -C Docker docker_build
+script:
+    - make -C Docker docker_run
