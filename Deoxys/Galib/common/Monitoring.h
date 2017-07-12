@@ -48,7 +48,8 @@ public:
 
 public:
     Duration qei_interrupt;
-    Duration asserv;
+    Duration asserv_pl;
+    Duration asserv_mc;
     Duration main_loop;
     Counter can_usage;
     Counter can_send_errors;

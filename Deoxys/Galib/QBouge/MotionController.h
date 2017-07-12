@@ -4,21 +4,6 @@
 #define MOTION_CONTROLLER_H_INLCUDED
 
 /*
-We should extract the stuff related to QEI Positionning out of MotionController
-
-QeiPosition
-    qei l, r
-    pos
-    angle
-    speed, speed_ang
-
-MotionController
-    Motor l, r
-    Pid dist, angle
-    current order
-*/
-
-/*
     The MotionController have the responsability to control the motors to move
     the robot to the specified coordinates (it execute orders: position, angle,
     delay, ...).
@@ -33,19 +18,8 @@ MotionController
 #include "common/OrdersFIFO.h"
 #include "common/utils.h"
 #include "QBouge/Motor.h"
-#include "QBouge/Qei.h"
+#include "QBouge/QeiPositionLocator.h"
 
-
-#define ENC_RADIUS          28.2                    // one encoder radius
-#define ENC_PERIMETER       (2*M_PI*ENC_RADIUS)     // one encoder perimeter
-#define ENC_POS_RADIUS      87                      // distance from one encoder to the center of the robot
-
-#define TICKS_PER_MM_L      16.5
-#define TICKS_PER_MM_R      131.8
-#define MM_TO_TICKS_L(val)  ((val)*TICKS_PER_MM_L)
-#define TICKS_TO_MM_L(val)  ((val)/TICKS_PER_MM_L)
-#define MM_TO_TICKS_R(val)  ((val)*TICKS_PER_MM_R)
-#define TICKS_TO_MM_R(val)  ((val)/TICKS_PER_MM_R)
 
 // Execute next order conditions
 
@@ -90,7 +64,7 @@ class MotionController {
 public:
     MotionController(void);
 
-    void reset(void);
+    void reset(bool lock=true);
     void we_are_at(int16_t x, int16_t y, float angle, bool lock=true);
     void update_current_order(s_order_exe *order);
 
@@ -115,54 +89,9 @@ private:
     */
     void asserv(void);
 
-// really private
 private:
-    /*
-        Disable and enable the Interrupt TIM2 used by the Ticker to call asserv().
-        Theses functions must be used by every function that is called from the
-        main thread (non interrupt) and that modify private attributes. Otherwise
-        data corruption might happen.
-    */
-    void lock(void);
-    void unlock(void);
+    QeiPositionLocator posLoc_;
 
-    /*
-        Save the encoders value to a working variable so that the various
-        computations and the debug are based on the same values within this
-        loop.
-    */
-    void fetchEncodersValue(void);
-
-    /*
-        Update the internal state of the MotionController (position, speed, ...)
-        given the value of the encoders ticks fetched by fetchEncodersValue().
-    */
-    void updatePosition(void);
-
-    /*
-        Recompute the distance and angle correction to apply.
-    */
-    void updateCurOrder(void);
-
-    /*
-        Compute the PIDs output based on the internal state of the
-        MotionController() computed by updateCurOrder() (distance and angle
-        errors to correct).
-    */
-    void computePid(void);
-
-    /*
-        Apply the computed PIDs output to the motors.
-    */
-    void updateMotors(void);
-
-    /*
-        Set the goal that the MotionController will make the robot move to.
-    */
-    void pidDistSetGoal(float goal);
-    void pidAngleSetGoal(float goal);
-
-private:
     /*
         Timer that generate an interrupt used to call asserv().
         Warning: This create an ISR. This uses the TIMER2 (TIM2_IRQn) interrupt.
@@ -170,40 +99,19 @@ private:
     Ticker *asserv_ticker_;
 
     // IO interfaces
-    Qei enc_l_, enc_r_;
     Motor motor_l_, motor_r_;
-
-    // Last value of the encoders. Used to determine speed. Unit: encoder ticks
-    int32_t enc_l_last_, enc_r_last_;
 
     // PID related variables
     PID pid_dist_, pid_angle_;
-    int32_t enc_l_val_, enc_r_val_;         // tmp variable used as a working var
-                                            //   use this instead of the raw value from the QEI objects.
-                                            //   unit: encoder ticks
-    float pid_dist_goal_, pid_angle_goal_;  // units: mm and rad
     float pid_dist_out_, pid_angle_out_;    // unit: between -1 and +1
 
     Timer timer_;
     float last_order_executed_timestamp_;
 
 public:
-    // Robot properties
-    s_vector_float pos_;    // unit: mm
-    float angle_;           // unit: radians
-    float speed_;           // unit: mm/sec
-    float speed_ang_;       // unit: rad/sec
-
     s_order_exe current_order_;
     bool is_current_order_executed_;
 };
-
-
-int mc_calcNewPos(
-    float diff_l, float diff_r,
-    float cur_angle, float cur_x, float cur_y,
-    float *new_angle_, float *new_x_, float *new_y_
-);
 
 /*
     Move backward if angle is not in [-90; 90].

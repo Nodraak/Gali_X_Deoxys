@@ -107,7 +107,8 @@ void mem_stats_settings(Debug *debug)
     debug->printf("\tMAIN_LOOP_FPS                  %d\n", MAIN_LOOP_FPS);
     debug->printf("\tORDERS_COUNT                   %d\n", ORDERS_COUNT);
 #ifdef IAM_QBOUGE
-    debug->printf("\tASSERV_FPS       %d\n", ASSERV_FPS);
+    debug->printf("\tASSERV_FPS_PL    %d\n", ASSERV_FPS_PL);
+    debug->printf("\tASSERV_FPS_MC    %d\n", ASSERV_FPS_MC);
 #endif
 
     debug->printf("\nCAN\n");

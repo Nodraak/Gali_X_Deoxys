@@ -14,7 +14,7 @@
 // otherwise it might fucked up the PID settings
 #define PWM_STEP_1_AFTER_X_SEC  0.25
 // This is acceleration and should not be constant, but be incremented -> https://www.rcva.fr/10-ans-dexperience/4/
-#define PWM_STEP                (1.0/(ASSERV_FPS*PWM_STEP_1_AFTER_X_SEC))
+#define PWM_STEP                (1.0/(ASSERV_FPS_MC*PWM_STEP_1_AFTER_X_SEC))
 
 #define PWM_IS_ALMOST_ZERO      (PWM_STEP/2)                // Pwm under this value is considered to be 0
 
@@ -74,18 +74,6 @@ public:
         Value between -1 and +1.
     */
     float getSPwm(void);
-
-    /*
-        Compute and save the actual speed of the wheel. This value is computed
-        from encoder ticks.
-    */
-    void updateSpeed(float mm_since_last_loop);
-
-    /*
-        Return the computed speed.
-        Unit: mm/sec
-    */
-    float getSpeed(void);
 
 protected:
     PwmOut pwm_;

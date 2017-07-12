@@ -73,7 +73,8 @@ void Monitoring::reset(void) {
 #endif
 
     qei_interrupt.reset_stats();
-    asserv.reset_stats();
+    asserv_pl.reset_stats();
+    asserv_mc.reset_stats();
     main_loop.reset_stats();
     can_usage.reset_stats();
     can_send_errors.reset_stats();
@@ -92,8 +93,11 @@ void Monitoring::debug(void) {
     qei_interrupt.get_stats(&min, &max, &sum, &count, &avg);
     g_debug->printf("\tqei          %3u %5u %6u %3u %5.1f\n", min, max, sum, count, avg);
 
-    asserv.get_stats(&min, &max, &sum, &count, &avg);
-    g_debug->printf("\tasserv       %3u %5u %6u %3u %5.1f\n", min, max, sum, count, avg);
+    asserv_pl.get_stats(&min, &max, &sum, &count, &avg);
+    g_debug->printf("\tasserv_pl    %3u %5u %6u %3u %5.1f\n", min, max, sum, count, avg);
+
+    asserv_mc.get_stats(&min, &max, &sum, &count, &avg);
+    g_debug->printf("\tasserv_mc    %3u %5u %6u %3u %5.1f\n", min, max, sum, count, avg);
 #endif
 
     main_loop.get_stats(&min, &max, &sum, &count, &avg);

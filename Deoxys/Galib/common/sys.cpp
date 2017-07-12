@@ -122,3 +122,12 @@ LEC
     //     *(uint32_t*)CAN_MCR |= 0x1 << 15;  // Bit 15 RESET: bxCAN software master reset
     // }
 }
+
+
+void ticker_lock(void) {
+    NVIC_DisableIRQ(TIM2_IRQn);
+}
+
+void ticker_unlock(void) {
+    NVIC_EnableIRQ(TIM2_IRQn);
+}

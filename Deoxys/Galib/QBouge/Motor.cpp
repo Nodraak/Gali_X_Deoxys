@@ -71,12 +71,4 @@ float Motor::getSPwm(void) {
     return this->getDir() ? this->getUPwm() : -this->getUPwm();
 }
 
-void Motor::updateSpeed(float mm_since_last_loop) {
-    speed_ = mm_since_last_loop / ASSERV_DELAY;
-}
-
-float Motor::getSpeed(void) {
-    return speed_;
-}
-
 #endif // #ifdef IAM_QBOUGE

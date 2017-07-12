@@ -4,6 +4,7 @@
 #include "common/utils.h"
 #include "common/test.h"
 #include "QBouge/MotionController.h"
+#include "QBouge/QeiPositionLocator.h"
 
 #include "test_mc.h"
 
